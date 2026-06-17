@@ -1,0 +1,97 @@
+.admin-layout {
+  min-height: 100vh;
+  background: #f5f7fb;
+}
+
+.sidebar {
+  color: #dbeafe;
+  background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
+  box-shadow: 8px 0 30px rgba(15, 23, 42, 0.12);
+}
+
+.logo-area {
+  height: 76px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.logo-mark {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #2563eb, #38bdf8);
+  color: #fff;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.logo-title {
+  color: #fff;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.logo-subtitle {
+  margin-top: 3px;
+  color: #93c5fd;
+  font-size: 12px;
+}
+
+.side-menu {
+  border-right: 0;
+  background: transparent;
+}
+
+.side-menu .el-menu-item {
+  margin: 8px 12px;
+  border-radius: 12px;
+  color: #cbd5e1;
+}
+
+.side-menu .el-menu-item.is-active {
+  color: #fff;
+  background: #2563eb;
+}
+
+.topbar {
+  height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.page-title {
+  color: #111827;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.page-subtitle {
+  margin-top: 4px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.user-panel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #334155;
+}
+
+.main-content {
+  padding: 24px;
+}
+
+.profile-select,
+.profile-date {
+  width: 100%;
+}

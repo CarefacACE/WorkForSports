@@ -1,0 +1,20 @@
+.workbench-page {
+  min-height: calc(100vh - 124px);
+}
+
+.empty-card {
+  min-height: 280px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 18px;
+  background: #fff;
+}
+
+.empty-card h2 {
+  margin: 0 0 10px;
+  color: #111827;
+}
+
+.empty-card p {
+  margin: 0;
+  color: #64748b;
+}
