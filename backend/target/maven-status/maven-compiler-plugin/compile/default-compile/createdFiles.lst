@@ -1,0 +1,14 @@
+com\zhixun\erp\user\dto\ResetPasswordRequest.class
+com\zhixun\erp\user\dto\RegisterRequest.class
+com\zhixun\erp\user\service\UserService.class
+com\zhixun\erp\user\entity\User.class
+com\zhixun\erp\ZhixunErpApplication.class
+com\zhixun\erp\user\dto\LoginRequest.class
+com\zhixun\erp\user\dto\ChangePasswordRequest.class
+com\zhixun\erp\user\mapper\UserMapper.class
+com\zhixun\erp\common\response\Result.class
+com\zhixun\erp\user\vo\UserProfileResponse.class
+com\zhixun\erp\common\exception\GlobalExceptionHandler.class
+com\zhixun\erp\user\controller\AuthController.class
+com\zhixun\erp\user\dto\UpdateProfileRequest.class
+com\zhixun\erp\user\vo\LoginResponse.class
