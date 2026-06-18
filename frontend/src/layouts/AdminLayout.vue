@@ -24,6 +24,16 @@
           <el-menu-item index="/dashboard/members">会员信息</el-menu-item>
           <el-menu-item index="/dashboard/member-balance">会员金额</el-menu-item>
         </el-sub-menu>
+        <el-sub-menu v-if="user?.role === 'ADMIN'" index="system-manage">
+          <template #title>
+            <el-icon><Setting /></el-icon>
+            <span>系统管理</span>
+          </template>
+          <el-menu-item index="/dashboard/logs">日志管理</el-menu-item>
+          <el-menu-item index="/dashboard/sql-monitor">SQL监控</el-menu-item>
+          <el-menu-item index="/dashboard/system-monitor">系统监控</el-menu-item>
+          <el-menu-item index="/dashboard/db-control">数据库控制</el-menu-item>
+        </el-sub-menu>
         <el-sub-menu v-if="user?.role === 'MEMBER'" index="course-select">
           <template #title>
             <el-icon><Reading /></el-icon>
@@ -163,7 +173,7 @@
 import { computed, reactive, ref } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
-import { Monitor, User, Reading } from '@element-plus/icons-vue';
+import { Monitor, User, Reading, Setting } from '@element-plus/icons-vue';
 import { changePassword, getProfile, updateProfile, type UserProfile } from '../api/auth';
 import { useUserStore } from '../stores/user';
 

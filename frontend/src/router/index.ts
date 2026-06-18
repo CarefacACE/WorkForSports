@@ -14,6 +14,10 @@ import CoachPublicCourseView from '../views/coach/CoachPublicCourseView.vue';
 import CoachPrivateCourseView from '../views/coach/CoachPrivateCourseView.vue';
 import CoachMyCoursesView from '../views/coach/CoachMyCoursesView.vue';
 import CoachMyStudentsView from '../views/coach/CoachMyStudentsView.vue';
+import LogView from '../views/LogView.vue';
+import SqlMonitorView from '../views/SqlMonitorView.vue';
+import SystemMonitorView from '../views/SystemMonitorView.vue';
+import DbControlView from '../views/DbControlView.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -61,6 +65,26 @@ const router = createRouter({
           path: 'wallet',
           name: 'wallet',
           component: WalletView,
+        },
+        {
+          path: 'logs',
+          name: 'logs',
+          component: LogView,
+        },
+        {
+          path: 'sql-monitor',
+          name: 'sql-monitor',
+          component: SqlMonitorView,
+        },
+        {
+          path: 'system-monitor',
+          name: 'system-monitor',
+          component: SystemMonitorView,
+        },
+        {
+          path: 'db-control',
+          name: 'db-control',
+          component: DbControlView,
         },
       ],
     },

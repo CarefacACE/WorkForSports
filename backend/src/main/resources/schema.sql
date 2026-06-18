@@ -72,3 +72,16 @@ CREATE TABLE IF NOT EXISTS enrollment (
     update_time DATETIME,
     deleted TINYINT DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS sys_log (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT,
+    username VARCHAR(64),
+    role VARCHAR(32),
+    operation VARCHAR(128),
+    method VARCHAR(255),
+    params TEXT,
+    ip VARCHAR(64),
+    create_time DATETIME,
+    deleted TINYINT DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
