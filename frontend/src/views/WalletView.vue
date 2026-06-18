@@ -12,13 +12,16 @@
       <el-col :span="16">
         <el-card shadow="hover">
           <template #header>
-            <span>{{ isCoach ? '收入记录' : '充值记录' }}</span>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span>{{ isCoach ? '收入记录' : '交易记录' }}</span>
+              <el-button type="primary" link @click="exportDialogVisible = true">导出账单</el-button>
+            </div>
           </template>
           <el-table :data="transactions" v-loading="tableLoading" stripe>
             <el-table-column prop="amount" label="金额" width="120">
               <template #default="{ row }">
-                <span :class="row.type === 'WITHDRAW' ? 'amount-minus' : 'amount-plus'">
-                  {{ row.type === 'WITHDRAW' ? '-' : '+' }}¥ {{ row.amount.toFixed(2) }}
+                <span :class="(row.type === 'WITHDRAW' || row.type === 'CONSUME') ? 'amount-minus' : 'amount-plus'">
+                  {{ (row.type === 'WITHDRAW' || row.type === 'CONSUME') ? '-' : '+' }}¥ {{ Math.abs(row.amount).toFixed(2) }}
                 </span>
               </template>
             </el-table-column>
@@ -43,6 +46,7 @@
       </el-col>
     </el-row>
 
+    <!-- 充值/提现对话框 -->
     <el-dialog v-model="dialogVisible" :title="isCoach ? '提现' : '充值'" width="420px">
       <el-form :model="form" label-position="top">
         <el-form-item :label="isCoach ? '提现金额' : '充值金额'">
@@ -66,13 +70,36 @@
         </el-button>
       </template>
     </el-dialog>
+
+    <!-- 导出账单对话框 -->
+    <el-dialog v-model="exportDialogVisible" title="导出账单" width="420px">
+      <el-form label-position="top">
+        <el-form-item v-if="!isCoach" label="账单类型">
+          <el-radio-group v-model="exportForm.type">
+            <el-radio value="CONSUME">消费记录</el-radio>
+            <el-radio value="RECHARGE">充值记录</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="时间范围">
+          <el-radio-group v-model="exportForm.period">
+            <el-radio value="WEEK">本周</el-radio>
+            <el-radio value="MONTH">本月</el-radio>
+            <el-radio value="YEAR">本年</el-radio>
+          </el-radio-group>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="exportDialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="exportLoading" @click="handleExport">确认导出</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
-import { recharge, withdraw, getBalance, getTransactions, type WalletTransaction } from '../api/finance';
+import { recharge, withdraw, getBalance, getTransactions, exportBill, type WalletTransaction } from '../api/finance';
 import { useUserStore } from '../stores/user';
 
 const userStore = useUserStore();
@@ -93,10 +120,19 @@ const form = reactive({
   remark: '',
 });
 
+const exportDialogVisible = ref(false);
+const exportLoading = ref(false);
+const exportForm = reactive({
+  type: 'CONSUME',
+  period: 'MONTH',
+});
+
 const typeLabelMap: Record<string, string> = {
   RECHARGE: '充值',
   WITHDRAW: '提现',
   COURSE: '卖课收入',
+  CONSUME: '课程消费',
+  COURSE_INCOME: '卖课收入',
   PERSONAL_TRAINING: '私教收入',
   ADJUST: '余额调整',
 };
@@ -105,6 +141,8 @@ const typeTagMap: Record<string, string> = {
   RECHARGE: 'success',
   WITHDRAW: 'warning',
   COURSE: '',
+  CONSUME: 'danger',
+  COURSE_INCOME: 'success',
   PERSONAL_TRAINING: '',
   ADJUST: 'info',
 };
@@ -174,6 +212,21 @@ async function handleSubmit() {
 function handlePageChange(page: number) {
   currentPage.value = page;
   fetchTransactions();
+}
+
+async function handleExport() {
+  if (!userId) return;
+  exportLoading.value = true;
+  try {
+    const type = isCoach.value ? 'COURSE_INCOME' : exportForm.type;
+    await exportBill(userId, exportForm.period, type);
+    ElMessage.success('导出成功');
+    exportDialogVisible.value = false;
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '导出失败');
+  } finally {
+    exportLoading.value = false;
+  }
 }
 
 onMounted(() => {

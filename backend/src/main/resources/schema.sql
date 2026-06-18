@@ -35,3 +35,40 @@ CREATE TABLE IF NOT EXISTS wallet_transaction (
     update_time DATETIME,
     deleted TINYINT DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS course (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    coach_id BIGINT NOT NULL,
+    name VARCHAR(128) NOT NULL,
+    description TEXT,
+    type VARCHAR(32) NOT NULL,
+    price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    cover_image VARCHAR(500),
+    status VARCHAR(32) DEFAULT 'ACTIVE',
+    create_time DATETIME,
+    update_time DATETIME,
+    deleted TINYINT DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS lesson (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    course_id BIGINT NOT NULL,
+    title VARCHAR(128) NOT NULL,
+    video_url VARCHAR(500),
+    sort_order INT DEFAULT 0,
+    is_trial TINYINT DEFAULT 0,
+    create_time DATETIME,
+    update_time DATETIME,
+    deleted TINYINT DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS enrollment (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    course_id BIGINT NOT NULL,
+    status VARCHAR(32) NOT NULL DEFAULT 'TRIAL',
+    paid_amount DECIMAL(10,2) DEFAULT 0.00,
+    create_time DATETIME,
+    update_time DATETIME,
+    deleted TINYINT DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

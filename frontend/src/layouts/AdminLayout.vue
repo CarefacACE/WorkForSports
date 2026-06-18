@@ -24,12 +24,31 @@
           <el-menu-item index="/dashboard/members">会员信息</el-menu-item>
           <el-menu-item index="/dashboard/member-balance">会员金额</el-menu-item>
         </el-sub-menu>
+        <el-sub-menu v-if="user?.role === 'MEMBER'" index="course-select">
+          <template #title>
+            <el-icon><Reading /></el-icon>
+            <span>选课</span>
+          </template>
+          <el-menu-item index="/member/public-courses">公共课</el-menu-item>
+          <el-menu-item index="/member/private-courses">私教</el-menu-item>
+        </el-sub-menu>
+        <el-sub-menu v-if="user?.role === 'COACH'" index="course-manage">
+          <template #title>
+            <el-icon><Reading /></el-icon>
+            <span>课程</span>
+          </template>
+          <el-menu-item index="/coach/public-courses">公共课</el-menu-item>
+          <el-menu-item index="/coach/private-courses">私教课</el-menu-item>
+        </el-sub-menu>
         <el-sub-menu v-if="user?.role !== 'ADMIN'" index="my-menu">
           <template #title>
             <el-icon><User /></el-icon>
             <span>我的</span>
           </template>
           <el-menu-item index="/dashboard/wallet">钱包</el-menu-item>
+          <el-menu-item v-if="user?.role === 'MEMBER'" index="/member/my-courses">我的课程</el-menu-item>
+          <el-menu-item v-if="user?.role === 'COACH'" index="/coach/my-courses">我的课程</el-menu-item>
+          <el-menu-item v-if="user?.role === 'COACH'" index="/coach/my-students">我的学员</el-menu-item>
         </el-sub-menu>
       </el-menu>
     </el-aside>
@@ -144,7 +163,7 @@
 import { computed, reactive, ref } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
-import { Monitor, User } from '@element-plus/icons-vue';
+import { Monitor, User, Reading } from '@element-plus/icons-vue';
 import { changePassword, getProfile, updateProfile, type UserProfile } from '../api/auth';
 import { useUserStore } from '../stores/user';
 

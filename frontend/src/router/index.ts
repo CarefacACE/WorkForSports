@@ -7,6 +7,13 @@ import MemberView from '../views/MemberView.vue';
 import MemberBalanceView from '../views/MemberBalanceView.vue';
 import CoachSalaryView from '../views/CoachSalaryView.vue';
 import WalletView from '../views/WalletView.vue';
+import PublicCourseView from '../views/member/PublicCourseView.vue';
+import PrivateCourseView from '../views/member/PrivateCourseView.vue';
+import MyCoursesView from '../views/member/MyCoursesView.vue';
+import CoachPublicCourseView from '../views/coach/CoachPublicCourseView.vue';
+import CoachPrivateCourseView from '../views/coach/CoachPrivateCourseView.vue';
+import CoachMyCoursesView from '../views/coach/CoachMyCoursesView.vue';
+import CoachMyStudentsView from '../views/coach/CoachMyStudentsView.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -57,13 +64,60 @@ const router = createRouter({
         },
       ],
     },
+    {
+      path: '/member',
+      component: AdminLayout,
+      children: [
+        {
+          path: 'public-courses',
+          name: 'member-public-courses',
+          component: PublicCourseView,
+        },
+        {
+          path: 'private-courses',
+          name: 'member-private-courses',
+          component: PrivateCourseView,
+        },
+        {
+          path: 'my-courses',
+          name: 'member-my-courses',
+          component: MyCoursesView,
+        },
+      ],
+    },
+    {
+      path: '/coach',
+      component: AdminLayout,
+      children: [
+        {
+          path: 'public-courses',
+          name: 'coach-public-courses',
+          component: CoachPublicCourseView,
+        },
+        {
+          path: 'private-courses',
+          name: 'coach-private-courses',
+          component: CoachPrivateCourseView,
+        },
+        {
+          path: 'my-courses',
+          name: 'coach-my-courses',
+          component: CoachMyCoursesView,
+        },
+        {
+          path: 'my-students',
+          name: 'coach-my-students',
+          component: CoachMyStudentsView,
+        },
+      ],
+    },
   ],
 });
 
 router.beforeEach((to) => {
   const token = localStorage.getItem('access_token');
 
-  if (to.path.startsWith('/dashboard') && !token) {
+  if ((to.path.startsWith('/dashboard') || to.path.startsWith('/member') || to.path.startsWith('/coach')) && !token) {
     return '/login';
   }
 

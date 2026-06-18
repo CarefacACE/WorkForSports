@@ -12,7 +12,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.temporal.TemporalAdjusters;
+import java.util.Arrays;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -122,5 +128,40 @@ public class FinanceService {
         walletTransactionMapper.insert(transaction);
 
         return user;
+    }
+
+    public List<WalletTransaction> getExportTransactions(Long userId, String type, String period) {
+        LambdaQueryWrapper<WalletTransaction> wrapper = new LambdaQueryWrapper<WalletTransaction>()
+                .eq(WalletTransaction::getUserId, userId);
+
+        // 按类型筛选
+        if (type != null && !type.isEmpty()) {
+            wrapper.eq(WalletTransaction::getType, type);
+        }
+
+        // 按时间范围筛选
+        if (period != null && !period.isEmpty()) {
+            LocalDate today = LocalDate.now();
+            LocalDateTime startDate = null;
+            switch (period.toUpperCase()) {
+                case "WEEK":
+                    startDate = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atStartOfDay();
+                    break;
+                case "MONTH":
+                    startDate = today.withDayOfMonth(1).atStartOfDay();
+                    break;
+                case "YEAR":
+                    startDate = today.withDayOfYear(1).atStartOfDay();
+                    break;
+                default:
+                    break;
+            }
+            if (startDate != null) {
+                wrapper.ge(WalletTransaction::getCreateTime, startDate);
+            }
+        }
+
+        wrapper.orderByAsc(WalletTransaction::getCreateTime);
+        return walletTransactionMapper.selectList(wrapper);
     }
 }

@@ -41,3 +41,24 @@ export function getTransactions(userId: number, pageNum = 1, pageSize = 10) {
 export function updateBalance(userId: number, balance: number) {
   return request.put<{ id: number; balance: number }>('/finance/balance', { userId, balance });
 }
+
+export async function exportBill(userId: number, period: string, type?: string) {
+  const params = new URLSearchParams({ userId: String(userId), period });
+  if (type) params.append('type', type);
+  const baseURL = (import.meta as any).env?.VITE_API_BASE_URL || '/api';
+  const url = `${baseURL}/finance/export?${params.toString()}`;
+
+  const token = localStorage.getItem('access_token');
+  const response = await fetch(url, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+
+  if (!response.ok) throw new Error('导出失败');
+
+  const blob = await response.blob();
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `账单_${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
