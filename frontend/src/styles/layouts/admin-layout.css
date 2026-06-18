@@ -58,6 +58,28 @@
   background: #2563eb;
 }
 
+.side-menu .el-sub-menu .el-sub-menu__title {
+  margin: 8px 12px;
+  border-radius: 12px;
+  color: #cbd5e1;
+}
+
+.side-menu .el-sub-menu .el-sub-menu__title:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.side-menu .el-sub-menu .el-menu-item {
+  margin: 4px 12px 4px 24px;
+  min-width: auto;
+  font-size: 13px;
+}
+
+.side-menu .el-sub-menu .el-menu-item.is-active {
+  color: #fff;
+  background: #2563eb;
+}
+
 .topbar {
   height: 76px;
   display: flex;

@@ -94,6 +94,20 @@
   color: #64748b;
 }
 
+.code-row {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.code-row .el-input {
+  flex: 1;
+}
+
+.code-row .el-button {
+  white-space: nowrap;
+}
+
 @media (max-width: 900px) {
   .login-page {
     grid-template-columns: 1fr;

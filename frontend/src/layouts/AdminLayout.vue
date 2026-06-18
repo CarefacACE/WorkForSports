@@ -9,11 +9,19 @@
         </div>
       </div>
 
-      <el-menu router :default-active="$route.path" class="side-menu">
+      <el-menu router :default-active="route.path" class="side-menu">
         <el-menu-item index="/dashboard/workbench">
           <el-icon><Monitor /></el-icon>
           <span>工作栏</span>
         </el-menu-item>
+        <el-sub-menu v-if="user?.role === 'ADMIN'" index="user-manage">
+          <template #title>
+            <el-icon><User /></el-icon>
+            <span>用户管理</span>
+          </template>
+          <el-menu-item index="/dashboard/coaches">教练信息</el-menu-item>
+          <el-menu-item index="/dashboard/members">会员信息</el-menu-item>
+        </el-sub-menu>
       </el-menu>
     </el-aside>
 
@@ -125,13 +133,14 @@
 
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
-import { Monitor } from '@element-plus/icons-vue';
+import { Monitor, User } from '@element-plus/icons-vue';
 import { changePassword, getProfile, updateProfile, type UserProfile } from '../api/auth';
 import { useUserStore } from '../stores/user';
 
 const router = useRouter();
+const route = useRoute();
 const userStore = useUserStore();
 const user = computed(() => userStore.user);
 const passwordDialogVisible = ref(false);

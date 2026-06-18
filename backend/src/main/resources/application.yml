@@ -11,9 +11,9 @@ spring:
       mode: always
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
-    url: ${DB_URL:jdbc:mariadb://localhost:3306/zhixun_erp?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai}
+    url: ${DB_URL:jdbc:mariadb://localhost:3366/zhixun_erp?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai}
     username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:123456}
+    password: ${DB_PASSWORD:fzq666}
     hikari:
       pool-name: ZhixunHikariPool
       minimum-idle: 5
@@ -21,6 +21,16 @@ spring:
       idle-timeout: 300000
       max-lifetime: 1800000
       connection-timeout: 30000
+  mail:
+    host: smtp.qq.com
+    port: 465
+    username: 1174486632@qq.com
+    password: rfproibjdcdrhega
+    properties:
+      mail:
+        smtp:
+          ssl:
+            enable: true
 
 mybatis-plus:
   mapper-locations: classpath*:/mapper/**/*.xml

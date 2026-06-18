@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router';
 import LoginView from '../views/LoginView.vue';
 import AdminLayout from '../layouts/AdminLayout.vue';
 import WorkbenchView from '../views/WorkbenchView.vue';
+import CoachView from '../views/CoachView.vue';
+import MemberView from '../views/MemberView.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -24,6 +26,16 @@ const router = createRouter({
           path: 'workbench',
           name: 'workbench',
           component: WorkbenchView,
+        },
+        {
+          path: 'coaches',
+          name: 'coaches',
+          component: CoachView,
+        },
+        {
+          path: 'members',
+          name: 'members',
+          component: MemberView,
         },
       ],
     },
