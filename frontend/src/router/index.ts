@@ -4,6 +4,9 @@ import AdminLayout from '../layouts/AdminLayout.vue';
 import WorkbenchView from '../views/WorkbenchView.vue';
 import CoachView from '../views/CoachView.vue';
 import MemberView from '../views/MemberView.vue';
+import MemberBalanceView from '../views/MemberBalanceView.vue';
+import CoachSalaryView from '../views/CoachSalaryView.vue';
+import WalletView from '../views/WalletView.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -36,6 +39,21 @@ const router = createRouter({
           path: 'members',
           name: 'members',
           component: MemberView,
+        },
+        {
+          path: 'member-balance',
+          name: 'member-balance',
+          component: MemberBalanceView,
+        },
+        {
+          path: 'coach-salary',
+          name: 'coach-salary',
+          component: CoachSalaryView,
+        },
+        {
+          path: 'wallet',
+          name: 'wallet',
+          component: WalletView,
         },
       ],
     },

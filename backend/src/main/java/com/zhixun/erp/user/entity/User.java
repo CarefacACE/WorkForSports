@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @TableName("sys_user")
@@ -39,6 +40,8 @@ public class User {
 
     @TableLogic
     private Integer deleted;
+
+    private BigDecimal balance;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -81,4 +84,7 @@ public class User {
 
     public Integer getDeleted() { return deleted; }
     public void setDeleted(Integer deleted) { this.deleted = deleted; }
+
+    public BigDecimal getBalance() { return balance; }
+    public void setBalance(BigDecimal balance) { this.balance = balance; }
 }

@@ -20,7 +20,16 @@
             <span>用户管理</span>
           </template>
           <el-menu-item index="/dashboard/coaches">教练信息</el-menu-item>
+          <el-menu-item index="/dashboard/coach-salary">教练工资</el-menu-item>
           <el-menu-item index="/dashboard/members">会员信息</el-menu-item>
+          <el-menu-item index="/dashboard/member-balance">会员金额</el-menu-item>
+        </el-sub-menu>
+        <el-sub-menu v-if="user?.role !== 'ADMIN'" index="my-menu">
+          <template #title>
+            <el-icon><User /></el-icon>
+            <span>我的</span>
+          </template>
+          <el-menu-item index="/dashboard/wallet">钱包</el-menu-item>
         </el-sub-menu>
       </el-menu>
     </el-aside>
