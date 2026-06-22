@@ -35,11 +35,8 @@ public class LessonController {
     public Result<Lesson> updateLesson(
             @PathVariable Long id,
             @RequestParam Long coachId,
-            @RequestParam String title,
-            @RequestParam(required = false) String videoUrl,
-            @RequestParam(required = false) Integer sortOrder,
-            @RequestParam(required = false) Integer isTrial) {
-        return Result.success("课时更新成功", lessonService.updateLesson(coachId, id, title, videoUrl, sortOrder, isTrial));
+            @RequestBody CreateLessonRequest request) {
+        return Result.success("课时更新成功", lessonService.updateLesson(coachId, id, request));
     }
 
     @DeleteMapping("/{id}")

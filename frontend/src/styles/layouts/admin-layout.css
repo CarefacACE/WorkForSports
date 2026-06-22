@@ -1,118 +1,165 @@
+/* ============================================
+   ADMIN LAYOUT — Glass Sidebar + Frosted Topbar
+   ============================================ */
+
 .admin-layout {
   min-height: 100vh;
-  background: #f5f7fb;
+  background: #f8fafc;
 }
 
+/* === Sidebar === */
 .sidebar {
-  color: #dbeafe;
-  background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
-  box-shadow: 8px 0 30px rgba(15, 23, 42, 0.12);
+  color: #475569;
+  background: rgba(255, 255, 255, 0.78) !important;
+  backdrop-filter: blur(24px) saturate(1.6);
+  -webkit-backdrop-filter: blur(24px) saturate(1.6);
+  border-right: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 1px 0 8px rgba(0, 0, 0, 0.02);
 }
 
+/* === Logo === */
 .logo-area {
-  height: 76px;
+  height: 72px;
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 0 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .logo-mark {
-  width: 42px;
-  height: 42px;
+  width: 38px;
+  height: 38px;
   display: grid;
   place-items: center;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #2563eb, #38bdf8);
+  border-radius: 12px;
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
   color: #fff;
-  font-size: 20px;
+  font-size: 17px;
   font-weight: 800;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
 }
 
 .logo-title {
-  color: #fff;
-  font-size: 17px;
+  color: #0f172a;
+  font-size: 15px;
   font-weight: 700;
+  letter-spacing: 0.3px;
 }
 
 .logo-subtitle {
-  margin-top: 3px;
-  color: #93c5fd;
-  font-size: 12px;
+  margin-top: 2px;
+  color: #94a3b8;
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.5px;
 }
 
+/* === Menu === */
 .side-menu {
   border-right: 0;
   background: transparent;
+  padding: 8px 0;
 }
 
 .side-menu .el-menu-item {
-  margin: 8px 12px;
-  border-radius: 12px;
-  color: #cbd5e1;
+  margin: 3px 12px;
+  border-radius: 10px;
+  color: #64748b;
+  font-weight: 500;
+  height: 42px;
+  line-height: 42px;
+  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.side-menu .el-menu-item:hover {
+  color: #1e293b;
+  background: rgba(0, 0, 0, 0.03);
 }
 
 .side-menu .el-menu-item.is-active {
   color: #fff;
   background: #2563eb;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
 }
 
 .side-menu .el-sub-menu .el-sub-menu__title {
-  margin: 8px 12px;
-  border-radius: 12px;
-  color: #cbd5e1;
+  margin: 3px 12px;
+  border-radius: 10px;
+  color: #475569;
+  font-weight: 600;
+  height: 42px;
+  line-height: 42px;
 }
 
 .side-menu .el-sub-menu .el-sub-menu__title:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.06);
+  color: #1e293b;
+  background: rgba(0, 0, 0, 0.03);
 }
 
 .side-menu .el-sub-menu .el-menu-item {
-  margin: 4px 12px 4px 24px;
+  margin: 2px 12px 2px 28px;
   min-width: auto;
   font-size: 13px;
+  height: 38px;
+  line-height: 38px;
+  font-weight: 400;
+  color: #64748b;
+}
+
+.side-menu .el-sub-menu .el-menu-item:hover {
+  color: #1e293b;
+  background: rgba(0, 0, 0, 0.03);
 }
 
 .side-menu .el-sub-menu .el-menu-item.is-active {
   color: #fff;
   background: #2563eb;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
 }
 
+/* === Topbar === */
 .topbar {
-  height: 76px;
+  height: 72px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 28px;
-  background: #fff;
-  border-bottom: 1px solid #e5e7eb;
+  padding: 0 32px;
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(24px) saturate(1.6);
+  -webkit-backdrop-filter: blur(24px) saturate(1.6);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .page-title {
-  color: #111827;
+  color: #0f172a;
   font-size: 20px;
   font-weight: 700;
+  letter-spacing: 0.2px;
 }
 
 .page-subtitle {
-  margin-top: 4px;
-  color: #64748b;
-  font-size: 13px;
+  margin-top: 3px;
+  color: #94a3b8;
+  font-size: 12px;
 }
 
 .user-panel {
   display: flex;
   align-items: center;
   gap: 12px;
-  color: #334155;
+  color: #475569;
 }
 
+/* === Main Content === */
 .main-content {
-  padding: 24px;
+  padding: 28px 32px;
+  background: #f8fafc;
 }
 
+/* === Profile Dialog === */
 .profile-select,
 .profile-date {
   width: 100%;

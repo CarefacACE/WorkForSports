@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import LoginView from '../views/LoginView.vue';
+import LandingView from '../views/LandingView.vue';
 import AdminLayout from '../layouts/AdminLayout.vue';
 import WorkbenchView from '../views/WorkbenchView.vue';
 import FileView from '../views/FileView.vue';
@@ -17,6 +18,9 @@ import CoachPublicCourseView from '../views/coach/CoachPublicCourseView.vue';
 import CoachPrivateCourseView from '../views/coach/CoachPrivateCourseView.vue';
 import CoachMyCoursesView from '../views/coach/CoachMyCoursesView.vue';
 import CoachMyStudentsView from '../views/coach/CoachMyStudentsView.vue';
+import CoachScheduleView from '../views/coach/CoachScheduleView.vue';
+import MemberScheduleView from '../views/member/MemberScheduleView.vue';
+import MemberExerciseView from '../views/member/MemberExerciseView.vue';
 import LogView from '../views/LogView.vue';
 import SqlMonitorView from '../views/SqlMonitorView.vue';
 import SystemMonitorView from '../views/SystemMonitorView.vue';
@@ -30,7 +34,8 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      redirect: '/login',
+      name: 'landing',
+      component: LandingView,
     },
     {
       path: '/login',
@@ -129,6 +134,16 @@ const router = createRouter({
           component: MemberProfileView,
         },
         {
+          path: 'my-schedule',
+          name: 'member-my-schedule',
+          component: MemberScheduleView,
+        },
+        {
+          path: 'exercise',
+          name: 'member-exercise',
+          component: MemberExerciseView,
+        },
+        {
           path: 'chat-group',
           name: 'member-chat-group',
           component: GroupChatView,
@@ -168,6 +183,11 @@ const router = createRouter({
           path: 'my-students',
           name: 'coach-my-students',
           component: CoachMyStudentsView,
+        },
+        {
+          path: 'my-schedule',
+          name: 'coach-my-schedule',
+          component: CoachScheduleView,
         },
         {
           path: 'chat-group',

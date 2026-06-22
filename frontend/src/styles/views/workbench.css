@@ -4,17 +4,20 @@
 
 .empty-card {
   min-height: 280px;
-  border: 1px dashed #cbd5e1;
-  border-radius: 18px;
-  background: #fff;
+  border: 1px dashed rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
 .empty-card h2 {
   margin: 0 0 10px;
-  color: #111827;
+  color: #0f172a;
+  font-weight: 700;
 }
 
 .empty-card p {
   margin: 0;
-  color: #64748b;
+  color: #94a3b8;
 }

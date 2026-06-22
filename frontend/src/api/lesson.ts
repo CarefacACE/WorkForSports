@@ -7,6 +7,8 @@ export interface Lesson {
   videoUrl: string;
   sortOrder: number;
   isTrial: number;
+  description: string;
+  duration: number;
   createTime: string;
 }
 
@@ -16,14 +18,16 @@ export interface CreateLessonParams {
   videoUrl?: string;
   sortOrder?: number;
   isTrial?: number;
+  description?: string;
+  duration?: number;
 }
 
 export function addLesson(coachId: number, data: CreateLessonParams) {
   return request.post<Lesson>(`/lesson?coachId=${coachId}`, data);
 }
 
-export function updateLesson(coachId: number, lessonId: number, title: string, videoUrl?: string, sortOrder?: number, isTrial?: number) {
-  return request.put<Lesson>(`/lesson/${lessonId}?coachId=${coachId}&title=${encodeURIComponent(title)}${videoUrl ? '&videoUrl=' + encodeURIComponent(videoUrl) : ''}${sortOrder != null ? '&sortOrder=' + sortOrder : ''}${isTrial != null ? '&isTrial=' + isTrial : ''}`);
+export function updateLesson(coachId: number, lessonId: number, data: CreateLessonParams) {
+  return request.put<Lesson>(`/lesson/${lessonId}?coachId=${coachId}`, data);
 }
 
 export function deleteLesson(coachId: number, lessonId: number) {

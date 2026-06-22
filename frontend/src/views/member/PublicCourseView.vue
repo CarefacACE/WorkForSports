@@ -24,10 +24,15 @@
               <div v-else class="cover-placeholder">{{ course.name.charAt(0) }}</div>
             </div>
             <div class="course-info">
+              <div class="course-tags">
+                <el-tag size="small" type="info">{{ categoryLabel(course.category) }}</el-tag>
+                <el-tag size="small" :type="difficultyType(course.difficulty)">{{ difficultyLabel(course.difficulty) }}</el-tag>
+              </div>
               <div class="course-name">{{ course.name }}</div>
               <div class="course-price">
                 <span v-if="course.price > 0" class="price-paid">¥ {{ course.price.toFixed(2) }}</span>
                 <span v-else class="price-free">免费</span>
+                <span v-if="course.maxStudents > 0" class="course-capacity">👥 {{ course.maxStudents }}人</span>
               </div>
             </div>
           </el-card>
@@ -50,10 +55,23 @@
         <p v-if="currentCourse.description" class="course-desc">{{ currentCourse.description }}</p>
         <p v-else class="course-desc-empty">暂无课程介绍</p>
 
+        <div class="detail-info-bar">
+          <span>📂 {{ categoryLabel(currentCourse?.category) }}</span>
+          <span>📊 {{ difficultyLabel(currentCourse?.difficulty) }}</span>
+          <span v-if="currentCourse?.location">📍 {{ currentCourse.location }}</span>
+          <span v-if="currentCourse?.startDate">📅 {{ currentCourse.startDate }}</span>
+          <span v-if="currentCourse?.maxStudents > 0">👥 限{{ currentCourse.maxStudents }}人</span>
+        </div>
+
         <h4>课时列表</h4>
         <el-table :data="lessons" stripe>
           <el-table-column type="index" width="60" label="#" />
           <el-table-column prop="title" label="课时名称" />
+          <el-table-column label="时长" width="100" align="center">
+            <template #default="{ row }">
+              {{ row.duration ? row.duration + '分钟' : '-' }}
+            </template>
+          </el-table-column>
           <el-table-column label="试听" width="80" align="center">
             <template #default="{ row }">
               <el-tag v-if="row.isTrial" type="success" size="small">可试听</el-tag>
@@ -89,6 +107,24 @@ import { useUserStore } from '../../stores/user';
 
 const userStore = useUserStore();
 const userId = userStore.user?.id;
+
+const categoryOptions = [
+  { label: '瑜伽', value: 'YOGA' }, { label: '拳击', value: 'BOXING' },
+  { label: '游泳', value: 'SWIMMING' }, { label: '跑步', value: 'RUNNING' },
+  { label: '力量', value: 'STRENGTH' }, { label: '舞蹈', value: 'DANCE' },
+  { label: '其他', value: 'OTHER' },
+];
+const difficultyOptions = [
+  { label: '初级', value: 'BEGINNER' }, { label: '中级', value: 'INTERMEDIATE' }, { label: '高级', value: 'ADVANCED' },
+];
+function categoryLabel(v?: string) { return categoryOptions.find(c => c.value === v)?.label || '其他'; }
+function difficultyLabel(v?: string) { return difficultyOptions.find(d => d.value === v)?.label || '初级'; }
+function difficultyType(v?: string) {
+  if (v === 'BEGINNER') return 'success';
+  if (v === 'INTERMEDIATE') return 'warning';
+  if (v === 'ADVANCED') return 'danger';
+  return 'info';
+}
 
 const keyword = ref('');
 const pageNum = ref(1);
@@ -159,11 +195,14 @@ onMounted(() => fetchData());
 .course-cover { height: 120px; overflow: hidden; border-radius: 4px; margin-bottom: 8px; }
 .course-cover img { width: 100%; height: 100%; object-fit: cover; }
 .cover-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #409eff; color: #fff; font-size: 32px; }
+.course-tags { display: flex; gap: 4px; margin-bottom: 4px; }
 .course-name { font-weight: 600; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .price-paid { color: #f56c6c; font-weight: bold; }
 .price-free { color: #67c23a; font-weight: bold; }
+.course-capacity { font-size: 12px; color: #909399; margin-left: 8px; }
 .course-desc { color: #606266; margin-bottom: 16px; }
 .course-desc-empty { color: #c0c4cc; margin-bottom: 16px; }
+.detail-info-bar { display: flex; gap: 16px; padding: 8px 12px; background: #f5f7fa; border-radius: 4px; margin: 12px 0; font-size: 13px; color: #606266; flex-wrap: wrap; }
 .pagination-wrapper { display: flex; justify-content: flex-end; margin-top: 16px; }
 .enroll-actions { padding: 10px 0; }
 </style>

@@ -11,6 +11,7 @@ import com.zhixun.erp.finance.entity.WalletTransaction;
 import com.zhixun.erp.finance.mapper.WalletTransactionMapper;
 import com.zhixun.erp.chat.entity.ChatConversation;
 import com.zhixun.erp.chat.service.ChatService;
+import com.zhixun.erp.chat.service.FriendService;
 import com.zhixun.erp.chat.service.NotificationService;
 import com.zhixun.erp.user.entity.User;
 import com.zhixun.erp.user.mapper.UserMapper;
@@ -31,6 +32,7 @@ public class EnrollmentService {
     private final UserMapper userMapper;
     private final WalletTransactionMapper walletTransactionMapper;
     private final ChatService chatService;
+    private final FriendService friendService;
     private final NotificationService notificationService;
 
     @Transactional
@@ -262,6 +264,14 @@ public class EnrollmentService {
                                 userMapper.selectById(course.getCoachId()).getRealName() : "") + "」建立私信",
                         "PRIVATE", priv.getId());
             }
+        }
+
+        // 自动向报名学员发起好友申请
+        try {
+            friendService.sendFriendRequest(course.getCoachId(), userId,
+                    "你好，我是课程「" + course.getName() + "」的教练，希望能加你为好友！");
+        } catch (Exception ignored) {
+            // 已是好友或已发送过申请，忽略异常
         }
     }
 }

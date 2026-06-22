@@ -68,6 +68,9 @@
           <el-menu-item v-if="user?.role === 'MEMBER'" index="/member/profile">个人信息</el-menu-item>
           <el-menu-item v-if="user?.role === 'COACH'" index="/coach/my-courses">我的课程</el-menu-item>
           <el-menu-item v-if="user?.role === 'COACH'" index="/coach/my-students">我的学员</el-menu-item>
+          <el-menu-item v-if="user?.role === 'MEMBER'" index="/member/my-schedule">我的课表</el-menu-item>
+          <el-menu-item v-if="user?.role === 'MEMBER'" index="/member/exercise">我的锻炼</el-menu-item>
+          <el-menu-item v-if="user?.role === 'COACH'" index="/coach/my-schedule">我的课表</el-menu-item>
         </el-sub-menu>
         <el-sub-menu v-if="user?.role !== 'ADMIN'" index="chat-menu">
           <template #title>
@@ -380,11 +383,13 @@ async function submitChangePassword() {
   gap: 4px;
   cursor: pointer;
   font-size: 14px;
-  color: #303133;
+  font-weight: 500;
+  color: #475569;
+  transition: color 0.2s ease;
 }
 
 .user-dropdown-trigger:hover {
-  color: #409eff;
+  color: #2563eb;
 }
 
 .user-panel {
