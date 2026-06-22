@@ -171,3 +171,32 @@ CREATE TABLE IF NOT EXISTS chat_friend_request (
     update_time DATETIME,
     deleted TINYINT DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS member_health_profile (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    height DECIMAL(5,1),
+    weight DECIMAL(5,1),
+    body_fat DECIMAL(4,1),
+    muscle_mass DECIMAL(5,1),
+    bp_systolic INT,
+    bp_diastolic INT,
+    resting_heart_rate INT,
+    blood_type VARCHAR(16),
+    allergies TEXT,
+    medical_history TEXT,
+    current_medications TEXT,
+    emergency_contact_name VARCHAR(64),
+    emergency_contact_phone VARCHAR(32),
+    target_weight DECIMAL(5,1),
+    target_body_fat DECIMAL(4,1),
+    target_muscle_mass DECIMAL(5,1),
+    fitness_goal VARCHAR(32),
+    weekly_workout_freq INT,
+    target_date DATE,
+    goal_notes TEXT,
+    create_time DATETIME,
+    update_time DATETIME,
+    deleted TINYINT DEFAULT 0,
+    UNIQUE KEY uk_user_id (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

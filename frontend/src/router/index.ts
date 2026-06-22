@@ -12,6 +12,7 @@ import WalletView from '../views/WalletView.vue';
 import PublicCourseView from '../views/member/PublicCourseView.vue';
 import PrivateCourseView from '../views/member/PrivateCourseView.vue';
 import MyCoursesView from '../views/member/MyCoursesView.vue';
+import MemberProfileView from '../views/member/MemberProfileView.vue';
 import CoachPublicCourseView from '../views/coach/CoachPublicCourseView.vue';
 import CoachPrivateCourseView from '../views/coach/CoachPrivateCourseView.vue';
 import CoachMyCoursesView from '../views/coach/CoachMyCoursesView.vue';
@@ -121,6 +122,11 @@ const router = createRouter({
           path: 'my-courses',
           name: 'member-my-courses',
           component: MyCoursesView,
+        },
+        {
+          path: 'profile',
+          name: 'member-profile',
+          component: MemberProfileView,
         },
         {
           path: 'chat-group',

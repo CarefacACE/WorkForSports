@@ -65,6 +65,7 @@
           </template>
           <el-menu-item index="/dashboard/wallet">钱包</el-menu-item>
           <el-menu-item v-if="user?.role === 'MEMBER'" index="/member/my-courses">我的课程</el-menu-item>
+          <el-menu-item v-if="user?.role === 'MEMBER'" index="/member/profile">个人信息</el-menu-item>
           <el-menu-item v-if="user?.role === 'COACH'" index="/coach/my-courses">我的课程</el-menu-item>
           <el-menu-item v-if="user?.role === 'COACH'" index="/coach/my-students">我的学员</el-menu-item>
         </el-sub-menu>
