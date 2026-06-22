@@ -1,0 +1,8 @@
+﻿id,5768700
+apiKey,sk-ws-H.RPEYPMM.Tt5m.MEQCIHEEL71_5KgPj7iPAgo9cBCwQC8zI4hoL6gsgLpsa3wGAiAbC7DxjZtpb7MYtnSeNunXW2nB5KGJQnVfC93_44ElnA
+apiHost,ws-mgtfsncutnp8n034.cn-beijing.maas.aliyuncs.com
+openAiCompatible,https://ws-mgtfsncutnp8n034.cn-beijing.maas.aliyuncs.com/compatible-mode/v1
+dashScope,https://ws-mgtfsncutnp8n034.cn-beijing.maas.aliyuncs.com/api/v1
+description,
+workspaceName,默认业务空间
+workspaceId,ws-mgtfsncutnp8n034
