@@ -22,7 +22,7 @@
       <el-form :model="form" label-position="top" size="large">
         <el-form-item label="用户身份">
           <el-radio-group v-model="form.role" class="role-group">
-            <el-radio-button value="ADMIN">管理员</el-radio-button>
+            <el-radio-button v-if="!isRegister" value="ADMIN">管理员</el-radio-button>
             <el-radio-button value="COACH">教练</el-radio-button>
             <el-radio-button value="MEMBER">会员</el-radio-button>
           </el-radio-group>
@@ -34,6 +34,14 @@
 
         <el-form-item v-if="isRegister" label="姓名">
           <el-input v-model="form.realName" placeholder="请输入真实姓名" clearable />
+        </el-form-item>
+
+        <el-form-item v-if="isRegister" label="手机号">
+          <el-input v-model="form.phone" placeholder="请输入手机号" clearable />
+        </el-form-item>
+
+        <el-form-item v-if="isRegister" label="邮箱">
+          <el-input v-model="form.email" placeholder="请输入邮箱" clearable />
         </el-form-item>
 
         <el-form-item label="密码">
@@ -59,15 +67,16 @@
 
     <el-dialog v-model="forgotDialogVisible" title="忘记密码" width="420px">
       <el-form :model="forgotForm" label-position="top">
-        <el-form-item label="用户身份">
-          <el-radio-group v-model="forgotForm.role" class="role-group">
-            <el-radio-button value="ADMIN">管理员</el-radio-button>
-            <el-radio-button value="COACH">教练</el-radio-button>
-            <el-radio-button value="MEMBER">会员</el-radio-button>
-          </el-radio-group>
+        <el-form-item label="邮箱">
+          <el-input v-model="forgotForm.email" placeholder="请输入注册时的邮箱" />
         </el-form-item>
-        <el-form-item label="用户名">
-          <el-input v-model="forgotForm.username" placeholder="请输入用户名" />
+        <el-form-item label="验证码">
+          <div class="code-row">
+            <el-input v-model="forgotForm.code" placeholder="请输入验证码" />
+            <el-button type="primary" :disabled="codeCooldown > 0" @click="handleSendCode">
+              {{ codeCooldown > 0 ? `${codeCooldown}s后重试` : '获取验证码' }}
+            </el-button>
+          </div>
         </el-form-item>
         <el-form-item label="新密码">
           <el-input v-model="forgotForm.newPassword" type="password" placeholder="请输入新密码" show-password />
@@ -88,7 +97,7 @@
 import { reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
-import { login, register, resetPassword, type UserRole } from '../api/auth';
+import { login, register, sendCode, resetPasswordByCode, type UserRole } from '../api/auth';
 import { useUserStore } from '../stores/user';
 
 const router = useRouter();
@@ -97,17 +106,20 @@ const loading = ref(false);
 const resetLoading = ref(false);
 const isRegister = ref(false);
 const forgotDialogVisible = ref(false);
+const codeCooldown = ref(0);
 
 const form = reactive({
   username: '',
   password: '',
   realName: '',
+  phone: '',
+  email: '',
   role: 'ADMIN' as UserRole,
 });
 
 const forgotForm = reactive({
-  username: '',
-  role: 'ADMIN' as UserRole,
+  email: '',
+  code: '',
   newPassword: '',
   confirmPassword: '',
 });
@@ -140,7 +152,7 @@ async function submit() {
 }
 
 async function submitResetPassword() {
-  if (!forgotForm.username || !forgotForm.newPassword || !forgotForm.confirmPassword) {
+  if (!forgotForm.email || !forgotForm.code || !forgotForm.newPassword || !forgotForm.confirmPassword) {
     ElMessage.warning('请填写完整信息');
     return;
   }
@@ -152,22 +164,37 @@ async function submitResetPassword() {
 
   resetLoading.value = true;
   try {
-    await resetPassword({
-      username: forgotForm.username,
-      role: forgotForm.role,
-      newPassword: forgotForm.newPassword,
-    });
+    await resetPasswordByCode(forgotForm.email, forgotForm.code, forgotForm.newPassword);
     ElMessage.success('密码重置成功，请使用新密码登录');
     forgotDialogVisible.value = false;
-    form.username = forgotForm.username;
-    form.role = forgotForm.role;
-    form.password = '';
+    forgotForm.email = '';
+    forgotForm.code = '';
     forgotForm.newPassword = '';
     forgotForm.confirmPassword = '';
   } catch (error) {
     ElMessage.error(error instanceof Error ? error.message : '密码重置失败');
   } finally {
     resetLoading.value = false;
+  }
+}
+
+async function handleSendCode() {
+  if (!forgotForm.email) {
+    ElMessage.warning('请输入邮箱');
+    return;
+  }
+  try {
+    await sendCode(forgotForm.email);
+    ElMessage.success('验证码已发送到邮箱');
+    codeCooldown.value = 60;
+    const timer = setInterval(() => {
+      codeCooldown.value--;
+      if (codeCooldown.value <= 0) {
+        clearInterval(timer);
+      }
+    }, 1000);
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '发送失败');
   }
 }
 </script>

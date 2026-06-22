@@ -9,11 +9,78 @@
         </div>
       </div>
 
-      <el-menu router :default-active="$route.path" class="side-menu">
+      <el-menu router :default-active="route.path" class="side-menu">
         <el-menu-item index="/dashboard/workbench">
           <el-icon><Monitor /></el-icon>
           <span>工作栏</span>
         </el-menu-item>
+        <el-menu-item index="/dashboard/files">
+          <el-icon><Folder /></el-icon>
+          <span>文件管理</span>
+        </el-menu-item>
+        <el-menu-item index="/dashboard/csv-analysis">
+          <el-icon><DataAnalysis /></el-icon>
+          <span>CSV分析</span>
+        </el-menu-item>
+        <el-sub-menu v-if="user?.role === 'ADMIN'" index="user-manage">
+          <template #title>
+            <el-icon><User /></el-icon>
+            <span>用户管理</span>
+          </template>
+          <el-menu-item index="/dashboard/coaches">教练信息</el-menu-item>
+          <el-menu-item index="/dashboard/coach-salary">教练工资</el-menu-item>
+          <el-menu-item index="/dashboard/members">会员信息</el-menu-item>
+          <el-menu-item index="/dashboard/member-balance">会员金额</el-menu-item>
+        </el-sub-menu>
+        <el-sub-menu v-if="user?.role === 'ADMIN'" index="system-manage">
+          <template #title>
+            <el-icon><Setting /></el-icon>
+            <span>系统管理</span>
+          </template>
+          <el-menu-item index="/dashboard/logs">日志管理</el-menu-item>
+          <el-menu-item index="/dashboard/sql-monitor">SQL监控</el-menu-item>
+          <el-menu-item index="/dashboard/system-monitor">系统监控</el-menu-item>
+          <el-menu-item index="/dashboard/db-control">数据库控制</el-menu-item>
+        </el-sub-menu>
+        <el-sub-menu v-if="user?.role === 'MEMBER'" index="course-select">
+          <template #title>
+            <el-icon><Reading /></el-icon>
+            <span>选课</span>
+          </template>
+          <el-menu-item index="/member/public-courses">公共课</el-menu-item>
+          <el-menu-item index="/member/private-courses">私教</el-menu-item>
+        </el-sub-menu>
+        <el-sub-menu v-if="user?.role === 'COACH'" index="course-manage">
+          <template #title>
+            <el-icon><Reading /></el-icon>
+            <span>课程</span>
+          </template>
+          <el-menu-item index="/coach/public-courses">公共课</el-menu-item>
+          <el-menu-item index="/coach/private-courses">私教课</el-menu-item>
+        </el-sub-menu>
+        <el-sub-menu v-if="user?.role !== 'ADMIN'" index="my-menu">
+          <template #title>
+            <el-icon><User /></el-icon>
+            <span>我的</span>
+          </template>
+          <el-menu-item index="/dashboard/wallet">钱包</el-menu-item>
+          <el-menu-item v-if="user?.role === 'MEMBER'" index="/member/my-courses">我的课程</el-menu-item>
+          <el-menu-item v-if="user?.role === 'MEMBER'" index="/member/profile">个人信息</el-menu-item>
+          <el-menu-item v-if="user?.role === 'COACH'" index="/coach/my-courses">我的课程</el-menu-item>
+          <el-menu-item v-if="user?.role === 'COACH'" index="/coach/my-students">我的学员</el-menu-item>
+        </el-sub-menu>
+        <el-sub-menu v-if="user?.role !== 'ADMIN'" index="chat-menu">
+          <template #title>
+            <el-icon><ChatDotRound /></el-icon>
+            <span>聊天</span>
+          </template>
+          <el-menu-item v-if="user?.role === 'MEMBER'" index="/member/chat-group">群聊</el-menu-item>
+          <el-menu-item v-if="user?.role === 'MEMBER'" index="/member/chat-private">私信</el-menu-item>
+          <el-menu-item v-if="user?.role === 'MEMBER'" index="/member/chat-requests">申请管理</el-menu-item>
+          <el-menu-item v-if="user?.role === 'COACH'" index="/coach/chat-group">群聊</el-menu-item>
+          <el-menu-item v-if="user?.role === 'COACH'" index="/coach/chat-private">私信</el-menu-item>
+          <el-menu-item v-if="user?.role === 'COACH'" index="/coach/chat-requests">申请管理</el-menu-item>
+        </el-sub-menu>
       </el-menu>
     </el-aside>
 
@@ -25,10 +92,23 @@
         </div>
         <div class="user-panel">
           <el-tag type="primary" effect="light">{{ roleLabel }}</el-tag>
-          <span>{{ user?.realName || user?.username || '未登录用户' }}</span>
-          <el-button text @click="openProfileDialog">个人信息</el-button>
-          <el-button text @click="passwordDialogVisible = true">修改密码</el-button>
-          <el-button text @click="logout">退出</el-button>
+          <template v-if="user?.role !== 'ADMIN'">
+            <MessageDropdown ref="messageDropdownRef" />
+            <NotificationDropdown ref="notificationDropdownRef" />
+          </template>
+          <el-dropdown @command="handleUserCommand">
+            <span class="user-dropdown-trigger">
+              {{ user?.realName || user?.username || '未登录用户' }}
+              <el-icon><ArrowDown /></el-icon>
+            </span>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item command="profile">个人信息</el-dropdown-item>
+                <el-dropdown-item command="password">修改密码</el-dropdown-item>
+                <el-dropdown-item divided command="logout">退出登录</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
         </div>
       </el-header>
 
@@ -40,6 +120,11 @@
     <el-dialog v-model="profileDialogVisible" title="个人信息" width="560px">
       <el-form :model="profileForm" label-position="top">
         <el-row :gutter="16">
+          <el-col :span="12">
+            <el-form-item label="用户ID（系统分配，不可修改）">
+              <el-input :model-value="profileForm.id" disabled />
+            </el-form-item>
+          </el-col>
           <el-col :span="12">
             <el-form-item label="用户名">
               <el-input v-model="profileForm.username" disabled />
@@ -125,19 +210,24 @@
 
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
-import { Monitor } from '@element-plus/icons-vue';
+import { Monitor, Folder, DataAnalysis, User, Reading, Setting, ChatDotRound, ArrowDown } from '@element-plus/icons-vue';
 import { changePassword, getProfile, updateProfile, type UserProfile } from '../api/auth';
 import { useUserStore } from '../stores/user';
+import MessageDropdown from '../components/MessageDropdown.vue';
+import NotificationDropdown from '../components/NotificationDropdown.vue';
 
 const router = useRouter();
+const route = useRoute();
 const userStore = useUserStore();
 const user = computed(() => userStore.user);
 const passwordDialogVisible = ref(false);
 const passwordLoading = ref(false);
 const profileDialogVisible = ref(false);
 const profileLoading = ref(false);
+const messageDropdownRef = ref();
+const notificationDropdownRef = ref();
 
 const passwordForm = reactive({
   oldPassword: '',
@@ -231,6 +321,16 @@ async function submitProfile() {
   }
 }
 
+function handleUserCommand(command: string) {
+  if (command === 'profile') {
+    openProfileDialog();
+  } else if (command === 'password') {
+    passwordDialogVisible.value = true;
+  } else if (command === 'logout') {
+    logout();
+  }
+}
+
 function logout() {
   userStore.logout();
   router.push('/login');
@@ -272,3 +372,24 @@ async function submitChangePassword() {
 </script>
 
 <style src="../styles/layouts/admin-layout.css"></style>
+
+<style scoped>
+.user-dropdown-trigger {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #303133;
+}
+
+.user-dropdown-trigger:hover {
+  color: #409eff;
+}
+
+.user-panel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+</style>

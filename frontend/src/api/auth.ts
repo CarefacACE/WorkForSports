@@ -10,6 +10,8 @@ export interface LoginParams {
 
 export interface RegisterParams extends LoginParams {
   realName: string;
+  phone?: string;
+  email?: string;
 }
 
 export interface ChangePasswordParams {
@@ -75,4 +77,12 @@ export function getProfile(id: number) {
 
 export function updateProfile(data: UpdateProfileParams) {
   return request.post<UserProfile>('/auth/profile', data);
+}
+
+export function sendCode(contact: string) {
+  return request.post<void>('/auth/send-code', { contact });
+}
+
+export function resetPasswordByCode(contact: string, code: string, newPassword: string) {
+  return request.post<void>('/auth/reset-password-by-code', { contact, code, newPassword });
 }
