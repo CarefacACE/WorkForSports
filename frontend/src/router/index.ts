@@ -18,6 +18,9 @@ import LogView from '../views/LogView.vue';
 import SqlMonitorView from '../views/SqlMonitorView.vue';
 import SystemMonitorView from '../views/SystemMonitorView.vue';
 import DbControlView from '../views/DbControlView.vue';
+import GroupChatView from '../views/chat/GroupChatView.vue';
+import PrivateChatView from '../views/chat/PrivateChatView.vue';
+import RequestManageView from '../views/chat/RequestManageView.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -107,6 +110,21 @@ const router = createRouter({
           name: 'member-my-courses',
           component: MyCoursesView,
         },
+        {
+          path: 'chat-group',
+          name: 'member-chat-group',
+          component: GroupChatView,
+        },
+        {
+          path: 'chat-private',
+          name: 'member-chat-private',
+          component: PrivateChatView,
+        },
+        {
+          path: 'chat-requests',
+          name: 'member-chat-requests',
+          component: RequestManageView,
+        },
       ],
     },
     {
@@ -132,6 +150,21 @@ const router = createRouter({
           path: 'my-students',
           name: 'coach-my-students',
           component: CoachMyStudentsView,
+        },
+        {
+          path: 'chat-group',
+          name: 'coach-chat-group',
+          component: GroupChatView,
+        },
+        {
+          path: 'chat-private',
+          name: 'coach-chat-private',
+          component: PrivateChatView,
+        },
+        {
+          path: 'chat-requests',
+          name: 'coach-chat-requests',
+          component: RequestManageView,
         },
       ],
     },

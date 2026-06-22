@@ -34,300 +34,187 @@
 
  :: Spring Boot ::                (v3.3.6)
 
-2026-06-18T17:42:25.266+08:00  INFO 43380 --- [zhixun-erp-backend] [  restartedMain] com.zhixun.erp.ZhixunErpApplication      : Starting ZhixunErpApplication using Java 17 with PID 43380 (D:\Project\Github\WorkForSports\backend\target\classes started by fzq11 in D:\Project\Github\WorkForSports\backend)
-2026-06-18T17:42:25.273+08:00  INFO 43380 --- [zhixun-erp-backend] [  restartedMain] com.zhixun.erp.ZhixunErpApplication      : No active profile set, falling back to 1 default profile: "default"
-2026-06-18T17:42:25.314+08:00  INFO 43380 --- [zhixun-erp-backend] [  restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
-2026-06-18T17:42:25.314+08:00  INFO 43380 --- [zhixun-erp-backend] [  restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
-2026-06-18T17:42:26.395+08:00  INFO 43380 --- [zhixun-erp-backend] [  restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
-2026-06-18T17:42:26.405+08:00  INFO 43380 --- [zhixun-erp-backend] [  restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2026-06-18T17:42:26.406+08:00  INFO 43380 --- [zhixun-erp-backend] [  restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.33]
-2026-06-18T17:42:26.453+08:00  INFO 43380 --- [zhixun-erp-backend] [  restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/api]    : Initializing Spring embedded WebApplicationContext
-2026-06-18T17:42:26.454+08:00  INFO 43380 --- [zhixun-erp-backend] [  restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1139 ms
-2026-06-18T17:42:26.692+08:00  INFO 43380 --- [zhixun-erp-backend] [  restartedMain] com.alibaba.druid.pool.DruidDataSource   : {dataSource-1} inited
+2026-06-18T19:01:00.740+08:00  INFO 43812 --- [zhixun-erp-backend] [  restartedMain] com.zhixun.erp.ZhixunErpApplication      : Starting ZhixunErpApplication using Java 17 with PID 43812 (D:\Project\Github\WorkForSports\backend\target\classes started by fzq11 in D:\Project\Github\WorkForSports\backend)
+2026-06-18T19:01:00.747+08:00  INFO 43812 --- [zhixun-erp-backend] [  restartedMain] com.zhixun.erp.ZhixunErpApplication      : No active profile set, falling back to 1 default profile: "default"
+2026-06-18T19:01:00.806+08:00  INFO 43812 --- [zhixun-erp-backend] [  restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2026-06-18T19:01:00.807+08:00  INFO 43812 --- [zhixun-erp-backend] [  restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2026-06-18T19:01:02.615+08:00  INFO 43812 --- [zhixun-erp-backend] [  restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-06-18T19:01:02.633+08:00  INFO 43812 --- [zhixun-erp-backend] [  restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-06-18T19:01:02.633+08:00  INFO 43812 --- [zhixun-erp-backend] [  restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.33]
+2026-06-18T19:01:02.702+08:00  INFO 43812 --- [zhixun-erp-backend] [  restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/api]    : Initializing Spring embedded WebApplicationContext
+2026-06-18T19:01:02.703+08:00  INFO 43812 --- [zhixun-erp-backend] [  restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1894 ms
+2026-06-18T19:01:03.149+08:00  INFO 43812 --- [zhixun-erp-backend] [  restartedMain] com.alibaba.druid.pool.DruidDataSource   : {dataSource-1} inited
 Logging initialized using 'class org.apache.ibatis.logging.stdout.StdOutImpl' adapter.
-Get /10.115.150.217 network interface 
+Get /10.114.81.118 network interface 
 Get network interface info: name:wlan2 (Intel(R) Wi-Fi 6 AX201 160MHz)
-Initialization Sequence datacenterId:2 workerId:26
+Initialization Sequence datacenterId:2 workerId:8
  _ _   |_  _ _|_. ___ _ |    _ 
 | | |\/|_)(_| | |_\  |_)||_|_\ 
      /               |         
                         3.5.9 
-2026-06-18T17:42:28.188+08:00  INFO 43380 --- [zhixun-erp-backend] [  restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
-2026-06-18T17:42:28.212+08:00  INFO 43380 --- [zhixun-erp-backend] [  restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/api'
-2026-06-18T17:42:28.218+08:00  INFO 43380 --- [zhixun-erp-backend] [  restartedMain] com.zhixun.erp.ZhixunErpApplication      : Started ZhixunErpApplication in 3.254 seconds (process running for 3.584)
-2026-06-18T17:44:53.726+08:00  INFO 43380 --- [zhixun-erp-backend] [nio-8080-exec-4] o.a.c.c.C.[Tomcat].[localhost].[/api]    : Initializing Spring DispatcherServlet 'dispatcherServlet'
-2026-06-18T17:44:53.726+08:00  INFO 43380 --- [zhixun-erp-backend] [nio-8080-exec-4] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
-2026-06-18T17:44:53.727+08:00  INFO 43380 --- [zhixun-erp-backend] [nio-8080-exec-4] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2026-06-18T19:01:06.136+08:00  INFO 43812 --- [zhixun-erp-backend] [  restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2026-06-18T19:01:06.186+08:00  INFO 43812 --- [zhixun-erp-backend] [  restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/api'
+2026-06-18T19:01:06.196+08:00  INFO 43812 --- [zhixun-erp-backend] [  restartedMain] com.zhixun.erp.ZhixunErpApplication      : Started ZhixunErpApplication in 5.983 seconds (process running for 6.486)
+2026-06-18T21:13:28.117+08:00  INFO 43812 --- [zhixun-erp-backend] [nio-8080-exec-5] o.a.c.c.C.[Tomcat].[localhost].[/api]    : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-06-18T21:13:28.117+08:00  INFO 43812 --- [zhixun-erp-backend] [nio-8080-exec-5] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-06-18T21:13:28.119+08:00  INFO 43812 --- [zhixun-erp-backend] [nio-8080-exec-5] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
 Creating a new SqlSession
-SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@709c656e] was not registered for synchronization because synchronization is not active
-JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@3778cf11] will not be managed by Spring
-==>  Preparing: INSERT INTO sys_log ( user_id, username, role, operation, method, ip, create_time ) VALUES ( ?, ?, ?, ?, ?, ?, ? )
-==> Parameters: 1(Long), admin(String), ADMIN(String), 查询数据库(String), GET DbController.getTables()(String), 0:0:0:0:0:0:0:1(String), 2026-06-18T17:45:00.536054(LocalDateTime)
-<==    Updates: 1
-Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@709c656e]
 Creating a new SqlSession
-SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@5a2161f2] was not registered for synchronization because synchronization is not active
-JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@3778cf11] will not be managed by Spring
-==>  Preparing: SELECT COUNT(*) AS total FROM sys_log WHERE deleted = 0
-==> Parameters: 
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@33c365b8] was not registered for synchronization because synchronization is not active
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@6cf6c83b] was not registered for synchronization because synchronization is not active
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@78162b57] was not registered for synchronization because synchronization is not active
+JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@17606982] will not be managed by Spring
+JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@42e5dea3] will not be managed by Spring
+JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@498bace7] will not be managed by Spring
+==>  Preparing: SELECT id,conversation_id,user_id,joined_at,deleted FROM chat_conversation_member WHERE deleted=0 AND (user_id = ?)
+==>  Preparing: SELECT COUNT( * ) AS total FROM notification WHERE deleted=0 AND (user_id = ? AND is_read = ?)
+==>  Preparing: SELECT id,conversation_id,user_id,joined_at,deleted FROM chat_conversation_member WHERE deleted=0 AND (user_id = ?)
+==> Parameters: 5(Long)
+==> Parameters: 5(Long), 0(Integer)
+==> Parameters: 5(Long)
+<==      Total: 0
+<==      Total: 0
 <==    Columns: total
-<==        Row: 89
+<==        Row: 0
 <==      Total: 1
-==>  Preparing: SELECT id,user_id,username,role,operation,method,params,ip,create_time,deleted FROM sys_log WHERE deleted=0 ORDER BY create_time DESC LIMIT ?
-==> Parameters: 10(Long)
-<==    Columns: id, user_id, username, role, operation, method, params, ip, create_time, deleted
-<==        Row: 94, 1, admin, ADMIN, 查询数据库, GET DbController.getTables(), null, 0:0:0:0:0:0:0:1, 2026-06-18 17:45:00, 0
-<==        Row: 93, 1, admin, ADMIN, 查询系统, GET SqlMonitorController.list(..), [1,20], 0:0:0:0:0:0:0:1, 2026-06-18 17:31:51, 0
-<==        Row: 92, 1, admin, ADMIN, 查询系统, GET SqlMonitorController.list(..), [1,20], 0:0:0:0:0:0:0:1, 2026-06-18 17:31:49, 0
-<==        Row: 91, 1, admin, ADMIN, 查询系统, GET SqlMonitorController.list(..), [1,20], 0:0:0:0:0:0:0:1, 2026-06-18 17:31:46, 0
-<==        Row: 90, 1, admin, ADMIN, 查询系统, GET SqlMonitorController.list(..), [1,20], 0:0:0:0:0:0:0:1, 2026-06-18 17:31:43, 0
-<==        Row: 89, 1, admin, ADMIN, 查询系统, GET SqlMonitorController.list(..), [1,20], 0:0:0:0:0:0:0:1, 2026-06-18 17:31:40, 0
-<==        Row: 88, 1, admin, ADMIN, 查询系统, GET SqlMonitorController.list(..), [1,20], 0:0:0:0:0:0:0:1, 2026-06-18 17:31:37, 0
-<==        Row: 87, 1, admin, ADMIN, 查询系统, GET SqlMonitorController.list(..), [1,20], 0:0:0:0:0:0:0:1, 2026-06-18 17:31:34, 0
-<==        Row: 86, 1, admin, ADMIN, 查询系统, GET SqlMonitorController.list(..), [1,20], 0:0:0:0:0:0:0:1, 2026-06-18 17:31:31, 0
-<==        Row: 85, 1, admin, ADMIN, 查询系统, GET SqlMonitorController.list(..), [1,20], 0:0:0:0:0:0:0:1, 2026-06-18 17:31:28, 0
-<==      Total: 10
-Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@5a2161f2]
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@78162b57]
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@6cf6c83b]
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@33c365b8]
 Creating a new SqlSession
-SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@5ac4c5f0] was not registered for synchronization because synchronization is not active
-JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@3778cf11] will not be managed by Spring
-==>  Preparing: SELECT COUNT(*) AS total FROM sys_log WHERE deleted = 0
-==> Parameters: 
-<==    Columns: total
-<==        Row: 89
-<==      Total: 1
-==>  Preparing: SELECT id,user_id,username,role,operation,method,params,ip,create_time,deleted FROM sys_log WHERE deleted=0 ORDER BY create_time DESC LIMIT ?
-==> Parameters: 10(Long)
-<==    Columns: id, user_id, username, role, operation, method, params, ip, create_time, deleted
-<==        Row: 94, 1, admin, ADMIN, 查询数据库, GET DbController.getTables(), null, 0:0:0:0:0:0:0:1, 2026-06-18 17:45:00, 0
-<==        Row: 93, 1, admin, ADMIN, 查询系统, GET SqlMonitorController.list(..), [1,20], 0:0:0:0:0:0:0:1, 2026-06-18 17:31:51, 0
-<==        Row: 92, 1, admin, ADMIN, 查询系统, GET SqlMonitorController.list(..), [1,20], 0:0:0:0:0:0:0:1, 2026-06-18 17:31:49, 0
-<==        Row: 91, 1, admin, ADMIN, 查询系统, GET SqlMonitorController.list(..), [1,20], 0:0:0:0:0:0:0:1, 2026-06-18 17:31:46, 0
-<==        Row: 90, 1, admin, ADMIN, 查询系统, GET SqlMonitorController.list(..), [1,20], 0:0:0:0:0:0:0:1, 2026-06-18 17:31:43, 0
-<==        Row: 89, 1, admin, ADMIN, 查询系统, GET SqlMonitorController.list(..), [1,20], 0:0:0:0:0:0:0:1, 2026-06-18 17:31:40, 0
-<==        Row: 88, 1, admin, ADMIN, 查询系统, GET SqlMonitorController.list(..), [1,20], 0:0:0:0:0:0:0:1, 2026-06-18 17:31:37, 0
-<==        Row: 87, 1, admin, ADMIN, 查询系统, GET SqlMonitorController.list(..), [1,20], 0:0:0:0:0:0:0:1, 2026-06-18 17:31:34, 0
-<==        Row: 86, 1, admin, ADMIN, 查询系统, GET SqlMonitorController.list(..), [1,20], 0:0:0:0:0:0:0:1, 2026-06-18 17:31:31, 0
-<==        Row: 85, 1, admin, ADMIN, 查询系统, GET SqlMonitorController.list(..), [1,20], 0:0:0:0:0:0:0:1, 2026-06-18 17:31:28, 0
-<==      Total: 10
-Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@5ac4c5f0]
 Creating a new SqlSession
-SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@5f04b74e] was not registered for synchronization because synchronization is not active
-JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@3778cf11] will not be managed by Spring
-==>  Preparing: SELECT COUNT(*) AS total FROM sys_user WHERE deleted = 0 AND (role = ?)
-==> Parameters: COACH(String)
-<==    Columns: total
-<==        Row: 2
-<==      Total: 1
-==>  Preparing: SELECT id,username,password,real_name,role,phone,email,gender,birthday,avatar,remark,create_time,update_time,deleted,balance FROM sys_user WHERE deleted=0 AND (role = ?) ORDER BY create_time DESC LIMIT ?
-==> Parameters: COACH(String), 10(Long)
-<==    Columns: id, username, password, real_name, role, phone, email, gender, birthday, avatar, remark, create_time, update_time, deleted, balance
-<==        Row: 5, chx, 123456, 陈浩轩, COACH, null, null, null, null, null, null, 2026-06-17 17:55:09, 2026-06-18 16:14:45, 0, 1010.00
-<==        Row: 2, coach, coach123, ???, COACH, null, null, null, null, null, null, 2026-06-17 17:00:41, null, 0, 0.00
-<==      Total: 2
-Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@5f04b74e]
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@5a355a82] was not registered for synchronization because synchronization is not active
 Creating a new SqlSession
-SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@27800a94] was not registered for synchronization because synchronization is not active
-JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@3778cf11] will not be managed by Spring
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@2bce76bf] was not registered for synchronization because synchronization is not active
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@1b8806e] was not registered for synchronization because synchronization is not active
+JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@42e5dea3] will not be managed by Spring
+JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@17606982] will not be managed by Spring
 ==>  Preparing: INSERT INTO sys_log ( user_id, username, role, operation, method, params, ip, create_time ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ? )
-==> Parameters: 1(Long), admin(String), ADMIN(String), 查询用户(String), GET UserController.listUsers(..)(String), [1,10,null,"COACH"](String), 0:0:0:0:0:0:0:1(String), 2026-06-18T17:45:05.972449700(LocalDateTime)
-<==    Updates: 1
-Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@27800a94]
-Creating a new SqlSession
-SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@7967c057] was not registered for synchronization because synchronization is not active
-JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@3778cf11] will not be managed by Spring
-==>  Preparing: SELECT COUNT(*) AS total FROM sys_user WHERE deleted = 0 AND (role = ?)
-==> Parameters: COACH(String)
-<==    Columns: total
-<==        Row: 2
-<==      Total: 1
-==>  Preparing: SELECT id,username,password,real_name,role,phone,email,gender,birthday,avatar,remark,create_time,update_time,deleted,balance FROM sys_user WHERE deleted=0 AND (role = ?) ORDER BY create_time DESC LIMIT ?
-==> Parameters: COACH(String), 10(Long)
-<==    Columns: id, username, password, real_name, role, phone, email, gender, birthday, avatar, remark, create_time, update_time, deleted, balance
-<==        Row: 5, chx, 123456, 陈浩轩, COACH, null, null, null, null, null, null, 2026-06-17 17:55:09, 2026-06-18 16:14:45, 0, 1010.00
-<==        Row: 2, coach, coach123, ???, COACH, null, null, null, null, null, null, 2026-06-17 17:00:41, null, 0, 0.00
-<==      Total: 2
-Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@7967c057]
-Creating a new SqlSession
-SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@322d1327] was not registered for synchronization because synchronization is not active
-JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@3778cf11] will not be managed by Spring
 ==>  Preparing: INSERT INTO sys_log ( user_id, username, role, operation, method, params, ip, create_time ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ? )
-==> Parameters: 1(Long), admin(String), ADMIN(String), 查询用户(String), GET UserController.listUsers(..)(String), [1,10,null,"COACH"](String), 0:0:0:0:0:0:0:1(String), 2026-06-18T17:45:06.675837300(LocalDateTime)
-<==    Updates: 1
-Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@322d1327]
-Creating a new SqlSession
-SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@cd70f05] was not registered for synchronization because synchronization is not active
-JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@3778cf11] will not be managed by Spring
-==>  Preparing: SELECT COUNT(*) AS total FROM sys_user WHERE deleted = 0 AND (role = ?)
-==> Parameters: MEMBER(String)
-<==    Columns: total
-<==        Row: 2
-<==      Total: 1
-==>  Preparing: SELECT id,username,password,real_name,role,phone,email,gender,birthday,avatar,remark,create_time,update_time,deleted,balance FROM sys_user WHERE deleted=0 AND (role = ?) ORDER BY create_time DESC LIMIT ?
-==> Parameters: MEMBER(String), 10(Long)
-<==    Columns: id, username, password, real_name, role, phone, email, gender, birthday, avatar, remark, create_time, update_time, deleted, balance
-<==        Row: 6, fzq, 123456, 付卓群, MEMBER, 15615582786, fzq1174486632@163.com, 男, , null, , 2026-06-17 17:56:02, 2026-06-18 16:14:45, 0, 890.00
-<==        Row: 3, member, member123, ???, MEMBER, 155, 145, , , null, , 2026-06-17 17:00:44, 2026-06-17 18:39:43, 0, 0.00
-<==      Total: 2
-Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@cd70f05]
-Creating a new SqlSession
-SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@29249741] was not registered for synchronization because synchronization is not active
-JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@3778cf11] will not be managed by Spring
+JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@498bace7] will not be managed by Spring
 ==>  Preparing: INSERT INTO sys_log ( user_id, username, role, operation, method, params, ip, create_time ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ? )
-==> Parameters: 1(Long), admin(String), ADMIN(String), 查询用户(String), GET UserController.listUsers(..)(String), [1,10,null,"MEMBER"](String), 0:0:0:0:0:0:0:1(String), 2026-06-18T17:45:07.806321800(LocalDateTime)
+==> Parameters: 5(Long), chx(String), COACH(String), 查询系统(String), GET ChatController.getUnreadCount(..)(String), [5](String), 0:0:0:0:0:0:0:1(String), 2026-06-18T21:13:28.387307700(LocalDateTime)
+==> Parameters: 5(Long), chx(String), COACH(String), 查询系统(String), GET NotificationController.getUnreadCount(..)(String), [5](String), 0:0:0:0:0:0:0:1(String), 2026-06-18T21:13:28.387307700(LocalDateTime)
+==> Parameters: 5(Long), chx(String), COACH(String), 查询系统(String), GET ChatController.getConversationsByType(..)(String), [5,"GROUP"](String), 0:0:0:0:0:0:0:1(String), 2026-06-18T21:13:28.387307700(LocalDateTime)
 <==    Updates: 1
-Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@29249741]
+<==    Updates: 1
+<==    Updates: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@2bce76bf]
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@5a355a82]
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@1b8806e]
 Creating a new SqlSession
-SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@7c5c7a0a] was not registered for synchronization because synchronization is not active
-JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@3778cf11] will not be managed by Spring
-==>  Preparing: SELECT COUNT(*) AS total FROM sys_user WHERE deleted = 0 AND (role = ?)
-==> Parameters: MEMBER(String)
-<==    Columns: total
-<==        Row: 2
-<==      Total: 1
-==>  Preparing: SELECT id,username,password,real_name,role,phone,email,gender,birthday,avatar,remark,create_time,update_time,deleted,balance FROM sys_user WHERE deleted=0 AND (role = ?) ORDER BY create_time DESC LIMIT ?
-==> Parameters: MEMBER(String), 10(Long)
-<==    Columns: id, username, password, real_name, role, phone, email, gender, birthday, avatar, remark, create_time, update_time, deleted, balance
-<==        Row: 6, fzq, 123456, 付卓群, MEMBER, 15615582786, fzq1174486632@163.com, 男, , null, , 2026-06-17 17:56:02, 2026-06-18 16:14:45, 0, 890.00
-<==        Row: 3, member, member123, ???, MEMBER, 155, 145, , , null, , 2026-06-17 17:00:44, 2026-06-17 18:39:43, 0, 0.00
-<==      Total: 2
-Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@7c5c7a0a]
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@46968e2f] was not registered for synchronization because synchronization is not active
+JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@498bace7] will not be managed by Spring
+==>  Preparing: SELECT id,conversation_id,user_id,joined_at,deleted FROM chat_conversation_member WHERE deleted=0 AND (user_id = ?)
+==> Parameters: 5(Long)
+<==      Total: 0
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@46968e2f]
 Creating a new SqlSession
-SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@1ae9d610] was not registered for synchronization because synchronization is not active
-JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@3778cf11] will not be managed by Spring
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@7bf97242] was not registered for synchronization because synchronization is not active
+JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@498bace7] will not be managed by Spring
 ==>  Preparing: INSERT INTO sys_log ( user_id, username, role, operation, method, params, ip, create_time ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ? )
-==> Parameters: 1(Long), admin(String), ADMIN(String), 查询用户(String), GET UserController.listUsers(..)(String), [1,10,null,"MEMBER"](String), 0:0:0:0:0:0:0:1(String), 2026-06-18T17:45:08.915844700(LocalDateTime)
+==> Parameters: 5(Long), chx(String), COACH(String), 查询系统(String), GET ChatController.getConversationsByType(..)(String), [5,"PRIVATE"](String), 0:0:0:0:0:0:0:1(String), 2026-06-18T21:13:29.025571900(LocalDateTime)
 <==    Updates: 1
-Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@1ae9d610]
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@7bf97242]
 Creating a new SqlSession
-SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@45ffc150] was not registered for synchronization because synchronization is not active
-JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@3778cf11] will not be managed by Spring
-==>  Preparing: SELECT COUNT(*) AS total FROM sys_user WHERE deleted = 0 AND (role = ?)
-==> Parameters: COACH(String)
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@21a50789] was not registered for synchronization because synchronization is not active
+JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@498bace7] will not be managed by Spring
+==>  Preparing: SELECT COUNT(*) AS total FROM chat_friend_request WHERE deleted = 0 AND (to_user_id = ?)
+==> Parameters: 5(Long)
 <==    Columns: total
-<==        Row: 2
+<==        Row: 0
 <==      Total: 1
-==>  Preparing: SELECT id,username,password,real_name,role,phone,email,gender,birthday,avatar,remark,create_time,update_time,deleted,balance FROM sys_user WHERE deleted=0 AND (role = ?) ORDER BY create_time DESC LIMIT ?
-==> Parameters: COACH(String), 10(Long)
-<==    Columns: id, username, password, real_name, role, phone, email, gender, birthday, avatar, remark, create_time, update_time, deleted, balance
-<==        Row: 5, chx, 123456, 陈浩轩, COACH, null, null, null, null, null, null, 2026-06-17 17:55:09, 2026-06-18 16:14:45, 0, 1010.00
-<==        Row: 2, coach, coach123, ???, COACH, null, null, null, null, null, null, 2026-06-17 17:00:41, null, 0, 0.00
-<==      Total: 2
-Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@45ffc150]
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@21a50789]
 Creating a new SqlSession
-SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@5ffa2b8d] was not registered for synchronization because synchronization is not active
-JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@3778cf11] will not be managed by Spring
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@25119b46] was not registered for synchronization because synchronization is not active
+JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@498bace7] will not be managed by Spring
 ==>  Preparing: INSERT INTO sys_log ( user_id, username, role, operation, method, params, ip, create_time ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ? )
-==> Parameters: 1(Long), admin(String), ADMIN(String), 查询用户(String), GET UserController.listUsers(..)(String), [1,10,null,"COACH"](String), 0:0:0:0:0:0:0:1(String), 2026-06-18T17:45:10.116881100(LocalDateTime)
+==> Parameters: 5(Long), chx(String), COACH(String), 查询系统(String), GET FriendController.getMyRequests(..)(String), [5,null,1,10](String), 0:0:0:0:0:0:0:1(String), 2026-06-18T21:13:29.753634700(LocalDateTime)
 <==    Updates: 1
-Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@5ffa2b8d]
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@25119b46]
 Creating a new SqlSession
-SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@6cec455d] was not registered for synchronization because synchronization is not active
-JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@3778cf11] will not be managed by Spring
-==>  Preparing: SELECT COUNT(*) AS total FROM sys_user WHERE deleted = 0 AND (role = ?)
-==> Parameters: COACH(String)
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@558541ee] was not registered for synchronization because synchronization is not active
+JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@498bace7] will not be managed by Spring
+==>  Preparing: SELECT id,conversation_id,user_id,joined_at,deleted FROM chat_conversation_member WHERE deleted=0 AND (user_id = ?)
+==> Parameters: 5(Long)
+<==      Total: 0
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@558541ee]
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@1a7fbf15] was not registered for synchronization because synchronization is not active
+JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@498bace7] will not be managed by Spring
+==>  Preparing: INSERT INTO sys_log ( user_id, username, role, operation, method, params, ip, create_time ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ? )
+==> Parameters: 5(Long), chx(String), COACH(String), 查询系统(String), GET ChatController.getConversationsByType(..)(String), [5,"GROUP"](String), 0:0:0:0:0:0:0:1(String), 2026-06-18T21:13:30.693370300(LocalDateTime)
+<==    Updates: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@1a7fbf15]
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@1c07d5a4] was not registered for synchronization because synchronization is not active
+JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@498bace7] will not be managed by Spring
+==>  Preparing: SELECT id,conversation_id,user_id,joined_at,deleted FROM chat_conversation_member WHERE deleted=0 AND (user_id = ?)
+==> Parameters: 5(Long)
+<==      Total: 0
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@1c07d5a4]
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@53fd326f] was not registered for synchronization because synchronization is not active
+JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@498bace7] will not be managed by Spring
+==>  Preparing: INSERT INTO sys_log ( user_id, username, role, operation, method, params, ip, create_time ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ? )
+==> Parameters: 5(Long), chx(String), COACH(String), 查询系统(String), GET ChatController.getConversationsByType(..)(String), [5,"PRIVATE"](String), 0:0:0:0:0:0:0:1(String), 2026-06-18T21:13:31.900811500(LocalDateTime)
+<==    Updates: 1
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@53fd326f]
+Creating a new SqlSession
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@61e9ae5d] was not registered for synchronization because synchronization is not active
+JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@498bace7] will not be managed by Spring
+==>  Preparing: SELECT COUNT(*) AS total FROM chat_friend_request WHERE deleted = 0 AND (to_user_id = ?)
+==> Parameters: 5(Long)
 <==    Columns: total
-<==        Row: 2
+<==        Row: 0
 <==      Total: 1
-==>  Preparing: SELECT id,username,password,real_name,role,phone,email,gender,birthday,avatar,remark,create_time,update_time,deleted,balance FROM sys_user WHERE deleted=0 AND (role = ?) ORDER BY create_time DESC LIMIT ?
-==> Parameters: COACH(String), 10(Long)
-<==    Columns: id, username, password, real_name, role, phone, email, gender, birthday, avatar, remark, create_time, update_time, deleted, balance
-<==        Row: 5, chx, 123456, 陈浩轩, COACH, null, null, null, null, null, null, 2026-06-17 17:55:09, 2026-06-18 16:14:45, 0, 1010.00
-<==        Row: 2, coach, coach123, ???, COACH, null, null, null, null, null, null, 2026-06-17 17:00:41, null, 0, 0.00
-<==      Total: 2
-Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@6cec455d]
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@61e9ae5d]
 Creating a new SqlSession
-SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@68e898b5] was not registered for synchronization because synchronization is not active
-JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@3778cf11] will not be managed by Spring
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@2a49ef2] was not registered for synchronization because synchronization is not active
+JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@498bace7] will not be managed by Spring
 ==>  Preparing: INSERT INTO sys_log ( user_id, username, role, operation, method, params, ip, create_time ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ? )
-==> Parameters: 1(Long), admin(String), ADMIN(String), 查询用户(String), GET UserController.listUsers(..)(String), [1,10,null,"COACH"](String), 0:0:0:0:0:0:0:1(String), 2026-06-18T17:45:11.225719200(LocalDateTime)
+==> Parameters: 5(Long), chx(String), COACH(String), 查询系统(String), GET FriendController.getMyRequests(..)(String), [5,null,1,10](String), 0:0:0:0:0:0:0:1(String), 2026-06-18T21:13:32.183832100(LocalDateTime)
 <==    Updates: 1
-Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@68e898b5]
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@2a49ef2]
 Creating a new SqlSession
-SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@4f4235d1] was not registered for synchronization because synchronization is not active
-JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@3778cf11] will not be managed by Spring
-==>  Preparing: SELECT COUNT(*) AS total FROM sys_user WHERE deleted = 0 AND (role = ?)
-==> Parameters: MEMBER(String)
-<==    Columns: total
-<==        Row: 2
-<==      Total: 1
-==>  Preparing: SELECT id,username,password,real_name,role,phone,email,gender,birthday,avatar,remark,create_time,update_time,deleted,balance FROM sys_user WHERE deleted=0 AND (role = ?) ORDER BY create_time DESC LIMIT ?
-==> Parameters: MEMBER(String), 10(Long)
-<==    Columns: id, username, password, real_name, role, phone, email, gender, birthday, avatar, remark, create_time, update_time, deleted, balance
-<==        Row: 6, fzq, 123456, 付卓群, MEMBER, 15615582786, fzq1174486632@163.com, 男, , null, , 2026-06-17 17:56:02, 2026-06-18 16:14:45, 0, 890.00
-<==        Row: 3, member, member123, ???, MEMBER, 155, 145, , , null, , 2026-06-17 17:00:44, 2026-06-17 18:39:43, 0, 0.00
-<==      Total: 2
-Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@4f4235d1]
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@442d071] was not registered for synchronization because synchronization is not active
+JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@498bace7] will not be managed by Spring
+==>  Preparing: SELECT id,conversation_id,user_id,joined_at,deleted FROM chat_conversation_member WHERE deleted=0 AND (user_id = ?)
+==> Parameters: 5(Long)
+<==      Total: 0
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@442d071]
 Creating a new SqlSession
-SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@73409f62] was not registered for synchronization because synchronization is not active
-JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@3778cf11] will not be managed by Spring
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@7a39282e] was not registered for synchronization because synchronization is not active
+JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@498bace7] will not be managed by Spring
 ==>  Preparing: INSERT INTO sys_log ( user_id, username, role, operation, method, params, ip, create_time ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ? )
-==> Parameters: 1(Long), admin(String), ADMIN(String), 查询用户(String), GET UserController.listUsers(..)(String), [1,10,null,"MEMBER"](String), 0:0:0:0:0:0:0:1(String), 2026-06-18T17:45:19.451340500(LocalDateTime)
+==> Parameters: 5(Long), chx(String), COACH(String), 查询系统(String), GET ChatController.getConversationsByType(..)(String), [5,"GROUP"](String), 0:0:0:0:0:0:0:1(String), 2026-06-18T21:13:33.215888900(LocalDateTime)
 <==    Updates: 1
-Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@73409f62]
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@7a39282e]
 Creating a new SqlSession
-SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@257e8fd5] was not registered for synchronization because synchronization is not active
-JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@3778cf11] will not be managed by Spring
-==>  Preparing: SELECT COUNT(*) AS total FROM sys_user WHERE deleted = 0 AND (role = ?)
-==> Parameters: MEMBER(String)
-<==    Columns: total
-<==        Row: 2
-<==      Total: 1
-==>  Preparing: SELECT id,username,password,real_name,role,phone,email,gender,birthday,avatar,remark,create_time,update_time,deleted,balance FROM sys_user WHERE deleted=0 AND (role = ?) ORDER BY create_time DESC LIMIT ?
-==> Parameters: MEMBER(String), 10(Long)
-<==    Columns: id, username, password, real_name, role, phone, email, gender, birthday, avatar, remark, create_time, update_time, deleted, balance
-<==        Row: 6, fzq, 123456, 付卓群, MEMBER, 15615582786, fzq1174486632@163.com, 男, , null, , 2026-06-17 17:56:02, 2026-06-18 16:14:45, 0, 890.00
-<==        Row: 3, member, member123, ???, MEMBER, 155, 145, , , null, , 2026-06-17 17:00:44, 2026-06-17 18:39:43, 0, 0.00
-<==      Total: 2
-Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@257e8fd5]
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@31d52481] was not registered for synchronization because synchronization is not active
+JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@498bace7] will not be managed by Spring
+==>  Preparing: SELECT id,conversation_id,user_id,joined_at,deleted FROM chat_conversation_member WHERE deleted=0 AND (user_id = ?)
+==> Parameters: 5(Long)
+<==      Total: 0
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@31d52481]
 Creating a new SqlSession
-SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@71ffd612] was not registered for synchronization because synchronization is not active
-JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@3778cf11] will not be managed by Spring
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@3f12cccb] was not registered for synchronization because synchronization is not active
+JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@498bace7] will not be managed by Spring
 ==>  Preparing: INSERT INTO sys_log ( user_id, username, role, operation, method, params, ip, create_time ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ? )
-==> Parameters: 1(Long), admin(String), ADMIN(String), 查询用户(String), GET UserController.listUsers(..)(String), [1,10,null,"MEMBER"](String), 0:0:0:0:0:0:0:1(String), 2026-06-18T17:45:19.709643800(LocalDateTime)
+==> Parameters: 5(Long), chx(String), COACH(String), 查询系统(String), GET ChatController.getConversationsByType(..)(String), [5,"PRIVATE"](String), 0:0:0:0:0:0:0:1(String), 2026-06-18T21:13:36.030341400(LocalDateTime)
 <==    Updates: 1
-Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@71ffd612]
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@3f12cccb]
 Creating a new SqlSession
-SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@60f7144] was not registered for synchronization because synchronization is not active
-JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@3778cf11] will not be managed by Spring
-==>  Preparing: SELECT COUNT(*) AS total FROM sys_user WHERE deleted = 0 AND (role = ?)
-==> Parameters: COACH(String)
-<==    Columns: total
-<==        Row: 2
-<==      Total: 1
-==>  Preparing: SELECT id,username,password,real_name,role,phone,email,gender,birthday,avatar,remark,create_time,update_time,deleted,balance FROM sys_user WHERE deleted=0 AND (role = ?) ORDER BY create_time DESC LIMIT ?
-==> Parameters: COACH(String), 10(Long)
-<==    Columns: id, username, password, real_name, role, phone, email, gender, birthday, avatar, remark, create_time, update_time, deleted, balance
-<==        Row: 5, chx, 123456, 陈浩轩, COACH, null, null, null, null, null, null, 2026-06-17 17:55:09, 2026-06-18 16:14:45, 0, 1010.00
-<==        Row: 2, coach, coach123, ???, COACH, null, null, null, null, null, null, 2026-06-17 17:00:41, null, 0, 0.00
-<==      Total: 2
-Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@60f7144]
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@5336406d] was not registered for synchronization because synchronization is not active
+JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@498bace7] will not be managed by Spring
+==>  Preparing: SELECT id,conversation_id,user_id,joined_at,deleted FROM chat_conversation_member WHERE deleted=0 AND (user_id = ?)
+==> Parameters: 5(Long)
+<==      Total: 0
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@5336406d]
 Creating a new SqlSession
-SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@74e3350f] was not registered for synchronization because synchronization is not active
-JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@3778cf11] will not be managed by Spring
+SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@44193dcb] was not registered for synchronization because synchronization is not active
+JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@498bace7] will not be managed by Spring
 ==>  Preparing: INSERT INTO sys_log ( user_id, username, role, operation, method, params, ip, create_time ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ? )
-==> Parameters: 1(Long), admin(String), ADMIN(String), 查询用户(String), GET UserController.listUsers(..)(String), [1,10,null,"COACH"](String), 0:0:0:0:0:0:0:1(String), 2026-06-18T17:45:19.918559(LocalDateTime)
+==> Parameters: 5(Long), chx(String), COACH(String), 查询系统(String), GET ChatController.getConversationsByType(..)(String), [5,"GROUP"](String), 0:0:0:0:0:0:0:1(String), 2026-06-18T21:13:36.296478800(LocalDateTime)
 <==    Updates: 1
-Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@74e3350f]
-Creating a new SqlSession
-SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@4c88fd14] was not registered for synchronization because synchronization is not active
-JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@3778cf11] will not be managed by Spring
-==>  Preparing: SELECT COUNT(*) AS total FROM sys_user WHERE deleted = 0 AND (role = ?)
-==> Parameters: COACH(String)
-<==    Columns: total
-<==        Row: 2
-<==      Total: 1
-==>  Preparing: SELECT id,username,password,real_name,role,phone,email,gender,birthday,avatar,remark,create_time,update_time,deleted,balance FROM sys_user WHERE deleted=0 AND (role = ?) ORDER BY create_time DESC LIMIT ?
-==> Parameters: COACH(String), 10(Long)
-<==    Columns: id, username, password, real_name, role, phone, email, gender, birthday, avatar, remark, create_time, update_time, deleted, balance
-<==        Row: 5, chx, 123456, 陈浩轩, COACH, null, null, null, null, null, null, 2026-06-17 17:55:09, 2026-06-18 16:14:45, 0, 1010.00
-<==        Row: 2, coach, coach123, ???, COACH, null, null, null, null, null, null, 2026-06-17 17:00:41, null, 0, 0.00
-<==      Total: 2
-Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@4c88fd14]
-Creating a new SqlSession
-SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@54e1b1f] was not registered for synchronization because synchronization is not active
-JDBC Connection [com.alibaba.druid.pool.DruidStatementConnection@3778cf11] will not be managed by Spring
-==>  Preparing: INSERT INTO sys_log ( user_id, username, role, operation, method, params, ip, create_time ) VALUES ( ?, ?, ?, ?, ?, ?, ?, ? )
-==> Parameters: 1(Long), admin(String), ADMIN(String), 查询用户(String), GET UserController.listUsers(..)(String), [1,10,null,"COACH"](String), 0:0:0:0:0:0:0:1(String), 2026-06-18T17:45:20.819140200(LocalDateTime)
-<==    Updates: 1
-Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@54e1b1f]
+Closing non transactional SqlSession [org.apache.ibatis.session.defaults.DefaultSqlSession@44193dcb]

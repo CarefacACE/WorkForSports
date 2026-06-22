@@ -85,3 +85,76 @@ CREATE TABLE IF NOT EXISTS sys_log (
     create_time DATETIME,
     deleted TINYINT DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS chat_conversation (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    type VARCHAR(16) NOT NULL,
+    name VARCHAR(128),
+    course_id BIGINT,
+    owner_id BIGINT,
+    create_time DATETIME,
+    update_time DATETIME,
+    deleted TINYINT DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS chat_conversation_member (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    conversation_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    joined_at DATETIME,
+    deleted TINYINT DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS chat_message (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    conversation_id BIGINT NOT NULL,
+    sender_id BIGINT NOT NULL,
+    content TEXT NOT NULL,
+    msg_type VARCHAR(16) DEFAULT 'TEXT',
+    create_time DATETIME,
+    deleted TINYINT DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS chat_read_status (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    conversation_id BIGINT NOT NULL,
+    last_read_message_id BIGINT DEFAULT 0,
+    update_time DATETIME,
+    UNIQUE KEY uk_user_conv (user_id, conversation_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS notification (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    title VARCHAR(128),
+    content TEXT,
+    type VARCHAR(32),
+    related_id BIGINT,
+    is_read TINYINT DEFAULT 0,
+    create_time DATETIME,
+    deleted TINYINT DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS chat_group_notice (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    conversation_id BIGINT NOT NULL,
+    publisher_id BIGINT NOT NULL,
+    content TEXT NOT NULL,
+    create_time DATETIME,
+    update_time DATETIME,
+    deleted TINYINT DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS chat_friend_request (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    from_user_id BIGINT NOT NULL,
+    to_user_id BIGINT NOT NULL,
+    request_type VARCHAR(16) NOT NULL,
+    conversation_id BIGINT,
+    status VARCHAR(16) DEFAULT 'PENDING',
+    message VARCHAR(255),
+    create_time DATETIME,
+    update_time DATETIME,
+    deleted TINYINT DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

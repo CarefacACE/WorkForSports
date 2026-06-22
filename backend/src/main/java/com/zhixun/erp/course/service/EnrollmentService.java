@@ -9,6 +9,9 @@ import com.zhixun.erp.course.mapper.CourseMapper;
 import com.zhixun.erp.course.mapper.EnrollmentMapper;
 import com.zhixun.erp.finance.entity.WalletTransaction;
 import com.zhixun.erp.finance.mapper.WalletTransactionMapper;
+import com.zhixun.erp.chat.entity.ChatConversation;
+import com.zhixun.erp.chat.service.ChatService;
+import com.zhixun.erp.chat.service.NotificationService;
 import com.zhixun.erp.user.entity.User;
 import com.zhixun.erp.user.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +30,8 @@ public class EnrollmentService {
     private final CourseMapper courseMapper;
     private final UserMapper userMapper;
     private final WalletTransactionMapper walletTransactionMapper;
+    private final ChatService chatService;
+    private final NotificationService notificationService;
 
     @Transactional
     public Enrollment enroll(Long userId, Long courseId) {
@@ -69,6 +75,11 @@ public class EnrollmentService {
 
         enrollment.setCreateTime(LocalDateTime.now());
         enrollmentMapper.insert(enrollment);
+
+        if ("PAID".equals(enrollment.getStatus())) {
+            afterEnrollSuccess(userId, course);
+        }
+
         return enrollment;
     }
 
@@ -143,6 +154,8 @@ public class EnrollmentService {
             walletTransactionMapper.insert(incomeTransaction);
         }
 
+        afterEnrollSuccess(userId, course);
+
         return enrollment;
     }
 
@@ -215,5 +228,40 @@ public class EnrollmentService {
 
         wrapper.orderByDesc(Enrollment::getCreateTime);
         return enrollmentMapper.selectPage(page, wrapper);
+    }
+
+    private void afterEnrollSuccess(Long userId, Course course) {
+        User member = userMapper.selectById(userId);
+        if (member == null) return;
+
+        if ("PUBLIC".equals(course.getType())) {
+            ChatConversation existing = chatService.getConversationsByType(userId, "GROUP")
+                    .stream().filter(c -> course.getId().equals(c.getCourseId()))
+                    .findFirst().orElse(null);
+
+            if (existing == null) {
+                ChatConversation group = chatService.createConversation(
+                        "GROUP", course.getName() + " 群聊",
+                        course.getId(), course.getCoachId(), List.of(userId));
+                notificationService.sendNotification(userId,
+                        "已加入群聊",
+                        "你已加入课程「" + course.getName() + "」的群聊",
+                        "GROUP", group.getId());
+            }
+        } else {
+            ChatConversation existing = chatService.getConversationsByType(userId, "PRIVATE")
+                    .stream().filter(c -> course.getCoachId().equals(c.getOwnerId()))
+                    .findFirst().orElse(null);
+
+            if (existing == null) {
+                ChatConversation priv = chatService.createConversation(
+                        "PRIVATE", null, course.getId(), course.getCoachId(), List.of(userId));
+                notificationService.sendNotification(userId,
+                        "已创建私信",
+                        "你已与教练「" + (userMapper.selectById(course.getCoachId()) != null ?
+                                userMapper.selectById(course.getCoachId()).getRealName() : "") + "」建立私信",
+                        "PRIVATE", priv.getId());
+            }
+        }
     }
 }
