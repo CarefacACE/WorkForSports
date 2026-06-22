@@ -222,39 +222,45 @@ onMounted(() => {
 
 <style scoped>
 .group-info-panel {
-  width: 300px;
-  border-left: 1px solid #e4e7ed;
+  width: 320px;
+  border-left: 1px solid rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
-  background: #fff;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
 .panel-header {
-  padding: 12px 16px;
-  font-weight: 600;
+  padding: 16px 20px;
+  font-weight: 700;
   font-size: 15px;
-  border-bottom: 1px solid #e4e7ed;
-  background: #f5f7fa;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  background: rgba(255, 255, 255, 0.6);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  color: #0f172a;
 }
 
 .panel-body {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
+  padding: 20px;
 }
 
 .info-section {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .section-title {
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 600;
-  color: #909399;
+  color: #94a3b8;
   margin-bottom: 8px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-family: 'JetBrains Mono', monospace;
 }
 
 .name-row {
@@ -265,28 +271,30 @@ onMounted(() => {
 
 .group-name {
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 600;
   flex: 1;
+  color: #1e293b;
 }
 
 .member-actions {
   display: flex;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .search-result {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 12px;
-  background: #f5f7fa;
-  border-radius: 6px;
-  margin-bottom: 8px;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+  margin-bottom: 10px;
 }
 
 .member-list {
-  max-height: 300px;
+  max-height: 320px;
   overflow-y: auto;
 }
 
@@ -294,31 +302,33 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 0;
-  border-bottom: 1px solid #f0f0f0;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 .member-info {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .member-name {
   font-size: 14px;
-  color: #303133;
+  color: #1e293b;
+  font-weight: 500;
 }
 
 .notice-content {
-  background: #f5f7fa;
-  border-radius: 8px;
-  padding: 12px;
+  background: #f8fafc;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  border-radius: 10px;
+  padding: 14px;
 }
 
 .notice-text {
   font-size: 14px;
-  color: #303133;
-  line-height: 1.5;
+  color: #1e293b;
+  line-height: 1.6;
   margin-bottom: 8px;
 }
 
@@ -330,7 +340,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  color: #c0c4cc;
+  color: #94a3b8;
   font-size: 13px;
 }
 </style>

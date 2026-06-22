@@ -1,30 +1,39 @@
 <template>
-  <div class="chat-room">
-    <div class="chat-header">
-      <span>{{ conversationName }}</span>
-    </div>
-    <div class="messages-area" ref="messagesArea">
-      <div v-for="msg in messages" :key="msg.id" class="message-item"
-        :class="{ 'self': msg.senderId === currentUserId }">
-        <div class="message-sender" v-if="msg.senderId !== currentUserId">
+  <div class="cr">
+    <div class="cr-messages" ref="messagesArea">
+      <div v-for="msg in messages" :key="msg.id" class="cr-msg"
+        :class="{ self: msg.senderId === currentUserId }">
+        <div class="cr-sender" v-if="msg.senderId !== currentUserId">
           {{ getSenderName(msg.senderId) }}
         </div>
-        <div class="message-bubble">
-          <div class="message-content">{{ msg.content }}</div>
-          <div class="message-time">{{ formatTime(msg.createTime) }}</div>
+        <div class="cr-bubble">
+          <div class="cr-text">{{ msg.content }}</div>
+          <div class="cr-time">{{ formatTime(msg.createTime) }}</div>
         </div>
       </div>
-      <div v-if="messages.length === 0" class="empty-hint">暂无消息</div>
+      <div v-if="messages.length === 0" class="cr-empty">暂无消息，发送第一条吧</div>
     </div>
-    <div class="input-area">
-      <el-input v-model="inputText" placeholder="输入消息..." @keyup.enter="sendMessage"
-        :disabled="!connected" style="flex:1">
-      </el-input>
-      <el-button type="primary" @click="sendMessage" :disabled="!connected || !inputText.trim()">
-        发送
-      </el-button>
+    <div class="cr-input-bar">
+      <div class="cr-input-wrap">
+        <textarea
+          v-model="inputText"
+          placeholder="输入消息…"
+          :disabled="!connected"
+          rows="1"
+          @keydown.enter.exact.prevent="sendMessage"
+          @input="autoResize"
+          ref="textareaEl"
+        ></textarea>
+      </div>
+      <button class="cr-send-btn" :disabled="!connected || !inputText.trim()" @click="sendMessage">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+        </svg>
+      </button>
     </div>
-    <div v-if="!connected" class="connecting-hint">正在连接...</div>
+    <div v-if="!connected" class="cr-connecting">
+      <span class="cr-dot-pulse"></span> 正在连接…
+    </div>
   </div>
 </template>
 
@@ -41,6 +50,7 @@ const props = defineProps<{
 const messages = ref<ChatMessage[]>([]);
 const inputText = ref('');
 const messagesArea = ref<HTMLElement>();
+const textareaEl = ref<HTMLTextAreaElement>();
 const loading = ref(false);
 const connected = ref(false);
 let ws: WebSocket | null = null;
@@ -62,6 +72,13 @@ function scrollToBottom() {
       messagesArea.value.scrollTop = messagesArea.value.scrollHeight;
     }
   });
+}
+
+function autoResize() {
+  const el = textareaEl.value;
+  if (!el) return;
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
 }
 
 async function loadMessages() {
@@ -92,23 +109,19 @@ function connectWs() {
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
   const host = window.location.host;
   const url = `${protocol}//${host}/api/ws/chat?userId=${userId}`;
-  console.log('Connecting WebSocket to:', url);
-  
+
   ws = new WebSocket(url);
 
   ws.onopen = () => {
-    console.log('WebSocket connected');
     connected.value = true;
   };
 
-  ws.onclose = (event) => {
-    console.log('WebSocket closed:', event.code, event.reason);
+  ws.onclose = () => {
     connected.value = false;
     reconnectTimer = setTimeout(connectWs, 3000);
   };
 
-  ws.onerror = (error) => {
-    console.error('WebSocket error:', error);
+  ws.onerror = () => {
     connected.value = false;
   };
 
@@ -139,6 +152,11 @@ function sendMessage() {
     msgType: 'TEXT',
   }));
   inputText.value = '';
+  nextTick(() => {
+    if (textareaEl.value) {
+      textareaEl.value.style.height = 'auto';
+    }
+  });
 }
 
 watch(() => props.conversationId, () => {
@@ -163,94 +181,207 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.chat-room {
+.cr {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  border: 1px solid #e4e7ed;
-  border-radius: 8px;
+  flex: 1;
+  min-width: 0;
+  background: #f8fafc;
   overflow: hidden;
 }
 
-.chat-header {
-  padding: 12px 16px;
-  background: #f5f7fa;
-  border-bottom: 1px solid #e4e7ed;
-  font-weight: 600;
-  font-size: 15px;
-}
-
-.messages-area {
+/* === Messages Area === */
+.cr-messages {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
-  background: #fafafa;
-}
-
-.message-item {
-  margin-bottom: 12px;
+  padding: 24px 28px;
   display: flex;
   flex-direction: column;
+  gap: 4px;
 }
 
-.message-item.self {
+.cr-msg {
+  display: flex;
+  flex-direction: column;
+  max-width: 65%;
+  margin-bottom: 6px;
+}
+.cr-msg.self {
+  align-self: flex-end;
   align-items: flex-end;
 }
 
-.message-sender {
-  font-size: 12px;
-  color: #909399;
-  margin-bottom: 4px;
-}
-
-.message-bubble {
-  max-width: 70%;
-  padding: 8px 12px;
-  border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
-}
-
-.self .message-bubble {
-  background: #409eff;
-  color: #fff;
-}
-
-.message-content {
-  font-size: 14px;
-  word-break: break-all;
-}
-
-.message-time {
+.cr-sender {
   font-size: 11px;
-  color: #c0c4cc;
-  margin-top: 4px;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 4px;
+  padding-left: 4px;
+}
+
+.cr-bubble {
+  padding: 12px 16px;
+  border-radius: 18px 18px 18px 4px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  transition: all 0.15s ease;
+}
+.cr-bubble:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.cr-msg.self .cr-bubble {
+  border-radius: 18px 18px 4px 18px;
+  background: #2563eb;
+  border-color: transparent;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+}
+
+.cr-text {
+  font-size: 14px;
+  line-height: 1.55;
+  color: #1e293b;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+.cr-msg.self .cr-text {
+  color: #ffffff;
+}
+
+.cr-time {
+  font-size: 10px;
+  color: #94a3b8;
+  margin-top: 6px;
   text-align: right;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.3px;
+}
+.cr-msg.self .cr-time {
+  color: rgba(255, 255, 255, 0.55);
 }
 
-.self .message-time {
-  color: rgba(255,255,255,0.7);
-}
-
-.empty-hint {
-  text-align: center;
-  color: #c0c4cc;
-  padding: 40px 0;
-}
-
-.input-area {
+.cr-empty {
+  flex: 1;
   display: flex;
-  gap: 8px;
-  padding: 12px;
-  border-top: 1px solid #e4e7ed;
-  background: #fff;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  font-size: 14px;
 }
 
-.connecting-hint {
-  text-align: center;
+/* === Input Bar === */
+.cr-input-bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 16px 24px 20px;
+  background: #ffffff;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.cr-input-wrap {
+  flex: 1;
+  background: #f1f5f9;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 16px;
   padding: 4px;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.cr-input-wrap:focus-within {
+  background: #ffffff;
+  border-color: rgba(37, 99, 235, 0.3);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
+}
+
+.cr-input-wrap textarea {
+  width: 100%;
+  background: none;
+  border: none;
+  outline: none;
+  resize: none;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-family: 'Inter', 'PingFang SC', system-ui, sans-serif;
+  color: #1e293b;
+  line-height: 1.5;
+  min-height: 24px;
+  max-height: 120px;
+}
+.cr-input-wrap textarea::placeholder {
+  color: #94a3b8;
+}
+.cr-input-wrap textarea:disabled {
+  opacity: 0.5;
+}
+
+/* === Send Button === */
+.cr-send-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  border: none;
+  background: #2563eb;
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+}
+.cr-send-btn:hover:not(:disabled) {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+.cr-send-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+.cr-send-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* === Connecting === */
+.cr-connecting {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px;
   font-size: 12px;
-  color: #e6a23c;
-  background: #fdf6ec;
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.06);
+  border-top: 1px solid rgba(245, 158, 11, 0.1);
+}
+
+.cr-dot-pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #f59e0b;
+  animation: crPulse 1.2s ease-in-out infinite;
+}
+@keyframes crPulse {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+/* Scrollbar */
+.cr-messages::-webkit-scrollbar {
+  width: 5px;
+}
+.cr-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+.cr-messages::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+.cr-messages::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 </style>
