@@ -10,13 +10,13 @@ import javax.sql.DataSource;
 @Configuration
 public class DruidDataSourceConfig {
 
-    @Value("${DB_URL:jdbc:mariadb://localhost:3366/zhixun_erp?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai}")
+    @Value("${DB_URL:jdbc:mariadb://localhost:3306/zhixun_erp?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai}")
     private String url;
 
     @Value("${DB_USERNAME:root}")
     private String username;
 
-    @Value("${DB_PASSWORD:fzq666}")
+    @Value("${DB_PASSWORD:123456}")
     private String password;
 
     @Bean

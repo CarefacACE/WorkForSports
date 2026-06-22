@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router';
 import LoginView from '../views/LoginView.vue';
 import AdminLayout from '../layouts/AdminLayout.vue';
 import WorkbenchView from '../views/WorkbenchView.vue';
+import FileView from '../views/FileView.vue';
+import CsvAnalysisView from '../views/CsvAnalysisView.vue';
 import CoachView from '../views/CoachView.vue';
 import MemberView from '../views/MemberView.vue';
 import MemberBalanceView from '../views/MemberBalanceView.vue';
@@ -10,6 +12,7 @@ import WalletView from '../views/WalletView.vue';
 import PublicCourseView from '../views/member/PublicCourseView.vue';
 import PrivateCourseView from '../views/member/PrivateCourseView.vue';
 import MyCoursesView from '../views/member/MyCoursesView.vue';
+import MemberProfileView from '../views/member/MemberProfileView.vue';
 import CoachPublicCourseView from '../views/coach/CoachPublicCourseView.vue';
 import CoachPrivateCourseView from '../views/coach/CoachPrivateCourseView.vue';
 import CoachMyCoursesView from '../views/coach/CoachMyCoursesView.vue';
@@ -43,6 +46,16 @@ const router = createRouter({
           path: 'workbench',
           name: 'workbench',
           component: WorkbenchView,
+        },
+        {
+          path: 'files',
+          name: 'files',
+          component: FileView,
+        },
+        {
+          path: 'csv-analysis',
+          name: 'csv-analysis',
+          component: CsvAnalysisView,
         },
         {
           path: 'coaches',
@@ -109,6 +122,11 @@ const router = createRouter({
           path: 'my-courses',
           name: 'member-my-courses',
           component: MyCoursesView,
+        },
+        {
+          path: 'profile',
+          name: 'member-profile',
+          component: MemberProfileView,
         },
         {
           path: 'chat-group',

@@ -14,6 +14,14 @@
           <el-icon><Monitor /></el-icon>
           <span>工作栏</span>
         </el-menu-item>
+        <el-menu-item index="/dashboard/files">
+          <el-icon><Folder /></el-icon>
+          <span>文件管理</span>
+        </el-menu-item>
+        <el-menu-item index="/dashboard/csv-analysis">
+          <el-icon><DataAnalysis /></el-icon>
+          <span>CSV分析</span>
+        </el-menu-item>
         <el-sub-menu v-if="user?.role === 'ADMIN'" index="user-manage">
           <template #title>
             <el-icon><User /></el-icon>
@@ -57,6 +65,7 @@
           </template>
           <el-menu-item index="/dashboard/wallet">钱包</el-menu-item>
           <el-menu-item v-if="user?.role === 'MEMBER'" index="/member/my-courses">我的课程</el-menu-item>
+          <el-menu-item v-if="user?.role === 'MEMBER'" index="/member/profile">个人信息</el-menu-item>
           <el-menu-item v-if="user?.role === 'COACH'" index="/coach/my-courses">我的课程</el-menu-item>
           <el-menu-item v-if="user?.role === 'COACH'" index="/coach/my-students">我的学员</el-menu-item>
         </el-sub-menu>
@@ -203,7 +212,7 @@
 import { computed, reactive, ref } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
-import { Monitor, User, Reading, Setting, ChatDotRound, ArrowDown } from '@element-plus/icons-vue';
+import { Monitor, Folder, DataAnalysis, User, Reading, Setting, ChatDotRound, ArrowDown } from '@element-plus/icons-vue';
 import { changePassword, getProfile, updateProfile, type UserProfile } from '../api/auth';
 import { useUserStore } from '../stores/user';
 import MessageDropdown from '../components/MessageDropdown.vue';
