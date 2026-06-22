@@ -19,6 +19,13 @@ service.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
 
+    try {
+      const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
+      if (userInfo.id) config.headers['X-User-Id'] = String(userInfo.id);
+      if (userInfo.username) config.headers['X-Username'] = userInfo.username;
+      if (userInfo.role) config.headers['X-Role'] = userInfo.role;
+    } catch {}
+
     return config;
   },
   (error: AxiosError) => Promise.reject(error),
@@ -50,8 +57,11 @@ const request = {
   post<T = unknown>(url: string, data?: unknown): Promise<T> {
     return service.post(url, data);
   },
-  delete<T = unknown>(url: string): Promise<T> {
-    return service.delete(url);
+  put<T = unknown>(url: string, data?: unknown): Promise<T> {
+    return service.put(url, data);
+  },
+  delete<T = unknown>(url: string, data?: unknown): Promise<T> {
+    return service.delete(url, { data });
   },
 };
 
