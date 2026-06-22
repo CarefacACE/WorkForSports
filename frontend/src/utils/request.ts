@@ -50,6 +50,9 @@ const request = {
   post<T = unknown>(url: string, data?: unknown): Promise<T> {
     return service.post(url, data);
   },
+  delete<T = unknown>(url: string): Promise<T> {
+    return service.delete(url);
+  },
 };
 
 export default request;

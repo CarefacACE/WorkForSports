@@ -22,3 +22,15 @@ ALTER TABLE sys_user ADD COLUMN IF NOT EXISTS birthday VARCHAR(32);
 ALTER TABLE sys_user ADD COLUMN IF NOT EXISTS avatar VARCHAR(255);
 ALTER TABLE sys_user ADD COLUMN IF NOT EXISTS remark VARCHAR(500);
 ALTER TABLE sys_user ADD COLUMN IF NOT EXISTS update_time DATETIME;
+
+CREATE TABLE IF NOT EXISTS sys_file (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    original_name VARCHAR(255) NOT NULL,
+    stored_name VARCHAR(255) NOT NULL,
+    file_path VARCHAR(500) NOT NULL,
+    file_size BIGINT NOT NULL,
+    file_type VARCHAR(128),
+    upload_user_id BIGINT,
+    upload_username VARCHAR(64),
+    create_time DATETIME
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

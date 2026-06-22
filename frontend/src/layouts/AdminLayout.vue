@@ -14,6 +14,14 @@
           <el-icon><Monitor /></el-icon>
           <span>工作栏</span>
         </el-menu-item>
+        <el-menu-item index="/dashboard/files">
+          <el-icon><Folder /></el-icon>
+          <span>文件管理</span>
+        </el-menu-item>
+        <el-menu-item index="/dashboard/csv-analysis">
+          <el-icon><DataAnalysis /></el-icon>
+          <span>CSV分析</span>
+        </el-menu-item>
       </el-menu>
     </el-aside>
 
@@ -127,7 +135,7 @@
 import { computed, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
-import { Monitor } from '@element-plus/icons-vue';
+import { Monitor, Folder, DataAnalysis } from '@element-plus/icons-vue';
 import { changePassword, getProfile, updateProfile, type UserProfile } from '../api/auth';
 import { useUserStore } from '../stores/user';
 
