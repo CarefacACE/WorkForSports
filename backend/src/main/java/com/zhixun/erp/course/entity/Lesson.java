@@ -23,6 +23,10 @@ public class Lesson {
 
     private Integer isTrial;
 
+    private String description;
+
+    private Integer duration;
+
     private LocalDateTime createTime;
 
     private LocalDateTime updateTime;
@@ -47,6 +51,12 @@ public class Lesson {
 
     public Integer getIsTrial() { return isTrial; }
     public void setIsTrial(Integer isTrial) { this.isTrial = isTrial; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+    public Integer getDuration() { return duration; }
+    public void setDuration(Integer duration) { this.duration = duration; }
 
     public LocalDateTime getCreateTime() { return createTime; }
     public void setCreateTime(LocalDateTime createTime) { this.createTime = createTime; }

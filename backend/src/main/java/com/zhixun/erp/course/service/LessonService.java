@@ -36,13 +36,15 @@ public class LessonService {
         lesson.setVideoUrl(request.getVideoUrl());
         lesson.setSortOrder(request.getSortOrder() == null ? 0 : request.getSortOrder());
         lesson.setIsTrial(request.getIsTrial() == null ? 0 : request.getIsTrial());
+        lesson.setDescription(request.getDescription());
+        lesson.setDuration(request.getDuration() != null ? request.getDuration() : 0);
         lesson.setCreateTime(LocalDateTime.now());
         lessonMapper.insert(lesson);
         return lesson;
     }
 
     @Transactional
-    public Lesson updateLesson(Long coachId, Long lessonId, String title, String videoUrl, Integer sortOrder, Integer isTrial) {
+    public Lesson updateLesson(Long coachId, Long lessonId, CreateLessonRequest request) {
         Lesson lesson = lessonMapper.selectById(lessonId);
         if (lesson == null) {
             throw new RuntimeException("课时不存在");
@@ -53,10 +55,12 @@ public class LessonService {
             throw new RuntimeException("只能修改自己课程的课时");
         }
 
-        if (title != null) lesson.setTitle(title);
-        if (videoUrl != null) lesson.setVideoUrl(videoUrl);
-        if (sortOrder != null) lesson.setSortOrder(sortOrder);
-        if (isTrial != null) lesson.setIsTrial(isTrial);
+        if (request.getTitle() != null) lesson.setTitle(request.getTitle());
+        if (request.getVideoUrl() != null) lesson.setVideoUrl(request.getVideoUrl());
+        if (request.getSortOrder() != null) lesson.setSortOrder(request.getSortOrder());
+        if (request.getIsTrial() != null) lesson.setIsTrial(request.getIsTrial());
+        if (request.getDescription() != null) lesson.setDescription(request.getDescription());
+        if (request.getDuration() != null) lesson.setDuration(request.getDuration());
         lesson.setUpdateTime(LocalDateTime.now());
         lessonMapper.updateById(lesson);
         return lesson;

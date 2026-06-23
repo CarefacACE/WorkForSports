@@ -1,20 +1,397 @@
-.workbench-page {
+/* ============================================
+   WORKBENCH DASHBOARD — Glassmorphism
+   ============================================ */
+
+.wb-page {
   min-height: calc(100vh - 124px);
+  padding-bottom: 32px;
 }
 
-.empty-card {
-  min-height: 280px;
-  border: 1px dashed #cbd5e1;
-  border-radius: 18px;
-  background: #fff;
+/* === Welcome Bar === */
+.wb-welcome {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
 }
-
-.empty-card h2 {
-  margin: 0 0 10px;
-  color: #111827;
+.wb-greeting {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 4px;
+  letter-spacing: 0.2px;
 }
-
-.empty-card p {
+.wb-greeting-sub {
+  font-size: 14px;
+  color: #94a3b8;
   margin: 0;
-  color: #64748b;
 }
+.wb-date-badge {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  padding: 10px 20px;
+}
+.wb-date-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 500;
+  color: #475569;
+  letter-spacing: 0.5px;
+}
+
+/* === Stat Cards === */
+.wb-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.wb-stat-card {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(16px) saturate(1.6);
+  -webkit-backdrop-filter: blur(16px) saturate(1.6);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 16px;
+  padding: 22px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.wb-stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+.wb-stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.wb-stat-icon .el-icon {
+  font-size: 22px;
+  color: #2563eb;
+}
+.wb-stat-info {
+  display: flex;
+  flex-direction: column;
+}
+.wb-stat-value {
+  font-size: 28px;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1;
+  letter-spacing: -0.5px;
+}
+.wb-stat-label {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+/* === Grid Layout === */
+.wb-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+/* === Section === */
+.wb-section {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(16px) saturate(1.6);
+  -webkit-backdrop-filter: blur(16px) saturate(1.6);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 0;
+}
+.wb-section-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 18px;
+  letter-spacing: 0.2px;
+}
+
+/* === Quick Links === */
+.wb-quick-links {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.wb-quick-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  background: rgba(248, 250, 252, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  text-decoration: none;
+}
+.wb-quick-link:hover {
+  background: #ffffff;
+  border-color: rgba(37, 99, 235, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+.wb-ql-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+.wb-ql-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: #475569;
+}
+
+/* === Course List === */
+.wb-course-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.wb-course-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: rgba(248, 250, 252, 0.6);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.wb-course-item:hover {
+  background: #ffffff;
+  border-color: rgba(37, 99, 235, 0.1);
+}
+.wb-course-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+}
+.wb-course-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.wb-course-price {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2563eb;
+}
+
+/* === Schedule List === */
+.wb-schedule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.wb-schedule-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  background: rgba(248, 250, 252, 0.6);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+.wb-schedule-item:hover {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.06);
+}
+.wb-sch-time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  color: #2563eb;
+  background: rgba(37, 99, 235, 0.06);
+  padding: 4px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+}
+.wb-sch-info {
+  flex: 1;
+  min-width: 0;
+}
+.wb-sch-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.wb-sch-loc {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+/* === Log List (Admin) === */
+.wb-log-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.wb-log-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: rgba(248, 250, 252, 0.6);
+  border-radius: 8px;
+  font-size: 13px;
+}
+.wb-log-user {
+  font-weight: 600;
+  color: #1e293b;
+  min-width: 60px;
+}
+.wb-log-op {
+  color: #475569;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.wb-log-time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+/* === Empty state === */
+.wb-section .el-empty {
+  padding: 16px 0;
+}
+.wb-section .el-empty__description p {
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+/* === Responsive === */
+@media (max-width: 1100px) {
+  .wb-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .wb-grid-2 {
+    grid-template-columns: 1fr;
+  }
+  .wb-quick-links {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .wb-stats {
+    grid-template-columns: 1fr;
+  }
+  .wb-quick-links {
+    grid-template-columns: 1fr;
+  }
+  .wb-welcome {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}
+
+/* ============================================
+   DARK THEME — Workbench (Layered)
+   L0: #0b0d14  L1: #12141d  L2: #1a1c28
+   L3: #222536  L4: #2a2d42
+   ============================================ */
+[data-admin-theme="dark"] .wb-greeting { color: #f0f0f5; }
+[data-admin-theme="dark"] .wb-greeting-sub { color: #6b7084; }
+[data-admin-theme="dark"] .wb-date-badge {
+  background: #1a1c28;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+[data-admin-theme="dark"] .wb-date-text { color: #7a7f96; }
+
+/* Stat Cards (Level 2) */
+[data-admin-theme="dark"] .wb-stat-card {
+  background: #1a1c28;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+[data-admin-theme="dark"] .wb-stat-card:hover {
+  background: #222536;
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+[data-admin-theme="dark"] .wb-stat-icon .el-icon { color: #818cf8; }
+[data-admin-theme="dark"] .wb-stat-value { color: #f0f0f5; }
+[data-admin-theme="dark"] .wb-stat-label { color: #6b7084; }
+
+/* Sections (Level 2) */
+[data-admin-theme="dark"] .wb-section {
+  background: #1a1c28;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+[data-admin-theme="dark"] .wb-section-title { color: #f0f0f5; }
+
+/* Quick Links (Level 3) */
+[data-admin-theme="dark"] .wb-quick-link {
+  background: #222536;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+[data-admin-theme="dark"] .wb-quick-link:hover {
+  background: #2a2d42;
+  border-color: rgba(91, 124, 247, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+[data-admin-theme="dark"] .wb-ql-text { color: #b0b4c0; }
+
+/* Course Items (Level 3) */
+[data-admin-theme="dark"] .wb-course-item {
+  background: #222536;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+[data-admin-theme="dark"] .wb-course-item:hover {
+  background: #2a2d42;
+  border-color: rgba(91, 124, 247, 0.2);
+}
+[data-admin-theme="dark"] .wb-course-name { color: #e8eaed; }
+[data-admin-theme="dark"] .wb-course-price { color: #818cf8; }
+
+/* Schedule Items (Level 3) */
+[data-admin-theme="dark"] .wb-schedule-item {
+  background: #222536;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+[data-admin-theme="dark"] .wb-schedule-item:hover {
+  background: #2a2d42;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+[data-admin-theme="dark"] .wb-sch-time {
+  color: #818cf8;
+  background: rgba(91, 124, 247, 0.12);
+}
+[data-admin-theme="dark"] .wb-sch-title { color: #e8eaed; }
+[data-admin-theme="dark"] .wb-sch-loc { color: #6b7084; }
+
+/* Log Items (Level 3) */
+[data-admin-theme="dark"] .wb-log-item { background: #222536; }
+[data-admin-theme="dark"] .wb-log-user { color: #e8eaed; }
+[data-admin-theme="dark"] .wb-log-op { color: #9a9eb5; }
+[data-admin-theme="dark"] .wb-log-time { color: #4a4e63; }
+
+[data-admin-theme="dark"] .wb-section .el-empty__description p { color: #4a4e63; }

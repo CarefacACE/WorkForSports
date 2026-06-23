@@ -8,6 +8,16 @@ export interface Course {
   type: 'PUBLIC' | 'PRIVATE';
   price: number;
   coverImage: string;
+  category: string;
+  difficulty: string;
+  maxStudents: number;
+  location: string;
+  startDate: string;
+  tags: string;
+  totalLessons: number;
+  frequency: string;
+  scheduleMode: string;
+  defaultTimeSlot: string;
   status: string;
   createTime: string;
 }
@@ -18,6 +28,16 @@ export interface CreateCourseParams {
   type: 'PUBLIC' | 'PRIVATE';
   price?: number;
   coverImage?: string;
+  category?: string;
+  difficulty?: string;
+  maxStudents?: number;
+  location?: string;
+  startDate?: string;
+  tags?: string;
+  totalLessons?: number;
+  frequency?: string;
+  scheduleMode?: string;
+  defaultTimeSlot?: string;
 }
 
 export interface UpdateCourseParams {
@@ -25,6 +45,16 @@ export interface UpdateCourseParams {
   name?: string;
   description?: string;
   coverImage?: string;
+  category?: string;
+  difficulty?: string;
+  maxStudents?: number;
+  location?: string;
+  startDate?: string;
+  tags?: string;
+  totalLessons?: number;
+  frequency?: string;
+  scheduleMode?: string;
+  defaultTimeSlot?: string;
 }
 
 export interface CoursePage {

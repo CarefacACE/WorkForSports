@@ -41,6 +41,18 @@ public class CourseService {
         course.setType(request.getType());
         course.setPrice(request.getPrice() == null ? BigDecimal.ZERO : request.getPrice());
         course.setCoverImage(request.getCoverImage());
+        course.setCategory(request.getCategory() != null ? request.getCategory() : "OTHER");
+        course.setDifficulty(request.getDifficulty() != null ? request.getDifficulty() : "BEGINNER");
+        course.setMaxStudents(request.getMaxStudents() != null ? request.getMaxStudents() : 0);
+        course.setLocation(request.getLocation());
+        if (request.getStartDate() != null && !request.getStartDate().isEmpty()) {
+            course.setStartDate(java.time.LocalDate.parse(request.getStartDate()));
+        }
+        course.setTags(request.getTags());
+        course.setTotalLessons(request.getTotalLessons() != null ? request.getTotalLessons() : 0);
+        course.setFrequency(request.getFrequency());
+        course.setScheduleMode(request.getScheduleMode() != null ? request.getScheduleMode() : "MANUAL");
+        course.setDefaultTimeSlot(request.getDefaultTimeSlot());
         course.setStatus("ACTIVE");
         course.setCreateTime(LocalDateTime.now());
         courseMapper.insert(course);
@@ -65,6 +77,36 @@ public class CourseService {
         }
         if (request.getCoverImage() != null) {
             course.setCoverImage(request.getCoverImage());
+        }
+        if (request.getCategory() != null) {
+            course.setCategory(request.getCategory());
+        }
+        if (request.getDifficulty() != null) {
+            course.setDifficulty(request.getDifficulty());
+        }
+        if (request.getMaxStudents() != null) {
+            course.setMaxStudents(request.getMaxStudents());
+        }
+        if (request.getLocation() != null) {
+            course.setLocation(request.getLocation());
+        }
+        if (request.getStartDate() != null && !request.getStartDate().isEmpty()) {
+            course.setStartDate(java.time.LocalDate.parse(request.getStartDate()));
+        }
+        if (request.getTags() != null) {
+            course.setTags(request.getTags());
+        }
+        if (request.getTotalLessons() != null) {
+            course.setTotalLessons(request.getTotalLessons());
+        }
+        if (request.getFrequency() != null) {
+            course.setFrequency(request.getFrequency());
+        }
+        if (request.getScheduleMode() != null) {
+            course.setScheduleMode(request.getScheduleMode());
+        }
+        if (request.getDefaultTimeSlot() != null) {
+            course.setDefaultTimeSlot(request.getDefaultTimeSlot());
         }
         course.setUpdateTime(LocalDateTime.now());
         courseMapper.updateById(course);
