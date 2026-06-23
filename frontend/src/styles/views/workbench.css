@@ -313,3 +313,85 @@
     gap: 12px;
   }
 }
+
+/* ============================================
+   DARK THEME — Workbench (Layered)
+   L0: #0b0d14  L1: #12141d  L2: #1a1c28
+   L3: #222536  L4: #2a2d42
+   ============================================ */
+[data-admin-theme="dark"] .wb-greeting { color: #f0f0f5; }
+[data-admin-theme="dark"] .wb-greeting-sub { color: #6b7084; }
+[data-admin-theme="dark"] .wb-date-badge {
+  background: #1a1c28;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+[data-admin-theme="dark"] .wb-date-text { color: #7a7f96; }
+
+/* Stat Cards (Level 2) */
+[data-admin-theme="dark"] .wb-stat-card {
+  background: #1a1c28;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+[data-admin-theme="dark"] .wb-stat-card:hover {
+  background: #222536;
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+[data-admin-theme="dark"] .wb-stat-icon .el-icon { color: #818cf8; }
+[data-admin-theme="dark"] .wb-stat-value { color: #f0f0f5; }
+[data-admin-theme="dark"] .wb-stat-label { color: #6b7084; }
+
+/* Sections (Level 2) */
+[data-admin-theme="dark"] .wb-section {
+  background: #1a1c28;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+[data-admin-theme="dark"] .wb-section-title { color: #f0f0f5; }
+
+/* Quick Links (Level 3) */
+[data-admin-theme="dark"] .wb-quick-link {
+  background: #222536;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+[data-admin-theme="dark"] .wb-quick-link:hover {
+  background: #2a2d42;
+  border-color: rgba(91, 124, 247, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+[data-admin-theme="dark"] .wb-ql-text { color: #b0b4c0; }
+
+/* Course Items (Level 3) */
+[data-admin-theme="dark"] .wb-course-item {
+  background: #222536;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+[data-admin-theme="dark"] .wb-course-item:hover {
+  background: #2a2d42;
+  border-color: rgba(91, 124, 247, 0.2);
+}
+[data-admin-theme="dark"] .wb-course-name { color: #e8eaed; }
+[data-admin-theme="dark"] .wb-course-price { color: #818cf8; }
+
+/* Schedule Items (Level 3) */
+[data-admin-theme="dark"] .wb-schedule-item {
+  background: #222536;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+[data-admin-theme="dark"] .wb-schedule-item:hover {
+  background: #2a2d42;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+[data-admin-theme="dark"] .wb-sch-time {
+  color: #818cf8;
+  background: rgba(91, 124, 247, 0.12);
+}
+[data-admin-theme="dark"] .wb-sch-title { color: #e8eaed; }
+[data-admin-theme="dark"] .wb-sch-loc { color: #6b7084; }
+
+/* Log Items (Level 3) */
+[data-admin-theme="dark"] .wb-log-item { background: #222536; }
+[data-admin-theme="dark"] .wb-log-user { color: #e8eaed; }
+[data-admin-theme="dark"] .wb-log-op { color: #9a9eb5; }
+[data-admin-theme="dark"] .wb-log-time { color: #4a4e63; }
+
+[data-admin-theme="dark"] .wb-section .el-empty__description p { color: #4a4e63; }

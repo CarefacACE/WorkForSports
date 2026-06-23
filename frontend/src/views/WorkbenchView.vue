@@ -168,6 +168,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, markRaw, type Component } from 'vue';
+import { gsap } from 'gsap';
 import { useUserStore } from '../stores/user';
 import { getUsers } from '../api/user';
 import { getLogs, type LogItem } from '../api/log';
@@ -378,6 +379,51 @@ onMounted(() => {
   if (user.value.role === 'ADMIN') loadAdminData();
   else if (user.value.role === 'COACH') loadCoachData();
   else loadMemberData();
+
+  /* ─── GSAP Entrance Animations ─── */
+  const tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
+
+  // Welcome bar
+  tl.fromTo('.wb-welcome',
+    { autoAlpha: 0, y: -12 },
+    { autoAlpha: 1, y: 0, duration: 0.5 },
+    0.05
+  );
+
+  // Stats cards — stagger from bottom
+  tl.fromTo('.wb-stat-card',
+    { autoAlpha: 0, y: 20, scale: 0.96 },
+    { autoAlpha: 1, y: 0, scale: 1, stagger: 0.08, duration: 0.5 },
+    0.15
+  );
+
+  // Section titles
+  tl.fromTo('.wb-section-title',
+    { autoAlpha: 0, x: -12 },
+    { autoAlpha: 1, x: 0, stagger: 0.06, duration: 0.4 },
+    0.3
+  );
+
+  // Section panels
+  tl.fromTo('.wb-section',
+    { autoAlpha: 0, y: 16 },
+    { autoAlpha: 1, y: 0, stagger: 0.1, duration: 0.5 },
+    0.35
+  );
+
+  // Quick links
+  tl.fromTo('.wb-quick-link',
+    { autoAlpha: 0, y: 10, scale: 0.9 },
+    { autoAlpha: 1, y: 0, scale: 1, stagger: 0.05, duration: 0.4 },
+    0.5
+  );
+
+  // Log items / course items
+  tl.fromTo('.wb-log-item, .wb-course-item, .wb-schedule-item',
+    { autoAlpha: 0, x: -10 },
+    { autoAlpha: 1, x: 0, stagger: 0.04, duration: 0.35 },
+    0.55
+  );
 });
 </script>
 

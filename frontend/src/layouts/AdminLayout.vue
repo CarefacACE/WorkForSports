@@ -85,6 +85,17 @@
           <el-menu-item v-if="user?.role === 'COACH'" index="/coach/chat-requests">申请管理</el-menu-item>
         </el-sub-menu>
       </el-menu>
+
+      <!-- Theme Toggle -->
+      <div class="theme-toggle-area">
+        <span class="theme-label">{{ themeStore.theme === 'dark' ? '夜间模式' : '日间模式' }}</span>
+        <button class="theme-switch" :class="{ active: themeStore.theme === 'dark' }" @click="themeStore.toggle()">
+          <span class="theme-switch-thumb">
+            <svg v-if="themeStore.theme === 'light'" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+            <svg v-else viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+          </span>
+        </button>
+      </div>
     </el-aside>
 
     <el-container>
@@ -212,18 +223,21 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue';
+import { computed, reactive, ref, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { Monitor, Folder, DataAnalysis, User, Reading, Setting, ChatDotRound, ArrowDown } from '@element-plus/icons-vue';
+import { gsap } from 'gsap';
 import { changePassword, getProfile, updateProfile, type UserProfile } from '../api/auth';
 import { useUserStore } from '../stores/user';
+import { useAdminThemeStore } from '../stores/adminTheme';
 import MessageDropdown from '../components/MessageDropdown.vue';
 import NotificationDropdown from '../components/NotificationDropdown.vue';
 
 const router = useRouter();
 const route = useRoute();
 const userStore = useUserStore();
+const themeStore = useAdminThemeStore();
 const user = computed(() => userStore.user);
 const passwordDialogVisible = ref(false);
 const passwordLoading = ref(false);
@@ -372,6 +386,47 @@ async function submitChangePassword() {
     passwordLoading.value = false;
   }
 }
+
+/* ─── GSAP Animations ─── */
+onMounted(() => {
+  // Sidebar entrance — slide from left
+  gsap.fromTo('.sidebar',
+    { autoAlpha: 0, x: -30 },
+    { autoAlpha: 1, x: 0, duration: 0.6, ease: 'power2.out' }
+  );
+
+  // Logo entrance
+  gsap.fromTo('.logo-area',
+    { autoAlpha: 0, y: -10 },
+    { autoAlpha: 1, y: 0, duration: 0.5, ease: 'power2.out', delay: 0.15 }
+  );
+
+  // Menu items stagger
+  gsap.fromTo('.side-menu .el-menu-item, .side-menu .el-sub-menu',
+    { autoAlpha: 0, x: -16 },
+    { autoAlpha: 1, x: 0, stagger: 0.04, duration: 0.4, ease: 'power2.out', delay: 0.25 }
+  );
+
+  // Topbar slide down
+  gsap.fromTo('.topbar',
+    { autoAlpha: 0, y: -20 },
+    { autoAlpha: 1, y: 0, duration: 0.5, ease: 'power2.out', delay: 0.1 }
+  );
+
+  // Main content fade in
+  gsap.fromTo('.main-content',
+    { autoAlpha: 0, y: 12 },
+    { autoAlpha: 1, y: 0, duration: 0.5, ease: 'power2.out', delay: 0.3 }
+  );
+});
+
+// Route change — animate page content transition
+watch(() => route.path, () => {
+  gsap.fromTo('.main-content',
+    { autoAlpha: 0, y: 8 },
+    { autoAlpha: 1, y: 0, duration: 0.35, ease: 'power2.out' }
+  );
+});
 </script>
 
 <style src="../styles/layouts/admin-layout.css"></style>
