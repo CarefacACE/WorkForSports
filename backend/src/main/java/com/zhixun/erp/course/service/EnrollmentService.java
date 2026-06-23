@@ -3,6 +3,7 @@ package com.zhixun.erp.course.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.zhixun.erp.checkin.service.CheckInService;
 import com.zhixun.erp.course.entity.Course;
 import com.zhixun.erp.course.entity.Enrollment;
 import com.zhixun.erp.course.mapper.CourseMapper;
@@ -13,6 +14,8 @@ import com.zhixun.erp.chat.entity.ChatConversation;
 import com.zhixun.erp.chat.service.ChatService;
 import com.zhixun.erp.chat.service.FriendService;
 import com.zhixun.erp.chat.service.NotificationService;
+import com.zhixun.erp.schedule.entity.CourseSchedule;
+import com.zhixun.erp.schedule.mapper.CourseScheduleMapper;
 import com.zhixun.erp.user.entity.User;
 import com.zhixun.erp.user.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +37,8 @@ public class EnrollmentService {
     private final ChatService chatService;
     private final FriendService friendService;
     private final NotificationService notificationService;
+    private final CheckInService checkInService;
+    private final CourseScheduleMapper courseScheduleMapper;
 
     @Transactional
     public Enrollment enroll(Long userId, Long courseId) {
@@ -272,6 +277,15 @@ public class EnrollmentService {
                     "你好，我是课程「" + course.getName() + "」的教练，希望能加你为好友！");
         } catch (Exception ignored) {
             // 已是好友或已发送过申请，忽略异常
+        }
+
+        // 为已报名学员生成已有排课的签到记录
+        List<CourseSchedule> schedules = courseScheduleMapper.selectList(
+                new LambdaQueryWrapper<CourseSchedule>()
+                        .eq(CourseSchedule::getCourseId, course.getId())
+                        .gt(CourseSchedule::getEndTime, LocalDateTime.now()));
+        for (CourseSchedule schedule : schedules) {
+            checkInService.generatePendingRecords(schedule.getId());
         }
     }
 }

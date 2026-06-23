@@ -1,0 +1,187 @@
+package com.zhixun.erp.checkin.service;
+
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.zhixun.erp.checkin.entity.CheckInRecord;
+import com.zhixun.erp.checkin.mapper.CheckInRecordMapper;
+import com.zhixun.erp.course.entity.Enrollment;
+import com.zhixun.erp.course.mapper.EnrollmentMapper;
+import com.zhixun.erp.schedule.entity.CourseSchedule;
+import com.zhixun.erp.schedule.mapper.CourseScheduleMapper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Service
+@RequiredArgsConstructor
+public class CheckInService {
+
+    private final CheckInRecordMapper checkInRecordMapper;
+    private final CourseScheduleMapper scheduleMapper;
+    private final EnrollmentMapper enrollmentMapper;
+
+    private static final int CHECK_IN_WINDOW_MINUTES = 30;
+
+    @Transactional
+    public CheckInRecord checkIn(Long scheduleId, Long userId, String role) {
+        CourseSchedule schedule = scheduleMapper.selectById(scheduleId);
+        if (schedule == null) {
+            throw new RuntimeException("排课记录不存在");
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime windowStart = schedule.getStartTime().minusMinutes(CHECK_IN_WINDOW_MINUTES);
+        LocalDateTime windowEnd = schedule.getEndTime();
+
+        if (now.isBefore(windowStart)) {
+            throw new RuntimeException("签到未开始，签到时间为课程开始前" + CHECK_IN_WINDOW_MINUTES + "分钟");
+        }
+        if (now.isAfter(windowEnd)) {
+            throw new RuntimeException("课程已结束，无法签到");
+        }
+
+        CheckInRecord existing = checkInRecordMapper.selectOne(
+                new LambdaQueryWrapper<CheckInRecord>()
+                        .eq(CheckInRecord::getScheduleId, scheduleId)
+                        .eq(CheckInRecord::getUserId, userId)
+                        .eq(CheckInRecord::getRole, role));
+
+        if (existing != null && "SIGNED".equals(existing.getStatus())) {
+            throw new RuntimeException("已签到，请勿重复签到");
+        }
+
+        if (existing != null) {
+            existing.setStatus("SIGNED");
+            existing.setCheckInTime(now);
+            existing.setUpdateTime(now);
+            checkInRecordMapper.updateById(existing);
+            return existing;
+        }
+
+        CheckInRecord record = new CheckInRecord();
+        record.setScheduleId(scheduleId);
+        record.setUserId(userId);
+        record.setRole(role);
+        record.setCheckInTime(now);
+        record.setStatus("SIGNED");
+        record.setCreateTime(now);
+        checkInRecordMapper.insert(record);
+        return record;
+    }
+
+    public CheckInRecord getCheckInStatus(Long scheduleId, Long userId, String role) {
+        return checkInRecordMapper.selectOne(
+                new LambdaQueryWrapper<CheckInRecord>()
+                        .eq(CheckInRecord::getScheduleId, scheduleId)
+                        .eq(CheckInRecord::getUserId, userId)
+                        .eq(CheckInRecord::getRole, role));
+    }
+
+    public List<CheckInRecord> getScheduleCheckIns(Long scheduleId) {
+        return checkInRecordMapper.selectList(
+                new LambdaQueryWrapper<CheckInRecord>()
+                        .eq(CheckInRecord::getScheduleId, scheduleId)
+                        .orderByAsc(CheckInRecord::getRole)
+                        .orderByAsc(CheckInRecord::getUserId));
+    }
+
+    public List<CheckInRecord> getUserCheckInHistory(Long userId, String role, LocalDateTime from, LocalDateTime to) {
+        LambdaQueryWrapper<CheckInRecord> wrapper = new LambdaQueryWrapper<CheckInRecord>()
+                .eq(CheckInRecord::getUserId, userId)
+                .eq(CheckInRecord::getRole, role);
+        if (from != null) wrapper.ge(CheckInRecord::getCreateTime, from);
+        if (to != null) wrapper.le(CheckInRecord::getCreateTime, to);
+        wrapper.orderByDesc(CheckInRecord::getCreateTime);
+        return checkInRecordMapper.selectList(wrapper);
+    }
+
+    public Map<String, Object> getCheckInStats(Long userId, String role) {
+        List<CheckInRecord> records = checkInRecordMapper.selectList(
+                new LambdaQueryWrapper<CheckInRecord>()
+                        .eq(CheckInRecord::getUserId, userId)
+                        .eq(CheckInRecord::getRole, role));
+
+        long totalRecords = records.size();
+        long signedCount = records.stream().filter(r -> "SIGNED".equals(r.getStatus())).count();
+        long absentCount = records.stream().filter(r -> "ABSENT".equals(r.getStatus())).count();
+        long pendingCount = records.stream().filter(r -> "PENDING".equals(r.getStatus())).count();
+        double checkInRate = totalRecords > 0 ? (double) signedCount / totalRecords * 100 : 0;
+
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("totalRecords", totalRecords);
+        stats.put("signedCount", signedCount);
+        stats.put("absentCount", absentCount);
+        stats.put("pendingCount", pendingCount);
+        stats.put("checkInRate", Math.round(checkInRate * 10.0) / 10.0);
+        return stats;
+    }
+
+    @Transactional
+    public void generatePendingRecords(Long scheduleId) {
+        CourseSchedule schedule = scheduleMapper.selectById(scheduleId);
+        if (schedule == null) return;
+
+        CheckInRecord coachRecord = checkInRecordMapper.selectOne(
+                new LambdaQueryWrapper<CheckInRecord>()
+                        .eq(CheckInRecord::getScheduleId, scheduleId)
+                        .eq(CheckInRecord::getUserId, schedule.getCoachId())
+                        .eq(CheckInRecord::getRole, "COACH"));
+        if (coachRecord == null) {
+            CheckInRecord record = new CheckInRecord();
+            record.setScheduleId(scheduleId);
+            record.setUserId(schedule.getCoachId());
+            record.setRole("COACH");
+            record.setStatus("PENDING");
+            record.setCreateTime(LocalDateTime.now());
+            checkInRecordMapper.insert(record);
+        }
+
+        List<Enrollment> enrollments = enrollmentMapper.selectList(
+                new LambdaQueryWrapper<Enrollment>()
+                        .eq(Enrollment::getCourseId, schedule.getCourseId())
+                        .in(Enrollment::getStatus, "PAID", "CONFIRMED"));
+
+        for (Enrollment enrollment : enrollments) {
+            CheckInRecord existing = checkInRecordMapper.selectOne(
+                    new LambdaQueryWrapper<CheckInRecord>()
+                            .eq(CheckInRecord::getScheduleId, scheduleId)
+                            .eq(CheckInRecord::getUserId, enrollment.getUserId())
+                            .eq(CheckInRecord::getRole, "MEMBER"));
+            if (existing == null) {
+                CheckInRecord record = new CheckInRecord();
+                record.setScheduleId(scheduleId);
+                record.setUserId(enrollment.getUserId());
+                record.setRole("MEMBER");
+                record.setStatus("PENDING");
+                record.setCreateTime(LocalDateTime.now());
+                checkInRecordMapper.insert(record);
+            }
+        }
+    }
+
+    @Scheduled(fixedRate = 300000)
+    @Transactional
+    public void markAbsent() {
+        List<CourseSchedule> endedSchedules = scheduleMapper.selectList(
+                new LambdaQueryWrapper<CourseSchedule>()
+                        .lt(CourseSchedule::getEndTime, LocalDateTime.now()));
+
+        for (CourseSchedule schedule : endedSchedules) {
+            List<CheckInRecord> pendingRecords = checkInRecordMapper.selectList(
+                    new LambdaQueryWrapper<CheckInRecord>()
+                            .eq(CheckInRecord::getScheduleId, schedule.getId())
+                            .eq(CheckInRecord::getStatus, "PENDING"));
+
+            for (CheckInRecord record : pendingRecords) {
+                record.setStatus("ABSENT");
+                record.setUpdateTime(LocalDateTime.now());
+                checkInRecordMapper.updateById(record);
+            }
+        }
+    }
+}

@@ -245,3 +245,17 @@ CREATE TABLE IF NOT EXISTS exercise_record (
     update_time DATETIME,
     deleted TINYINT DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS check_in_record (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    schedule_id BIGINT NOT NULL COMMENT '排课ID',
+    user_id BIGINT NOT NULL COMMENT '签到用户ID',
+    role VARCHAR(16) NOT NULL COMMENT '角色: COACH/MEMBER',
+    check_in_time DATETIME COMMENT '签到时间',
+    status VARCHAR(16) NOT NULL DEFAULT 'PENDING' COMMENT '状态: PENDING/SIGNED/ABSENT',
+    create_time DATETIME,
+    update_time DATETIME,
+    deleted TINYINT DEFAULT 0,
+    INDEX idx_schedule_user (schedule_id, user_id),
+    UNIQUE KEY uk_schedule_user_role (schedule_id, user_id, role)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

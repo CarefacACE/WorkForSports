@@ -21,6 +21,8 @@ import CoachMyStudentsView from '../views/coach/CoachMyStudentsView.vue';
 import CoachScheduleView from '../views/coach/CoachScheduleView.vue';
 import MemberScheduleView from '../views/member/MemberScheduleView.vue';
 import MemberExerciseView from '../views/member/MemberExerciseView.vue';
+import MemberCheckInView from '../views/member/MemberCheckInView.vue';
+import CoachCheckInView from '../views/coach/CoachCheckInView.vue';
 import LogView from '../views/LogView.vue';
 import SqlMonitorView from '../views/SqlMonitorView.vue';
 import SystemMonitorView from '../views/SystemMonitorView.vue';
@@ -144,6 +146,11 @@ const router = createRouter({
           component: MemberExerciseView,
         },
         {
+          path: 'checkin',
+          name: 'member-checkin',
+          component: MemberCheckInView,
+        },
+        {
           path: 'chat-group',
           name: 'member-chat-group',
           component: GroupChatView,
@@ -188,6 +195,11 @@ const router = createRouter({
           path: 'my-schedule',
           name: 'coach-my-schedule',
           component: CoachScheduleView,
+        },
+        {
+          path: 'checkin',
+          name: 'coach-checkin',
+          component: CoachCheckInView,
         },
         {
           path: 'chat-group',

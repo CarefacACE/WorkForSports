@@ -116,6 +116,21 @@
         <el-form-item label="上课地点">
           <el-input v-model="editForm.location" placeholder="可选" />
         </el-form-item>
+        <el-form-item label="我的签到状态">
+          <el-tag :type="coachCheckInStatus === 'SIGNED' ? 'success' : coachCheckInStatus === 'ABSENT' ? 'danger' : 'info'" size="large">
+            {{ coachCheckInStatus === 'SIGNED' ? '已签到' : coachCheckInStatus === 'ABSENT' ? '缺勤' : '待签到' }}
+          </el-tag>
+          <el-button v-if="coachCheckInStatus === 'PENDING'" type="primary" style="margin-left:12px" :loading="checkInLoading" @click="handleCoachCheckIn">签到</el-button>
+        </el-form-item>
+        <el-form-item v-if="scheduleCheckIns.length > 0" label="学员签到情况">
+          <div v-for="item in scheduleCheckIns" :key="item.id" class="checkin-item">
+            <span>用户{{ item.userId }}</span>
+            <el-tag :type="item.status === 'SIGNED' ? 'success' : item.status === 'ABSENT' ? 'danger' : 'info'" size="small" style="margin-left:8px">
+              {{ item.status === 'SIGNED' ? '已签到' : item.status === 'ABSENT' ? '缺勤' : '待签到' }}
+            </el-tag>
+            <span v-if="item.checkInTime" style="margin-left:8px;font-size:12px;color:#909399">{{ item.checkInTime.replace('T',' ').slice(11,16) }}</span>
+          </div>
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button type="danger" @click="handleDeleteEvent">删除排课</el-button>
@@ -132,6 +147,7 @@ import { ElMessage } from 'element-plus';
 import { Plus } from '@element-plus/icons-vue';
 import { getMyCourses, type Course } from '../../api/course';
 import { getCoachSchedules, createSchedule, updateSchedule, deleteSchedule, type ScheduleEvent } from '../../api/schedule';
+import { checkIn, getCheckInStatus, getScheduleCheckIns, type CheckInRecord } from '../../api/checkin';
 import { useUserStore } from '../../stores/user';
 
 const userStore = useUserStore();
@@ -283,6 +299,9 @@ async function handleAdd() {
 const editDialogVisible = ref(false);
 const editingEvent = ref<(ScheduleEvent & { _date: string; _slot: string }) | null>(null);
 const editForm = ref({ title: '', dateStr: '', timeRange: '', location: '' });
+const coachCheckInStatus = ref<string>('PENDING');
+const scheduleCheckIns = ref<CheckInRecord[]>([]);
+const checkInLoading = ref(false);
 
 function onEventClick(event: ScheduleEvent & { _date: string; _slot: string }) {
   editingEvent.value = event;
@@ -294,6 +313,37 @@ function onEventClick(event: ScheduleEvent & { _date: string; _slot: string }) {
     location: event.location || '',
   };
   editDialogVisible.value = true;
+  loadCheckInData(event.id!);
+}
+
+async function loadCheckInData(scheduleId: number) {
+  if (!coachId) return;
+  try {
+    const [status, checkIns] = await Promise.all([
+      getCheckInStatus(scheduleId, coachId, 'COACH'),
+      getScheduleCheckIns(scheduleId)
+    ]);
+    coachCheckInStatus.value = status?.status || 'PENDING';
+    scheduleCheckIns.value = checkIns.filter(item => item.role === 'MEMBER');
+  } catch {
+    coachCheckInStatus.value = 'PENDING';
+    scheduleCheckIns.value = [];
+  }
+}
+
+async function handleCoachCheckIn() {
+  if (!coachId || !editingEvent.value?.id) return;
+  checkInLoading.value = true;
+  try {
+    await checkIn(editingEvent.value.id, coachId, 'COACH');
+    ElMessage.success('签到成功');
+    coachCheckInStatus.value = 'SIGNED';
+    await loadCheckInData(editingEvent.value.id);
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '签到失败');
+  } finally {
+    checkInLoading.value = false;
+  }
 }
 
 async function handleEditEvent() {
@@ -486,4 +536,5 @@ onMounted(async () => {
 
 /* 弹窗中的课程选项 */
 .option-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.checkin-item { display: flex; align-items: center; padding: 4px 0; font-size: 13px; }
 </style>

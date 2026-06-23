@@ -1,6 +1,7 @@
 package com.zhixun.erp.schedule.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.zhixun.erp.checkin.service.CheckInService;
 import com.zhixun.erp.course.entity.Course;
 import com.zhixun.erp.course.mapper.CourseMapper;
 import com.zhixun.erp.schedule.entity.CourseSchedule;
@@ -22,6 +23,7 @@ public class CourseScheduleService {
 
     private final CourseScheduleMapper scheduleMapper;
     private final CourseMapper courseMapper;
+    private final CheckInService checkInService;
 
     private static final String[] TIME_SLOTS = {
             "08:00","09:00","10:00","11:00","12:00","13:00",
@@ -61,6 +63,7 @@ public class CourseScheduleService {
         input.setCoachId(coachId);
         input.setCreateTime(LocalDateTime.now());
         scheduleMapper.insert(input);
+        checkInService.generatePendingRecords(input.getId());
         return input;
     }
 
@@ -174,6 +177,7 @@ public class CourseScheduleService {
                 schedule.setColor(color);
                 schedule.setCreateTime(LocalDateTime.now());
                 scheduleMapper.insert(schedule);
+                checkInService.generatePendingRecords(schedule.getId());
                 generated.add(schedule);
                 count++;
             }

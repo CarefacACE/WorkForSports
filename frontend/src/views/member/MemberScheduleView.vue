@@ -31,7 +31,8 @@
                class="timetable-cell timetable-slot"
                :class="{ 'has-event': getEvent(day.date, slot.start) }">
             <div v-if="getEvent(day.date, slot.start)" class="event-block"
-                 :style="{ background: getEvent(day.date, slot.start)!.color || '#3056d3' }">
+                 :style="{ background: getEvent(day.date, slot.start)!.color || '#3056d3' }"
+                 @click="onEventClick(getEvent(day.date, slot.start)!)">
               <div class="event-title">{{ getEvent(day.date, slot.start)!.title }}</div>
               <div class="event-location" v-if="getEvent(day.date, slot.start)!.location">{{ getEvent(day.date, slot.start)!.location }}</div>
             </div>
@@ -41,12 +42,33 @@
 
       <el-empty v-if="events.length === 0 && !loading" description="暂无课程安排，请先选课" :image-size="80" />
     </el-card>
+
+    <!-- 签到弹窗 -->
+    <el-dialog v-model="checkInDialogVisible" title="课程签到" width="400px">
+      <div v-if="selectedEvent" class="checkin-dialog-content">
+        <div class="checkin-course-title">{{ selectedEvent.title }}</div>
+        <div class="checkin-course-info">
+          <div>{{ selectedEvent._date }} {{ selectedEvent._slot }} - {{ selectedEvent.endTime?.slice(11, 16) }}</div>
+          <div v-if="selectedEvent.location">地点：{{ selectedEvent.location }}</div>
+        </div>
+        <div class="checkin-status-area">
+          <el-tag :type="memberCheckInStatus === 'SIGNED' ? 'success' : memberCheckInStatus === 'ABSENT' ? 'danger' : 'info'" size="large">
+            {{ memberCheckInStatus === 'SIGNED' ? '已签到' : memberCheckInStatus === 'ABSENT' ? '缺勤' : '待签到' }}
+          </el-tag>
+          <el-button v-if="memberCheckInStatus === 'PENDING'" type="primary" size="large" style="margin-left:16px" :loading="checkInLoading" @click="handleMemberCheckIn">
+            立即签到
+          </el-button>
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
+import { ElMessage } from 'element-plus';
 import { getMemberSchedules, type ScheduleEvent } from '../../api/schedule';
+import { checkIn, getCheckInStatus } from '../../api/checkin';
 import { useUserStore } from '../../stores/user';
 
 const userStore = useUserStore();
@@ -133,6 +155,39 @@ async function fetchSchedules() {
 
 watch(currentWeekOffset, () => fetchSchedules());
 onMounted(() => fetchSchedules());
+
+// ====== 签到功能 ======
+const checkInDialogVisible = ref(false);
+const selectedEvent = ref<(ScheduleEvent & { _date: string; _slot: string }) | null>(null);
+const memberCheckInStatus = ref<string>('PENDING');
+const checkInLoading = ref(false);
+
+async function onEventClick(event: ScheduleEvent & { _date: string; _slot: string }) {
+  selectedEvent.value = event;
+  checkInDialogVisible.value = true;
+  if (userId && event.id) {
+    try {
+      const status = await getCheckInStatus(event.id, userId, 'MEMBER');
+      memberCheckInStatus.value = status?.status || 'PENDING';
+    } catch {
+      memberCheckInStatus.value = 'PENDING';
+    }
+  }
+}
+
+async function handleMemberCheckIn() {
+  if (!userId || !selectedEvent.value?.id) return;
+  checkInLoading.value = true;
+  try {
+    await checkIn(selectedEvent.value.id, userId, 'MEMBER');
+    ElMessage.success('签到成功');
+    memberCheckInStatus.value = 'SIGNED';
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '签到失败');
+  } finally {
+    checkInLoading.value = false;
+  }
+}
 </script>
 
 <style scoped>
@@ -159,4 +214,11 @@ onMounted(() => fetchSchedules());
 .event-block { width: 100%; padding: 6px 8px; border-radius: 6px; color: #fff; font-size: 12px; text-align: left; }
 .event-block .event-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .event-block .event-location { font-size: 10px; opacity: 0.85; margin-top: 2px; }
+.event-block { cursor: pointer; }
+.event-block:hover { transform: scale(1.02); box-shadow: 0 2px 8px rgba(0,0,0,0.15); transition: transform 0.1s, box-shadow 0.15s; }
+
+.checkin-dialog-content { text-align: center; padding: 10px 0; }
+.checkin-course-title { font-size: 18px; font-weight: 700; color: #303133; margin-bottom: 12px; }
+.checkin-course-info { font-size: 14px; color: #606266; margin-bottom: 20px; line-height: 1.8; }
+.checkin-status-area { display: flex; align-items: center; justify-content: center; }
 </style>

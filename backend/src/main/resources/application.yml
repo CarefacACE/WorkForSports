@@ -14,9 +14,9 @@ spring:
       mode: always
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://localhost:3306/zhixun_erp?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    url: jdbc:mariadb://localhost:3366/fzqsdata?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
     username: root
-    password: 123456
+    password: fzq666
     hikari:
       pool-name: ZhixunHikariPool
       minimum-idle: 5
