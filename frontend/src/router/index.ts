@@ -223,4 +223,14 @@ router.beforeEach((to) => {
   return true;
 });
 
+/* Dark theme isolation: only activate on landing + login pages */
+const darkRoutes = ['/', '/login'];
+router.afterEach((to) => {
+  if (darkRoutes.includes(to.path)) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+  }
+});
+
 export default router;

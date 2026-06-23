@@ -1,608 +1,736 @@
 <template>
-  <div class="landing-page">
-    <!-- ====== Header ====== -->
-    <header class="ud-header" :class="{ sticky: isSticky }">
-      <div class="container">
-        <div class="row">
-          <div class="col-lg-12">
-            <nav class="navbar navbar-expand-lg">
-              <a class="navbar-brand" href="/">
-                <img src="/landing/images/logo/logo.svg" alt="Logo" />
-              </a>
-              <button class="navbar-toggler" :class="{ active: mobileMenuOpen }" @click="mobileMenuOpen = !mobileMenuOpen">
-                <span class="toggler-icon"> </span>
-                <span class="toggler-icon"> </span>
-                <span class="toggler-icon"> </span>
-              </button>
+  <div class="lp-page">
+    <!-- ═══ Navbar ═══ -->
+    <LandingNavbar />
 
-              <div class="navbar-collapse" :class="{ show: mobileMenuOpen }">
-                <ul id="nav" class="navbar-nav mx-auto">
-                  <li class="nav-item">
-                    <a class="ud-menu-scroll" :class="{ active: activeSection === 'home' }" href="#home" @click.prevent="scrollTo('home')">Home</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="ud-menu-scroll" :class="{ active: activeSection === 'about' }" href="#about" @click.prevent="scrollTo('about')">About</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="ud-menu-scroll" :class="{ active: activeSection === 'pricing' }" href="#pricing" @click.prevent="scrollTo('pricing')">Pricing</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="ud-menu-scroll" :class="{ active: activeSection === 'team' }" href="#team" @click.prevent="scrollTo('team')">Team</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="ud-menu-scroll" :class="{ active: activeSection === 'contact' }" href="#contact" @click.prevent="scrollTo('contact')">Contact</a>
-                  </li>
-                </ul>
-              </div>
+    <main class="lp-main">
+      <!-- ═══ Hero Section ═══ -->
+      <section class="lp-hero">
+        <div class="lp-container lp-hero-grid">
+          <!-- Left Column -->
+          <div class="lp-hero-left">
+            <BackgroundLines class="lp-hero-bg">
+              <div class="lp-hero-content">
+                <h1 class="lp-hero-title">
+                  面向体育训练与健身行业的
+                  <br />
+                  <ColourfulText text="智能管理平台" />
+                </h1>
+                <p class="lp-hero-sub">
+                  课程管理 · 财务结算 · 实时通讯 · 数据分析，一体化解决方案。助力体育培训机构高效运营。
+                </p>
 
-              <div class="navbar-btn d-none d-sm-inline-block">
-                <router-link to="/login" class="ud-main-btn ud-login-btn">
-                  Sign In
-                </router-link>
-                <router-link to="/login" class="ud-main-btn ud-white-btn">
-                  Sign Up
-                </router-link>
-              </div>
-            </nav>
-          </div>
-        </div>
-      </div>
-    </header>
-
-    <!-- ====== Hero ====== -->
-    <section class="ud-hero" id="home">
-      <div class="container">
-        <div class="row">
-          <div class="col-lg-12">
-            <div class="ud-hero-content wow fadeInUp" data-wow-delay=".2s">
-              <h1 class="ud-hero-title">
-                智训业财云 — 一站式健身房智能管理平台
-              </h1>
-              <p class="ud-hero-desc">
-                集健康数据分析、定制课程、AI 训练计划、财务结算于一体的新一代健身 ERP 系统。为教练、会员、管理员打造全链路数字化体验。
-              </p>
-              <ul class="ud-hero-buttons">
-                <li>
-                  <router-link to="/login" class="ud-main-btn ud-white-btn">
-                    立即体验
+                <!-- CTA -->
+                <div class="lp-hero-cta">
+                  <router-link to="/login" class="lp-btn-primary">
+                    快速开始
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" class="lp-btn-icon">
+                      <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
                   </router-link>
-                </li>
-                <li>
-                  <a href="#features" class="ud-main-btn ud-link-btn" @click.prevent="scrollTo('features')">
-                    了解更多 <i class="lni lni-arrow-right"></i>
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div class="ud-hero-brands-wrapper wow fadeInUp" data-wow-delay=".3s">
-              <img src="/landing/images/hero/brand.svg" alt="brand" />
-            </div>
-            <div class="ud-hero-image wow fadeInUp" data-wow-delay=".25s">
-              <img src="/landing/images/hero/hero-image.svg" alt="hero-image" />
-              <img src="/landing/images/hero/dotted-shape.svg" alt="shape" class="shape shape-1" />
-              <img src="/landing/images/hero/dotted-shape.svg" alt="shape" class="shape shape-2" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ====== Features ====== -->
-    <section id="features" class="ud-features">
-      <div class="container">
-        <div class="row">
-          <div class="col-lg-12">
-            <div class="ud-section-title">
-              <span>产品亮点</span>
-              <h2>智训核心功能</h2>
-              <p>从数据分析到财务结算，覆盖健身房运营全链路，让管理更高效、训练更科学、体验更出色。</p>
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-xl-3 col-lg-3 col-sm-6" v-for="(feature, i) in features" :key="i">
-            <div class="ud-single-feature wow fadeInUp" :data-wow-delay="`${0.1 + i * 0.05}s`">
-              <div class="ud-feature-icon">
-                <i :class="`lni ${feature.icon}`"></i>
-              </div>
-              <div class="ud-feature-content">
-                <h3 class="ud-feature-title">{{ feature.title }}</h3>
-                <p class="ud-feature-desc">{{ feature.desc }}</p>
-                <a href="javascript:void(0)" class="ud-feature-link">Learn More</a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ====== About ====== -->
-    <section id="about" class="ud-about">
-      <div class="container">
-        <div class="ud-about-wrapper wow fadeInUp" data-wow-delay=".2s">
-          <div class="ud-about-content-wrapper">
-            <div class="ud-about-content">
-              <span class="tag">关于我们</span>
-              <h2>为健身行业量身打造的数字化解决方案</h2>
-              <p>智训业财云专注于解决健身房运营中的核心痛点：会员健康追踪难、课程管理混乱、财务结算繁琐。我们通过数据分析与智能推荐，让每一位会员都能获得个性化的训练体验。</p>
-              <p>系统支持管理员、教练、会员三种角色，内置实时聊天、消息通知、健康档案、选课系统等功能模块，实现健身房全业务线上化闭环。</p>
-              <a href="javascript:void(0)" class="ud-main-btn">了解更多</a>
-            </div>
-          </div>
-          <div class="ud-about-image">
-            <img src="/landing/images/about/about-image.svg" alt="about-image" />
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ====== Pricing ====== -->
-    <section id="pricing" class="ud-pricing">
-      <div class="container">
-        <div class="row">
-          <div class="col-lg-12">
-            <div class="ud-section-title mx-auto text-center">
-              <span>价格方案</span>
-              <h2>灵活定价，按需选择</h2>
-              <p>从个人健身房到连锁健身集团，我们提供多种方案满足不同规模的需求。</p>
-            </div>
-          </div>
-        </div>
-        <div class="row g-0 align-items-center justify-content-center">
-          <div class="col-lg-4 col-md-6 col-sm-10" v-for="(plan, i) in pricingPlans" :key="i">
-            <div class="ud-single-pricing wow fadeInUp"
-                 :class="{ 'first-item': i === 0, active: i === 1, 'last-item': i === 2 }"
-                 :data-wow-delay="i === 1 ? '.1s' : '.15s'">
-              <span v-if="i === 1" class="ud-popular-tag">POPULAR</span>
-              <div class="ud-pricing-header">
-                <h3>{{ plan.priceLabel }}</h3>
-                <h4>¥ {{ plan.price }}/月</h4>
-              </div>
-              <div class="ud-pricing-body">
-                <ul>
-                  <li v-for="(item, j) in plan.items" :key="j">{{ item }}</li>
-                </ul>
-              </div>
-              <div class="ud-pricing-footer">
-                <a href="javascript:void(0)" class="ud-main-btn" :class="i === 1 ? 'ud-white-btn' : 'ud-border-btn'">
-                  立即开通
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ====== FAQ ====== -->
-    <section id="faq" class="ud-faq">
-      <div class="shape">
-        <img src="/landing/images/faq/shape.svg" alt="shape" />
-      </div>
-      <div class="container">
-        <div class="row">
-          <div class="col-lg-12">
-            <div class="ud-section-title text-center mx-auto">
-              <span>常见问题</span>
-              <h2>有疑问？这里为你解答</h2>
-              <p>以下是用户最关心的问题，如有更多疑问欢迎联系我们。</p>
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-lg-6" v-for="(col, colIdx) in faqColumns" :key="colIdx">
-            <div class="ud-single-faq wow fadeInUp" v-for="(item, i) in col" :key="i" :data-wow-delay="`${0.1 + i * 0.05}s`">
-              <div class="accordion">
-                <button class="ud-faq-btn" :class="{ collapsed: openFaq !== colIdx * 3 + i }" @click="toggleFaq(colIdx * 3 + i)">
-                  <span class="icon flex-shrink-0">
-                    <i class="lni lni-chevron-down"></i>
-                  </span>
-                  <span>{{ item.q }}</span>
-                </button>
-                <div class="accordion-collapse" :class="{ collapse: openFaq !== colIdx * 3 + i, show: openFaq === colIdx * 3 + i }">
-                  <div class="ud-faq-body">{{ item.a }}</div>
+                  <a href="#features" class="lp-btn-ghost">了解更多</a>
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
 
-    <!-- ====== Testimonials ====== -->
-    <section id="testimonials" class="ud-testimonials">
-      <div class="container">
-        <div class="row">
-          <div class="col-lg-12">
-            <div class="ud-section-title mx-auto text-center">
-              <span>用户评价</span>
-              <h2>听听他们怎么说</h2>
-              <p>来自教练、会员和管理员的真实反馈，看看智训如何改变他们的健身体验。</p>
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-lg-4 col-md-6" v-for="(t, i) in testimonials" :key="i">
-            <div class="ud-single-testimonial wow fadeInUp" :data-wow-delay="`${0.1 + i * 0.05}s`">
-              <div class="ud-testimonial-ratings">
-                <i class="lni lni-star-filled" v-for="s in 5" :key="s"></i>
-              </div>
-              <div class="ud-testimonial-content">
-                <p>{{ t.content }}</p>
-              </div>
-              <div class="ud-testimonial-info">
-                <div class="ud-testimonial-image">
-                  <img :src="`/landing/images/testimonials/author-0${i + 1}.png`" alt="author" />
-                </div>
-                <div class="ud-testimonial-meta">
-                  <h4>{{ t.name }}</h4>
-                  <p>{{ t.role }}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-lg-12">
-            <div class="ud-brands wow fadeInUp" data-wow-delay=".2s">
-              <div class="ud-title">
-                <h6>受到众多健身房信赖</h6>
-              </div>
-              <div class="ud-brands-logo">
-                <div class="ud-single-logo" v-for="brand in brands" :key="brand">
-                  <img :src="`/landing/images/brands/${brand}.svg`" :alt="brand" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ====== Team ====== -->
-    <section id="team" class="ud-team">
-      <div class="container">
-        <div class="row">
-          <div class="col-lg-12">
-            <div class="ud-section-title mx-auto text-center">
-              <span>团队介绍</span>
-              <h2>认识我们的团队</h2>
-              <p>一群热爱健身与技术的年轻人，致力于打造最好的健身行业数字化平台。</p>
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-xl-3 col-lg-3 col-sm-6" v-for="(member, i) in teamMembers" :key="i">
-            <div class="ud-single-team wow fadeInUp" :data-wow-delay="`${0.1 + i * 0.05}s`">
-              <div class="ud-team-image-wrapper">
-                <div class="ud-team-image">
-                  <img :src="`/landing/images/team/team-0${i + 1}.png`" alt="team" />
-                </div>
-                <img src="/landing/images/team/dotted-shape.svg" alt="shape" class="shape shape-1" />
-                <img src="/landing/images/team/shape-2.svg" alt="shape" class="shape shape-2" />
-              </div>
-              <div class="ud-team-info">
-                <h5>{{ member.name }}</h5>
-                <h6>{{ member.role }}</h6>
-              </div>
-              <ul class="ud-team-socials">
-                <li><a href="javascript:void(0)"><i class="lni lni-facebook-filled"></i></a></li>
-                <li><a href="javascript:void(0)"><i class="lni lni-twitter-filled"></i></a></li>
-                <li><a href="javascript:void(0)"><i class="lni lni-instagram-filled"></i></a></li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ====== Contact ====== -->
-    <section id="contact" class="ud-contact">
-      <div class="container">
-        <div class="row align-items-center">
-          <div class="col-xl-8 col-lg-7">
-            <div class="ud-contact-content-wrapper">
-              <div class="ud-contact-title">
-                <span>联系我们</span>
-                <h2>联系我们<br />期待与您沟通！</h2>
-              </div>
-              <div class="ud-contact-info-wrapper">
-                <div class="ud-single-info">
-                  <div class="ud-info-icon"><i class="lni lni-map-marker"></i></div>
-                  <div class="ud-info-meta">
-                    <h5>公司地址</h5>
-                    <p>北京市海淀区中关村科技园 A 座 12 层</p>
+                <!-- Stats -->
+                <div class="lp-hero-stats">
+                  <div class="lp-stat-item">
+                    <span class="lp-stat-num">500+</span>
+                    <span class="lp-stat-lbl">教练信赖</span>
                   </div>
-                </div>
-                <div class="ud-single-info">
-                  <div class="ud-info-icon"><i class="lni lni-envelope"></i></div>
-                  <div class="ud-info-meta">
-                    <h5>联系方式</h5>
-                    <p>contact@zhixun.fit</p>
-                    <p>support@zhixun.fit</p>
+                  <div class="lp-stat-divider" />
+                  <div class="lp-stat-item">
+                    <span class="lp-stat-num">10K+</span>
+                    <span class="lp-stat-lbl">学员管理</span>
+                  </div>
+                  <div class="lp-stat-divider" />
+                  <div class="lp-stat-item">
+                    <span class="lp-stat-num">99.9%</span>
+                    <span class="lp-stat-lbl">系统稳定</span>
                   </div>
                 </div>
               </div>
-            </div>
+            </BackgroundLines>
           </div>
-          <div class="col-xl-4 col-lg-5">
-            <div class="ud-contact-form-wrapper wow fadeInUp" data-wow-delay=".2s">
-              <h3 class="ud-contact-form-title">给我们留言</h3>
-              <form class="ud-contact-form" @submit.prevent>
-                <div class="ud-form-group">
-                  <label for="fullName">姓名*</label>
-                  <input type="text" name="fullName" placeholder="请输入您的姓名" />
-                </div>
-                <div class="ud-form-group">
-                  <label for="email">邮箱*</label>
-                  <input type="email" name="email" placeholder="example@yourmail.com" />
-                </div>
-                <div class="ud-form-group">
-                  <label for="phone">电话*</label>
-                  <input type="text" name="phone" placeholder="+86 138 0000 0000" />
-                </div>
-                <div class="ud-form-group">
-                  <label for="message">留言*</label>
-                  <textarea name="message" rows="1" placeholder="请输入您的留言内容"></textarea>
-                </div>
-                <div class="ud-form-group mb-0">
-                  <button type="submit" class="ud-main-btn">发送消息</button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
 
-    <!-- ====== Footer ====== -->
-    <footer class="ud-footer wow fadeInUp" data-wow-delay=".15s">
-      <div class="shape shape-1"><img src="/landing/images/footer/shape-1.svg" alt="shape" /></div>
-      <div class="shape shape-2"><img src="/landing/images/footer/shape-2.svg" alt="shape" /></div>
-      <div class="shape shape-3"><img src="/landing/images/footer/shape-3.svg" alt="shape" /></div>
-      <div class="ud-footer-widgets">
-        <div class="container">
-          <div class="row">
-            <div class="col-xl-3 col-lg-4 col-md-6">
-              <div class="ud-widget">
-                <a href="/" class="ud-footer-logo">
-                  <img src="/landing/images/logo/logo.svg" alt="logo" />
-                </a>
-                <p class="ud-widget-desc">集健康数据分析、定制课程、AI 训练计划、财务结算于一体的新一代健身 ERP 系统。</p>
-                <ul class="ud-widget-socials">
-                  <li><a href="javascript:void(0)"><i class="lni lni-facebook-filled"></i></a></li>
-                  <li><a href="javascript:void(0)"><i class="lni lni-twitter-filled"></i></a></li>
-                  <li><a href="javascript:void(0)"><i class="lni lni-instagram-filled"></i></a></li>
-                  <li><a href="javascript:void(0)"><i class="lni lni-linkedin-original"></i></a></li>
-                </ul>
-              </div>
-            </div>
-            <div class="col-xl-2 col-lg-2 col-md-6 col-sm-6">
-              <div class="ud-widget">
-                <h5 class="ud-widget-title">产品服务</h5>
-                <ul class="ud-widget-links">
-                  <li><a href="javascript:void(0)">数据分析</a></li>
-                  <li><a href="javascript:void(0)">课程管理</a></li>
-                  <li><a href="javascript:void(0)">AI 训练计划</a></li>
-                  <li><a href="javascript:void(0)">财务结算</a></li>
-                </ul>
-              </div>
-            </div>
-            <div class="col-xl-2 col-lg-3 col-md-6 col-sm-6">
-              <div class="ud-widget">
-                <h5 class="ud-widget-title">功能模块</h5>
-                <ul class="ud-widget-links">
-                  <li><a href="javascript:void(0)">健康档案</a></li>
-                  <li><a href="javascript:void(0)">实时聊天</a></li>
-                  <li><a href="javascript:void(0)">选课系统</a></li>
-                  <li><a href="javascript:void(0)">消息通知</a></li>
-                </ul>
-              </div>
-            </div>
-            <div class="col-xl-2 col-lg-3 col-md-6 col-sm-6">
-              <div class="ud-widget">
-                <h5 class="ud-widget-title">支持</h5>
-                <ul class="ud-widget-links">
-                  <li><a href="javascript:void(0)">帮助中心</a></li>
-                  <li><a href="javascript:void(0)">隐私政策</a></li>
-                  <li><a href="javascript:void(0)">服务条款</a></li>
-                  <li><a href="javascript:void(0)">退款政策</a></li>
-                </ul>
-              </div>
-            </div>
-            <div class="col-xl-3 col-lg-6 col-md-8 col-sm-10">
-              <div class="ud-widget">
-                <h5 class="ud-widget-title">合作生态</h5>
-                <ul class="ud-widget-brands">
-                  <li v-for="brand in footerBrands" :key="brand">
-                    <a :href="`https://${brand}.com/`" rel="nofollow noopener" target="_blank">
-                      <img :src="`/landing/images/footer/brands/${brand}.svg`" :alt="brand" />
-                    </a>
-                  </li>
-                </ul>
-              </div>
+          <!-- Right Column (Desktop) -->
+          <div class="lp-hero-right">
+            <div class="lp-cards-grid">
+              <GlowingEffect v-for="card in heroCards" :key="card.title" :glow="true" :spread="40" :proximity="64" class="lp-glow-card">
+                <div class="lp-card-inner">
+                  <div class="lp-card-icon" v-html="card.icon" />
+                  <div>
+                    <h3 class="lp-card-title">{{ card.title }}</h3>
+                    <p class="lp-card-desc">{{ card.desc }}</p>
+                  </div>
+                </div>
+              </GlowingEffect>
             </div>
           </div>
         </div>
-      </div>
-      <div class="ud-footer-bottom">
-        <div class="container">
-          <div class="row">
-            <div class="col-md-8">
-              <ul class="ud-footer-bottom-left">
-                <li><a href="javascript:void(0)">隐私政策</a></li>
-                <li><a href="javascript:void(0)">服务协议</a></li>
-                <li><a href="javascript:void(0)">服务条款</a></li>
-              </ul>
-            </div>
-            <div class="col-md-4">
-              <p class="ud-footer-bottom-right">
-                © 2026 智训业财云 All Rights Reserved
-              </p>
-            </div>
+      </section>
+
+      <!-- ═══ Features Section ═══ -->
+      <section id="features" class="lp-features">
+        <div class="lp-container lp-features-row">
+          <div v-for="f in features" :key="f.title" class="lp-feature-card">
+            <div class="lp-feature-icon" v-html="f.icon" />
+            <h3 class="lp-feature-title">{{ f.title }}</h3>
+            <p class="lp-feature-desc">{{ f.desc }}</p>
           </div>
+        </div>
+      </section>
+
+      <!-- ═══ Sponsors / Partners ═══ -->
+      <section class="lp-sponsors">
+        <div class="lp-container lp-sponsors-inner">
+          <p class="lp-sponsors-label">合作伙伴</p>
+          <div class="lp-sponsors-row">
+            <span v-for="s in sponsors" :key="s" class="lp-sponsor-logo">{{ s }}</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══ Video / Demo Scroll ═══ -->
+      <section id="solutions" class="lp-video">
+        <ContainerScroll>
+          <template #title>
+            <h2 class="lp-video-title">
+              观看演示，在
+              <span class="lp-video-highlight">
+                <ColourfulText text="5 分钟内" />
+              </span>
+              了解全部功能
+            </h2>
+          </template>
+          <div class="lp-demo-placeholder">
+            <svg viewBox="0 0 800 500" class="lp-demo-svg">
+              <rect width="800" height="500" fill="#171717"/>
+              <rect x="40" y="30" width="720" height="40" rx="8" fill="#262626"/>
+              <circle cx="65" cy="50" r="8" fill="#ef4444"/>
+              <circle cx="90" cy="50" r="8" fill="#f59e0b"/>
+              <circle cx="115" cy="50" r="8" fill="#22c55e"/>
+              <rect x="40" y="90" width="180" height="380" rx="8" fill="#1e1e1e"/>
+              <rect x="240" y="90" width="520" height="380" rx="8" fill="#1e1e1e"/>
+              <rect x="60" y="120" width="140" height="12" rx="4" fill="#333"/>
+              <rect x="60" y="150" width="120" height="12" rx="4" fill="#333"/>
+              <rect x="60" y="180" width="130" height="12" rx="4" fill="#333"/>
+              <rect x="60" y="210" width="100" height="12" rx="4" fill="#333"/>
+              <rect x="270" y="120" width="460" height="180" rx="8" fill="#222"/>
+              <rect x="270" y="320" width="220" height="120" rx="8" fill="#222"/>
+              <rect x="510" y="320" width="220" height="120" rx="8" fill="#222"/>
+              <text x="400" y="220" text-anchor="middle" fill="#525252" font-size="24" font-family="Inter">智训 ERP Dashboard</text>
+            </svg>
+          </div>
+        </ContainerScroll>
+      </section>
+
+      <!-- ═══ Testimonials ═══ -->
+      <section id="testimonials" class="lp-testimonials">
+        <div class="lp-container lp-testimonials-inner">
+          <h2 class="lp-section-title">听听大家怎么说</h2>
+          <p class="lp-section-desc">不要只听我们说。以下是真实用户对智训 ERP 的评价。</p>
+
+          <div class="lp-marquee-wrap">
+            <MarqueeRow :pause-on-hover="true" duration="30s">
+              <div v-for="r in reviews.slice(0, 4)" :key="r.name" class="lp-review-card">
+                <div class="lp-review-header">
+                  <div class="lp-review-avatar">{{ r.name[0] }}</div>
+                  <div>
+                    <div class="lp-review-name">{{ r.name }}</div>
+                    <div class="lp-review-role">{{ r.role }}</div>
+                  </div>
+                </div>
+                <p class="lp-review-body">{{ r.body }}</p>
+              </div>
+            </MarqueeRow>
+            <MarqueeRow :reverse="true" :pause-on-hover="true" duration="35s">
+              <div v-for="r in reviews.slice(4)" :key="r.name" class="lp-review-card">
+                <div class="lp-review-header">
+                  <div class="lp-review-avatar">{{ r.name[0] }}</div>
+                  <div>
+                    <div class="lp-review-name">{{ r.name }}</div>
+                    <div class="lp-review-role">{{ r.role }}</div>
+                  </div>
+                </div>
+                <p class="lp-review-body">{{ r.body }}</p>
+              </div>
+            </MarqueeRow>
+            <!-- Gradient fades -->
+            <div class="lp-fade-left" />
+            <div class="lp-fade-right" />
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ═══ Footer ═══ -->
+    <footer class="lp-footer">
+      <div class="lp-container lp-footer-inner">
+        <div class="lp-footer-left">
+          <svg viewBox="0 0 42 42" class="lp-footer-logo">
+            <rect x="2" y="2" width="38" height="38" rx="10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1.5"/>
+            <text x="21" y="28" text-anchor="middle" fill="#fafafa" font-family="Inter,sans-serif" font-size="16" font-weight="800">ZX</text>
+          </svg>
+          <span class="lp-footer-copy">© {{ new Date().getFullYear() }} 智训科技。保留所有权利。</span>
+        </div>
+        <div class="lp-footer-links">
+          <a href="#features">功能</a>
+          <a href="#solutions">方案</a>
+          <a href="#testimonials">评价</a>
         </div>
       </div>
     </footer>
-
-    <!-- ====== Back To Top ====== -->
-    <a href="javascript:void(0)" class="back-to-top" :class="{ active: showBackToTop }" @click.prevent="scrollToTop">
-      <i class="lni lni-chevron-up"> </i>
-    </a>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { onMounted } from 'vue';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import LandingNavbar from '../components/landing/LandingNavbar.vue';
+import BackgroundLines from '../components/landing/BackgroundLines.vue';
+import ColourfulText from '../components/landing/ColourfulText.vue';
+import ContainerScroll from '../components/landing/ContainerScroll.vue';
+import GlowingEffect from '../components/landing/GlowingEffect.vue';
+import MarqueeRow from '../components/landing/MarqueeRow.vue';
 
-// ====== Data ======
+gsap.registerPlugin(ScrollTrigger);
+
+/* ─── Hero Cards ─── */
+const heroCards = [
+  {
+    title: '智能排课',
+    desc: 'AI 驱动的排课引擎，自动避免冲突，优化教练与场地利用率。',
+    icon: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#a78bfa" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',
+  },
+  {
+    title: '实时数据',
+    desc: '运动数据实时采集与分析，助力科学训练决策。',
+    icon: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#a78bfa" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>',
+  },
+  {
+    title: '多端协作',
+    desc: 'Web、移动端、小程序全覆盖，随时随地管理训练。',
+    icon: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#a78bfa" stroke-width="1.5"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>',
+  },
+];
+
+/* ─── Features ─── */
 const features = [
-  { icon: 'lni-bar-chart', title: '数据分析', desc: '上传运动数据 CSV，自动识别数值列，生成心率区间、均值、极值等多维分析报表，让训练效果一目了然。' },
-  { icon: 'lni-book', title: '定制课程', desc: '教练可创建公共课与私教课，灵活设置课时、试听、视频教学。会员一键选课、付费、确认，全流程线上化。' },
-  { icon: 'lni-brain', title: 'AI 训练计划', desc: '基于会员健康档案（身高、体重、体脂率、血压等），智能推荐训练目标与周期计划，助力科学健身。' },
-  { icon: 'lni-wallet', title: '财务结算', desc: '内置钱包充值、消费、提现功能，教练工资自动核算，管理员实时掌控资金流水，账目清晰透明。' },
+  {
+    title: '课程管理',
+    desc: '灵活的课程创建、排期与选课系统，支持团课、私教等多种模式。',
+    icon: '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>',
+  },
+  {
+    title: '财务结算',
+    desc: '钱包充值、提现、工资结算，全流程自动化财务管理。',
+    icon: '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="1.5"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>',
+  },
+  {
+    title: '即时通讯',
+    desc: '内置群聊与私聊，教练、学员、管理员无缝沟通协作。',
+    icon: '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="1.5"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>',
+  },
+  {
+    title: '数据分析',
+    desc: 'CSV 上传智能分析，可视化图表一键生成，数据驱动决策。',
+    icon: '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a78bfa" stroke-width="1.5"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>',
+  },
 ];
 
-const pricingPlans = [
-  { price: '0', priceLabel: '基础版', items: ['50 人用户数', '基础分析报表', '公共课管理', '群聊功能', '社区支持', '—'] },
-  { price: '99', priceLabel: '专业版', items: ['500 人用户数', '高级分析 + 心率区间', '公共课 + 私教', '群聊 + 私聊', '在线工单支持', '基础 AI 推荐'] },
-  { price: '299', priceLabel: '旗舰版', items: ['无限制用户数', '全功能 + API 对接', '全课程类型', '全聊天功能', '专属客服', '深度 AI 定制'] },
+/* ─── Sponsors ─── */
+const sponsors = ['阿里云', '腾讯云', '华为云', '钉钉', '企业微信'];
+
+/* ─── Reviews ─── */
+const reviews = [
+  { name: '张伟', role: '健身教练', body: '用了智训 ERP 之后，排课效率提升了 3 倍，再也不用手动排课了。' },
+  { name: '李芳', role: '培训机构校长', body: '财务管理模块非常强大，工资结算从原来的两天缩短到几分钟。' },
+  { name: '王磊', role: '瑜伽教练', body: '学员管理一目了然，课程提醒功能让学员出勤率提升了 40%。' },
+  { name: '陈静', role: '游泳馆经理', body: '多端同步非常好用，随时随地查看运营数据，非常放心。' },
+  { name: '赵明', role: '篮球训练营', body: '即时通讯功能让教练和家长的沟通变得轻松高效，非常满意。' },
+  { name: '刘洋', role: '体能训练师', body: '数据分析功能帮助我科学制定训练计划，学员进步明显。' },
+  { name: '孙婷', role: '舞蹈工作室', body: '界面简洁美观，操作简单，团队上手非常快，强烈推荐。' },
+  { name: '周涛', role: '搏击俱乐部', body: '系统稳定性非常好，用了半年多从未出过问题，值得信赖。' },
 ];
 
-const faqItems = [
-  { q: '智训业财云支持哪些角色？', a: '系统支持管理员、教练、会员三种角色，每种角色拥有独立的菜单和权限体系。管理员可管理所有数据，教练管理自己的课程和学员，会员选课和查看个人健康档案。' },
-  { q: '健康数据如何分析？', a: '会员可上传运动数据的 CSV 文件，系统自动识别数值列，计算均值、极值等统计指标。对于心率数据，还会自动划分热身区、燃脂区、有氧区、无氧区、极限区五个心率区间。' },
-  { q: '可以定制训练计划吗？', a: '会员可设置目标体重、目标体脂率、目标肌肉量、期望达成日期等目标信息。系统根据健康档案和目标数据，辅助教练为会员制定个性化的训练方案。' },
-  { q: '财务结算怎么运作？', a: '系统内置钱包功能，会员可充值和消费。教练工资根据课时和学员确认自动核算。管理员可查看全平台交易流水和余额概览，所有账目实时透明。' },
-  { q: '支持实时沟通吗？', a: '支持。系统内置群聊和私聊功能，教练和会员可以在课程群组中交流，也可以发起一对一私聊。还支持好友申请、群公告、未读消息提醒等功能。' },
-  { q: '数据安全如何保障？', a: '系统采用逻辑删除机制保护数据不被误删，所有敏感操作记录审计日志。数据库支持 MariaDB，可配合备份策略确保数据安全。' },
-];
-
-const faqColumns = [faqItems.slice(0, 3), faqItems.slice(3, 6)];
-
-const testimonials = [
-  { content: '"智训系统让我们的课程管理效率提升了 3 倍，会员选课、付费全部线上化，再也不用手动对账了。"', name: '张教练', role: '资深健身教练' },
-  { content: '"健康档案和数据分析功能太实用了，每次训练后上传数据就能看到心率区间和运动趋势，训练更有方向了。"', name: '李小姐', role: '健身会员' },
-  { content: '"作为健身房老板，财务结算和教练工资核算一直是头疼的问题。智训帮我实现了全自动结算，账目一目了然。"', name: '王总', role: '健身房管理员' },
-];
-
-const brands: string[] = [];
-const footerBrands: string[] = [];
-
-const teamMembers = [
-  { name: '陈志远', role: '产品经理' },
-  { name: '林小雨', role: '前端工程师' },
-  { name: '赵明辉', role: '后端工程师' },
-  { name: '周婷婷', role: 'UI 设计师' },
-];
-
-// ====== State ======
-const isSticky = ref(false);
-const mobileMenuOpen = ref(false);
-const activeSection = ref('home');
-const openFaq = ref(-1);
-const showBackToTop = ref(false);
-
-// ====== Methods ======
-function scrollTo(id: string) {
-  const el = document.getElementById(id);
-  if (el) {
-    el.scrollIntoView({ behavior: 'smooth' });
-    mobileMenuOpen.value = false;
-  }
-}
-
-function scrollToTop() {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function toggleFaq(index: number) {
-  openFaq.value = openFaq.value === index ? -1 : index;
-}
-
-function handleScroll() {
-  // Sticky header
-  isSticky.value = window.scrollY > 50;
-
-  // Back to top
-  showBackToTop.value = window.scrollY > 300;
-
-  // Active section tracking
-  const sectionIds = ['home', 'about', 'pricing', 'team', 'contact'];
-  const scrollPos = window.scrollY + 73;
-
-  for (const id of sectionIds) {
-    const el = document.getElementById(id);
-    if (el && el.offsetTop <= scrollPos && el.offsetTop + el.offsetHeight > scrollPos) {
-      activeSection.value = id;
-      break;
-    }
-  }
-}
-
-// ====== Scroll animations (IntersectionObserver, replaces WOW.js) ======
-let observer: IntersectionObserver | null = null;
-
-function initScrollAnimations() {
-  const elements = document.querySelectorAll('.wow');
-  observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const el = entry.target as HTMLElement;
-          const delay = el.getAttribute('data-wow-delay') || '0s';
-          el.style.animationDelay = delay;
-          el.classList.add('animated', 'fadeInUp');
-          el.style.visibility = 'visible';
-          observer?.unobserve(el);
-        }
-      });
-    },
-    { threshold: 0.1 }
-  );
-
-  elements.forEach((el) => {
-    (el as HTMLElement).style.visibility = 'hidden';
-    observer?.observe(el);
-  });
-}
-
-// ====== Lifecycle ======
+/* ─── Entrance Animations ─── */
 onMounted(() => {
-  window.addEventListener('scroll', handleScroll);
-  handleScroll();
-  initScrollAnimations();
-});
+  const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
 
-onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll);
-  observer?.disconnect();
+  tl.from('.lp-hero-title', { autoAlpha: 0, y: 30, duration: 0.8 }, 0.2)
+    .from('.lp-hero-sub', { autoAlpha: 0, y: 20, duration: 0.6 }, 0.5)
+    .from('.lp-hero-cta', { autoAlpha: 0, y: 15, duration: 0.5 }, 0.7)
+    .from('.lp-hero-stats', { autoAlpha: 0, y: 10, duration: 0.5 }, 0.9);
+
+  // Features section
+  gsap.from('.lp-feature-card', {
+    scrollTrigger: { trigger: '.lp-features', start: 'top 80%' },
+    autoAlpha: 0,
+    y: 30,
+    stagger: 0.12,
+    duration: 0.6,
+  });
+
+  // Testimonials section
+  gsap.from('.lp-section-title', {
+    scrollTrigger: { trigger: '.lp-testimonials', start: 'top 80%' },
+    autoAlpha: 0,
+    y: 20,
+    duration: 0.6,
+  });
+  gsap.from('.lp-section-desc', {
+    scrollTrigger: { trigger: '.lp-testimonials', start: 'top 80%' },
+    autoAlpha: 0,
+    y: 15,
+    duration: 0.6,
+    delay: 0.15,
+  });
 });
 </script>
 
-<style>
-/* Landing page styles - loaded from public directory */
-@import '/landing/css/bootstrap.min.css';
-@import '/landing/css/animate.css';
-@import '/landing/css/lineicons.css';
-@import '/landing/css/ud-styles.css';
+<style scoped>
+/* ─── Page ─── */
+.lp-page {
+  min-height: 100vh;
+  background: #0a0a0a;
+  color: #fafafa;
+  font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.lp-main {
+  flex: 1;
+}
+.lp-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
 
-/* Fix: ensure landing page styles don't leak to other routes */
-.landing-page .back-to-top {
-  transition: opacity 0.3s;
-  opacity: 0;
+/* ─── Hero ─── */
+.lp-hero {
+  position: relative;
+  overflow: hidden;
+}
+.lp-hero-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2.5rem;
+  padding-top: 2rem;
+  padding-bottom: 4rem;
+}
+@media (min-width: 1280px) {
+  .lp-hero-grid {
+    grid-template-columns: 1fr 1fr;
+    padding-top: 4rem;
+    padding-bottom: 6rem;
+  }
+}
+.lp-hero-left {
+  position: relative;
+}
+.lp-hero-bg {
+  min-height: 100%;
+}
+.lp-hero-content {
+  display: flex;
+  flex-direction: column;
+  padding-top: 2rem;
+}
+@media (min-width: 768px) {
+  .lp-hero-content { padding-top: 6rem; }
+}
+.lp-hero-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1.15;
+  margin-bottom: 1.5rem;
+  color: #fafafa;
+}
+@media (min-width: 768px) {
+  .lp-hero-title { font-size: 3.25rem; line-height: 4rem; }
+}
+.lp-hero-sub {
+  font-size: 1.05rem;
+  color: #a3a3a3;
+  line-height: 1.75;
+  max-width: 500px;
+  margin-bottom: 1.5rem;
+}
+
+/* CTA */
+.lp-hero-cta {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+.lp-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 3rem;
+  padding: 0 1.5rem;
+  background: #2563eb;
+  color: #fff;
+  border-radius: 9999px;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+  border: none;
+  cursor: pointer;
+}
+.lp-btn-primary:hover { background: #1d4ed8; }
+.lp-btn-icon { flex-shrink: 0; }
+.lp-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  height: 3rem;
+  padding: 0 1.5rem;
+  color: #a3a3a3;
+  font-size: 1rem;
+  font-weight: 500;
+  text-decoration: none;
+  border: 1px solid hsl(0, 0%, 20%);
+  border-radius: 9999px;
+  transition: all 0.2s;
+}
+.lp-btn-ghost:hover { color: #fafafa; border-color: hsl(0, 0%, 30%); }
+
+/* Stats */
+.lp-hero-stats {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+.lp-stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.lp-stat-num {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fafafa;
+}
+.lp-stat-lbl {
+  font-size: 0.75rem;
+  color: #737373;
+  letter-spacing: 0.5px;
+}
+.lp-stat-divider {
+  width: 1px;
+  height: 2rem;
+  background: hsl(0, 0%, 15%);
+}
+
+/* Right Column */
+.lp-hero-right {
+  display: none;
+}
+@media (min-width: 1280px) {
+  .lp-hero-right { display: block; }
+}
+.lp-cards-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto;
+  gap: 1rem;
+  max-height: 34rem;
+}
+@media (min-width: 1280px) {
+  .lp-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+  }
+  .lp-cards-grid > :first-child {
+    grid-column: 1 / -1;
+  }
+}
+.lp-glow-card {
+  min-height: 12rem;
+  border-radius: 1.5rem;
+  border: 1px solid hsl(0, 0%, 12%);
+  padding: 0.5rem;
+}
+.lp-card-inner {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1.5rem;
+  height: 100%;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  background: rgba(23, 23, 23, 0.6);
+}
+.lp-card-icon {
+  width: fit-content;
+  border-radius: 0.5rem;
+  border: 1px solid hsl(0, 0%, 20%);
+  padding: 0.5rem;
+  display: flex;
+}
+.lp-card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #fafafa;
+  margin: 0;
+}
+.lp-card-desc {
+  font-size: 0.875rem;
+  color: #a3a3a3;
+  line-height: 1.5;
+  margin: 0.25rem 0 0;
+}
+
+/* ─── Features ─── */
+.lp-features {
+  position: relative;
+  margin-top: -8rem;
+  padding-bottom: 6rem;
+}
+@media (min-width: 768px) {
+  .lp-features { margin-top: -12rem; }
+}
+.lp-features-row {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+@media (min-width: 640px) {
+  .lp-features-row { flex-direction: row; }
+}
+.lp-feature-card {
+  flex: 1;
+  padding: 1.5rem;
+  border-radius: 1.5rem;
+  border: 1px solid hsl(0, 0%, 12%);
+  background: rgba(23, 23, 23, 0.4);
+}
+.lp-feature-icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 9999px;
+  background: rgba(167, 139, 250, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+.lp-feature-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #fafafa;
+  margin: 0 0 0.5rem;
+}
+.lp-feature-desc {
+  font-size: 0.875rem;
+  color: #a3a3a3;
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* ─── Sponsors ─── */
+.lp-sponsors {
+  padding: 3rem 0;
+}
+.lp-sponsors-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+.lp-sponsors-label {
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #525252;
+  margin: 0;
+}
+.lp-sponsors-row {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.lp-sponsor-logo {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #404040;
+  letter-spacing: 1px;
+}
+
+/* ─── Video Scroll ─── */
+.lp-video {
+  padding: 4rem 0;
+}
+.lp-video-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fafafa;
+  text-align: center;
+  line-height: 1.3;
+}
+@media (min-width: 768px) {
+  .lp-video-title { font-size: 3rem; }
+}
+.lp-video-highlight {
+  display: inline;
+}
+.lp-demo-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.lp-demo-svg {
+  width: 100%;
+  height: 100%;
+  border-radius: 0.75rem;
+}
+
+/* ─── Testimonials ─── */
+.lp-testimonials {
+  padding: 5rem 0;
+  overflow: hidden;
+}
+.lp-testimonials-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.lp-section-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fafafa;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+@media (min-width: 768px) {
+  .lp-section-title { font-size: 3rem; }
+}
+.lp-section-desc {
+  font-size: 1.125rem;
+  color: #a3a3a3;
+  text-align: center;
+  margin-bottom: 3rem;
+}
+.lp-marquee-wrap {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem 0;
+}
+.lp-review-card {
+  flex-shrink: 0;
+  width: 18rem;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid hsl(0, 0%, 12%);
+  background: rgba(23, 23, 23, 0.5);
+  cursor: default;
+  transition: background 0.2s;
+}
+.lp-review-card:hover {
+  background: rgba(23, 23, 23, 0.8);
+}
+.lp-review-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+.lp-review-avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  background: #2563eb;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.lp-review-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fafafa;
+}
+.lp-review-role {
+  font-size: 0.7rem;
+  color: #525252;
+}
+.lp-review-body {
+  font-size: 0.85rem;
+  color: #a3a3a3;
+  line-height: 1.5;
+  margin: 0;
+}
+.lp-fade-left,
+.lp-fade-right {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 15%;
   pointer-events: none;
+  z-index: 2;
 }
-.landing-page .back-to-top.active {
-  opacity: 1;
-  pointer-events: auto;
+.lp-fade-left {
+  left: 0;
+  background: linear-gradient(to right, #0a0a0a, transparent);
+}
+.lp-fade-right {
+  right: 0;
+  background: linear-gradient(to left, #0a0a0a, transparent);
 }
 
-/* Animate.css integration */
-.wow {
-  visibility: hidden;
+/* ─── Footer ─── */
+.lp-footer {
+  border-top: 1px solid hsl(0, 0%, 12%);
+  padding: 2.5rem 0;
 }
-.wow.animated {
-  visibility: visible;
+.lp-footer-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+@media (min-width: 768px) {
+  .lp-footer-inner { flex-direction: row; }
+}
+.lp-footer-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.lp-footer-logo {
+  width: 28px;
+  height: 28px;
+}
+.lp-footer-copy {
+  font-size: 0.8rem;
+  color: #525252;
+}
+.lp-footer-links {
+  display: flex;
+  gap: 1.5rem;
+}
+.lp-footer-links a {
+  font-size: 0.8rem;
+  color: #525252;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.lp-footer-links a:hover {
+  color: #a3a3a3;
 }
 </style>
