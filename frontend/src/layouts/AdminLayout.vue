@@ -46,13 +46,17 @@
           <el-menu-item index="/dashboard/system-monitor">系统监控</el-menu-item>
           <el-menu-item index="/dashboard/db-control">数据库控制</el-menu-item>
         </el-sub-menu>
+        <el-menu-item v-if="user?.role === 'ADMIN'" index="/dashboard/gym">
+          <el-icon><Ticket /></el-icon>
+          <span>健身房管理</span>
+        </el-menu-item>
         <el-sub-menu v-if="user?.role === 'MEMBER'" index="course-select">
           <template #title>
             <el-icon><Reading /></el-icon>
             <span>选课</span>
           </template>
           <el-menu-item index="/member/public-courses">公共课</el-menu-item>
-          <el-menu-item index="/member/private-courses">私教</el-menu-item>
+          <el-menu-item index="/member/private-courses">私教教练</el-menu-item>
         </el-sub-menu>
         <el-sub-menu v-if="user?.role === 'COACH'" index="course-manage">
           <template #title>
@@ -60,7 +64,7 @@
             <span>课程</span>
           </template>
           <el-menu-item index="/coach/public-courses">公共课</el-menu-item>
-          <el-menu-item index="/coach/private-courses">私教课</el-menu-item>
+          <el-menu-item index="/coach/private-courses">私教主页</el-menu-item>
         </el-sub-menu>
         <el-sub-menu v-if="user?.role !== 'ADMIN'" index="my-menu">
           <template #title>
@@ -69,6 +73,8 @@
           </template>
           <el-menu-item index="/dashboard/wallet">钱包</el-menu-item>
           <el-menu-item v-if="user?.role === 'MEMBER'" index="/member/my-courses">我的课程</el-menu-item>
+          <el-menu-item v-if="user?.role === 'MEMBER'" index="/member/my-coaches">我的私教</el-menu-item>
+          <el-menu-item v-if="user?.role === 'MEMBER'" index="/member/gym">健身房</el-menu-item>
           <el-menu-item v-if="user?.role === 'MEMBER'" index="/member/profile">个人信息</el-menu-item>
           <el-menu-item v-if="user?.role === 'COACH'" index="/coach/my-courses">我的课程</el-menu-item>
           <el-menu-item v-if="user?.role === 'COACH'" index="/coach/my-students">我的学员</el-menu-item>
@@ -118,6 +124,8 @@
           </template>
           <el-dropdown @command="handleUserCommand">
             <span class="user-dropdown-trigger">
+              <img v-if="user?.avatar" :src="user.avatar" class="user-avatar" alt="avatar" />
+              <span v-else class="user-avatar-placeholder">{{ (user?.realName || user?.username || '?')[0] }}</span>
               {{ user?.realName || user?.username || '未登录用户' }}
               <el-icon><ArrowDown /></el-icon>
             </span>
@@ -232,7 +240,7 @@
 import { computed, reactive, ref, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
-import { Monitor, Folder, DataAnalysis, User, Reading, Setting, ChatDotRound, ArrowDown } from '@element-plus/icons-vue';
+import { Monitor, Folder, DataAnalysis, User, Reading, Setting, ChatDotRound, ArrowDown, Ticket } from '@element-plus/icons-vue';
 import { gsap } from 'gsap';
 import { changePassword, getProfile, updateProfile, type UserProfile } from '../api/auth';
 import { useUserStore } from '../stores/user';
@@ -451,6 +459,29 @@ watch(() => route.path, () => {
 
 .user-dropdown-trigger:hover {
   color: #2563eb;
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(37, 99, 235, 0.2);
+  flex-shrink: 0;
+}
+
+.user-avatar-placeholder {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
 }
 
 .user-panel {

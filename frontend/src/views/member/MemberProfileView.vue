@@ -1,5 +1,37 @@
 <template>
   <div class="member-profile-page">
+    <!-- 头像上传 -->
+    <el-card class="section-card" shadow="never">
+      <template #header>
+        <div class="card-header">
+          <el-icon :size="18"><User /></el-icon>
+          <span>个人头像</span>
+        </div>
+      </template>
+
+      <div class="avatar-upload-area">
+        <div class="avatar-preview">
+          <img v-if="avatarUrl" :src="avatarUrl" class="avatar-img" alt="头像" />
+          <div v-else class="avatar-placeholder">
+            <el-icon :size="36"><User /></el-icon>
+          </div>
+        </div>
+        <div class="avatar-actions">
+          <el-upload
+            :show-file-list="false"
+            :before-upload="beforeAvatarUpload"
+            :http-request="handleAvatarUpload"
+            accept="image/*"
+          >
+            <el-button type="primary" :loading="avatarLoading">
+              {{ avatarUrl ? '更换头像' : '上传头像' }}
+            </el-button>
+          </el-upload>
+          <p class="avatar-hint">支持 JPG、PNG 格式，建议尺寸不超过 2MB</p>
+        </div>
+      </div>
+    </el-card>
+
     <!-- 健康信息 -->
     <el-card class="section-card" shadow="never">
       <template #header>
@@ -168,12 +200,52 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
-import { FirstAidKit, TrendCharts } from '@element-plus/icons-vue';
+import { FirstAidKit, TrendCharts, User } from '@element-plus/icons-vue';
 import { getHealthProfile, saveHealthProfile, type HealthProfile } from '../../api/health';
+import { uploadFile } from '../../api/file';
+import { updateProfile } from '../../api/auth';
 import { useUserStore } from '../../stores/user';
 
 const userStore = useUserStore();
 const userId = userStore.user?.id;
+
+// ====== 头像上传 ======
+const avatarUrl = ref(userStore.user?.avatar || '');
+const avatarLoading = ref(false);
+
+function beforeAvatarUpload(file: File) {
+  const isImage = file.type.startsWith('image/');
+  const isLt2M = file.size / 1024 / 1024 < 2;
+  if (!isImage) { ElMessage.error('只能上传图片文件'); return false; }
+  if (!isLt2M) { ElMessage.error('图片大小不能超过 2MB'); return false; }
+  return true;
+}
+
+async function handleAvatarUpload(options: { file: File }) {
+  if (!userId) return;
+  avatarLoading.value = true;
+  try {
+    const result = await uploadFile(options.file, userId, userStore.user?.username || '');
+    // Build download URL
+    const base = import.meta.env.VITE_API_BASE_URL || '/api';
+    const url = `${base}/file/download/${result.id}`;
+    avatarUrl.value = url;
+    // Update user profile avatar
+    if (userStore.user) {
+      await updateProfile({
+        id: userStore.user.id,
+        realName: userStore.user.realName || '',
+        avatar: url,
+      });
+      userStore.user.avatar = url;
+    }
+    ElMessage.success('头像上传成功');
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '上传失败');
+  } finally {
+    avatarLoading.value = false;
+  }
+}
 
 const saving = ref(false);
 
@@ -285,5 +357,44 @@ onMounted(() => {
 .save-area {
   text-align: center;
   padding: 16px 0 32px;
+}
+
+/* Avatar Upload */
+.avatar-upload-area {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.avatar-preview {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 3px solid var(--el-color-primary-light-7, #c6e2ff);
+}
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--el-fill-color-light, #f5f7fa);
+  color: var(--el-text-color-placeholder, #a8abb2);
+}
+.avatar-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.avatar-hint {
+  font-size: 12px;
+  color: var(--el-text-color-secondary, #909399);
+  margin: 0;
 }
 </style>

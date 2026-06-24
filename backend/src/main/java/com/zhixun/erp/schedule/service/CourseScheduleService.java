@@ -45,9 +45,14 @@ public class CourseScheduleService {
 
     public List<CourseSchedule> getMemberSchedules(Long userId, LocalDateTime from, LocalDateTime to) {
         LambdaQueryWrapper<CourseSchedule> wrapper = new LambdaQueryWrapper<CourseSchedule>()
-                .inSql(CourseSchedule::getCourseId,
-                        "SELECT course_id FROM enrollment WHERE user_id = " + userId
-                                + " AND status IN ('PAID','CONFIRMED') AND deleted = 0");
+                .and(w -> w
+                        // Regular course enrollments
+                        .inSql(CourseSchedule::getCourseId,
+                                "SELECT course_id FROM enrollment WHERE user_id = " + userId
+                                        + " AND status IN ('PAID','CONFIRMED') AND deleted = 0 AND total_sessions IS NULL")
+                        // Private coaching: booked sessions
+                        .or().eq(CourseSchedule::getMemberId, userId)
+                );
         if (from != null) wrapper.ge(CourseSchedule::getStartTime, from);
         if (to != null) wrapper.le(CourseSchedule::getEndTime, to);
         wrapper.orderByAsc(CourseSchedule::getStartTime);
@@ -56,12 +61,21 @@ public class CourseScheduleService {
 
     @Transactional
     public CourseSchedule createSchedule(Long coachId, CourseSchedule input) {
-        Course course = courseMapper.selectById(input.getCourseId());
-        if (course == null || !course.getCoachId().equals(coachId)) {
-            throw new RuntimeException("只能为自己的课程排课");
+        if (input.getCourseId() != null) {
+            Course course = courseMapper.selectById(input.getCourseId());
+            if (course == null || !course.getCoachId().equals(coachId)) {
+                throw new RuntimeException("只能为自己的课程排课");
+            }
         }
         input.setCoachId(coachId);
         input.setCreateTime(LocalDateTime.now());
+        // Private coaching available slot
+        if (input.getCourseId() == null) {
+            input.setBookingStatus("AVAILABLE");
+            if (input.getTitle() == null || input.getTitle().isEmpty()) {
+                input.setTitle("私教空闲");
+            }
+        }
         scheduleMapper.insert(input);
         checkInService.generatePendingRecords(input.getId());
         return input;

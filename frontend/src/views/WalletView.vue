@@ -20,8 +20,8 @@
           <el-table :data="transactions" v-loading="tableLoading" stripe>
             <el-table-column prop="amount" label="金额" width="120">
               <template #default="{ row }">
-                <span :class="(row.type === 'WITHDRAW' || row.type === 'CONSUME') ? 'amount-minus' : 'amount-plus'">
-                  {{ (row.type === 'WITHDRAW' || row.type === 'CONSUME') ? '-' : '+' }}¥ {{ Math.abs(row.amount).toFixed(2) }}
+                <span :class="(row.type === 'WITHDRAW' || row.type === 'CONSUME' || row.type === 'GYM_CONSUME') ? 'amount-minus' : 'amount-plus'">
+                  {{ (row.type === 'WITHDRAW' || row.type === 'CONSUME' || row.type === 'GYM_CONSUME') ? '-' : '+' }}¥ {{ Math.abs(row.amount).toFixed(2) }}
                 </span>
               </template>
             </el-table-column>
@@ -132,6 +132,7 @@ const typeLabelMap: Record<string, string> = {
   WITHDRAW: '提现',
   COURSE: '卖课收入',
   CONSUME: '课程消费',
+  GYM_CONSUME: '健身卡消费',
   COURSE_INCOME: '卖课收入',
   PERSONAL_TRAINING: '私教收入',
   ADJUST: '余额调整',
@@ -142,6 +143,7 @@ const typeTagMap: Record<string, string> = {
   WITHDRAW: 'warning',
   COURSE: '',
   CONSUME: 'danger',
+  GYM_CONSUME: 'danger',
   COURSE_INCOME: 'success',
   PERSONAL_TRAINING: '',
   ADJUST: 'info',

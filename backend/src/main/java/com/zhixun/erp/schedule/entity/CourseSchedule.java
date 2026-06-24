@@ -19,6 +19,9 @@ public class CourseSchedule {
     private LocalDateTime endTime;
     private String location;
     private String color;
+    private Long memberId;
+    private Long enrollmentId;
+    private String bookingStatus;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
     @TableLogic
@@ -40,6 +43,12 @@ public class CourseSchedule {
     public void setLocation(String location) { this.location = location; }
     public String getColor() { return color; }
     public void setColor(String color) { this.color = color; }
+    public Long getMemberId() { return memberId; }
+    public void setMemberId(Long memberId) { this.memberId = memberId; }
+    public Long getEnrollmentId() { return enrollmentId; }
+    public void setEnrollmentId(Long enrollmentId) { this.enrollmentId = enrollmentId; }
+    public String getBookingStatus() { return bookingStatus; }
+    public void setBookingStatus(String bookingStatus) { this.bookingStatus = bookingStatus; }
     public LocalDateTime getCreateTime() { return createTime; }
     public void setCreateTime(LocalDateTime createTime) { this.createTime = createTime; }
     public LocalDateTime getUpdateTime() { return updateTime; }

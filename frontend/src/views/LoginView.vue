@@ -140,38 +140,67 @@
           <!-- Register Link -->
           <p class="si-anim si-d9 si-register">
             还没有账号？
-            <router-link to="/login" class="si-register-link">立即注册</router-link>
+            <router-link to="/register" class="si-register-link">立即注册</router-link>
           </p>
         </div>
       </div>
     </section>
 
-    <!-- ═══ Forgot Password Dialog ═══ -->
-    <el-dialog v-model="forgotDialogVisible" title="重置密码" width="440px" class="si-dialog" :append-to-body="true">
-      <el-form :model="forgotForm" label-position="top">
-        <el-form-item label="邮箱">
-          <el-input v-model="forgotForm.email" placeholder="请输入注册时的邮箱" />
-        </el-form-item>
-        <el-form-item label="验证码">
-          <div class="si-code-row">
-            <el-input v-model="forgotForm.code" placeholder="请输入验证码" />
-            <el-button type="primary" :disabled="codeCooldown > 0" @click="handleSendCode">
-              {{ codeCooldown > 0 ? `${codeCooldown}s` : '获取验证码' }}
-            </el-button>
+    <!-- ═══ Forgot Password Modal ═══ -->
+    <Transition name="si-modal">
+      <div v-if="forgotDialogVisible" class="si-modal-overlay" @click.self="forgotDialogVisible = false">
+        <div class="si-modal-card">
+          <div class="si-modal-header">
+            <h2 class="si-modal-title">重置密码</h2>
+            <button class="si-modal-close" @click="forgotDialogVisible = false">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
           </div>
-        </el-form-item>
-        <el-form-item label="新密码">
-          <el-input v-model="forgotForm.newPassword" type="password" placeholder="请输入新密码" show-password />
-        </el-form-item>
-        <el-form-item label="确认新密码">
-          <el-input v-model="forgotForm.confirmPassword" type="password" placeholder="请再次输入新密码" show-password />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="forgotDialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="resetLoading" @click="submitResetPassword">确认重置</el-button>
-      </template>
-    </el-dialog>
+
+          <form class="si-modal-form" @submit.prevent="submitResetPassword">
+            <div>
+              <label class="si-label">邮箱</label>
+              <div class="si-glass">
+                <input v-model="forgotForm.email" type="email" placeholder="请输入注册时的邮箱" class="si-input" />
+              </div>
+            </div>
+
+            <div>
+              <label class="si-label">验证码</label>
+              <div class="si-glass">
+                <div class="si-code-inner">
+                  <input v-model="forgotForm.code" type="text" placeholder="请输入验证码" class="si-input si-code-input" />
+                  <button type="button" class="si-code-btn" :disabled="codeCooldown > 0" @click="handleSendCode">
+                    {{ codeCooldown > 0 ? `${codeCooldown}s` : '获取' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label class="si-label">新密码</label>
+              <div class="si-glass">
+                <input v-model="forgotForm.newPassword" type="password" placeholder="请输入新密码" class="si-input" />
+              </div>
+            </div>
+
+            <div>
+              <label class="si-label">确认新密码</label>
+              <div class="si-glass">
+                <input v-model="forgotForm.confirmPassword" type="password" placeholder="请再次输入新密码" class="si-input" />
+              </div>
+            </div>
+
+            <div class="si-modal-actions">
+              <button type="button" class="si-modal-btn-cancel" @click="forgotDialogVisible = false">取消</button>
+              <button type="submit" class="si-modal-btn-submit" :disabled="resetLoading">
+                {{ resetLoading ? '重置中...' : '确认重置' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -720,50 +749,152 @@ async function handleSendCode() {
 /* ─── Animation helpers ─── */
 /* initial state set by GSAP fromTo */
 
-/* ─── Code Row (dialog) ─── */
-.si-code-row {
+/* ─── Forgot Password Modal ─── */
+.si-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  padding: 1rem;
+}
+.si-modal-card {
+  width: 100%;
+  max-width: 28rem;
+  background: rgba(20, 20, 20, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1.75rem;
+  padding: 2rem 2rem 1.75rem;
+  box-shadow: 0 16px 64px rgba(0, 0, 0, 0.5);
+}
+.si-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+.si-modal-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #fafafa;
+  margin: 0;
+}
+.si-modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.si-modal-close:hover {
+  color: #fafafa;
+  background: rgba(255, 255, 255, 0.06);
+}
+.si-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+.si-code-inner {
+  display: flex;
+  align-items: center;
+}
+.si-code-input {
+  flex: 1;
+}
+.si-code-btn {
+  flex-shrink: 0;
+  padding: 0 1.25rem;
+  height: 2.5rem;
+  margin-right: 0.4rem;
+  border: none;
+  border-radius: 0.75rem;
+  background: linear-gradient(135deg, #5b7cf7, #818cf8);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.si-code-btn:hover {
+  background: linear-gradient(135deg, #6b8cff, #9ba6ff);
+}
+.si-code-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.si-modal-actions {
   display: flex;
   gap: 0.75rem;
-  width: 100%;
+  margin-top: 0.5rem;
 }
-.si-code-row :deep(.el-input) { flex: 1; }
-.si-code-row :deep(.el-button) {
-  white-space: nowrap;
-  border-radius: 0.5rem;
-  height: 2rem;
-  font-size: 0.75rem;
+.si-modal-btn-cancel {
+  flex: 1;
+  padding: 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.04);
+  color: #b0b4c0;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.si-modal-btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fafafa;
+}
+.si-modal-btn-submit {
+  flex: 1;
+  padding: 0.85rem;
+  border: none;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, #5b7cf7, #818cf8);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+.si-modal-btn-submit:hover {
+  background: linear-gradient(135deg, #6b8cff, #9ba6ff);
+  box-shadow: 0 4px 16px rgba(91, 124, 247, 0.35);
+}
+.si-modal-btn-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
-/* ─── Dialog Dark Override ─── */
-.si-dialog :deep(.el-dialog) {
-  background: #171717 !important;
-  border: 1px solid hsl(0, 0%, 15%) !important;
-  border-radius: 1.25rem !important;
+/* Modal transition */
+.si-modal-enter-active,
+.si-modal-leave-active {
+  transition: opacity 0.25s ease;
 }
-.si-dialog :deep(.el-dialog__header) {
-  border-bottom: 1px solid hsl(0, 0%, 12%) !important;
+.si-modal-enter-active .si-modal-card,
+.si-modal-leave-active .si-modal-card {
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease;
 }
-.si-dialog :deep(.el-dialog__title) {
-  color: #fafafa !important;
+.si-modal-enter-from,
+.si-modal-leave-to {
+  opacity: 0;
 }
-.si-dialog :deep(.el-dialog__body) {
-  color: #a3a3a3 !important;
+.si-modal-enter-from .si-modal-card {
+  transform: scale(0.95) translateY(10px);
+  opacity: 0;
 }
-.si-dialog :deep(.el-form-item__label) {
-  color: #737373 !important;
-  font-size: 0.7rem !important;
-  letter-spacing: 1px !important;
-  text-transform: uppercase !important;
-}
-.si-dialog :deep(.el-input__wrapper) {
-  background: rgba(255, 255, 255, 0.03) !important;
-  border: 1px solid hsl(0, 0%, 15%) !important;
-  box-shadow: none !important;
-}
-.si-dialog :deep(.el-input__inner) {
-  color: #fafafa !important;
-}
-.si-dialog :deep(.el-input__inner::placeholder) {
-  color: #404040 !important;
+.si-modal-leave-to .si-modal-card {
+  transform: scale(0.95) translateY(10px);
+  opacity: 0;
 }
 </style>

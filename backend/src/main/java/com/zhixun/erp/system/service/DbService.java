@@ -132,6 +132,10 @@ public class DbService {
         }
     }
 
+    public int executeSql(String sql) {
+        return jdbcTemplate.update(sql);
+    }
+
     private List<String> getSearchableColumns(String tableName) {
         String sql = "SELECT COLUMN_NAME FROM information_schema.COLUMNS " +
                 "WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND DATA_TYPE IN ('varchar','char','text','longtext','mediumtext','tinytext')";

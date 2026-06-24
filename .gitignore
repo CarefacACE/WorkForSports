@@ -32,3 +32,5 @@ dist-ssr/
 
 # ====== 其他 ======
 .mimocode/
+.claude/
+.codegraph/

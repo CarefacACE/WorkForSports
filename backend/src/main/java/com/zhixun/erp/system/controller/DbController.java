@@ -75,4 +75,16 @@ public class DbController {
         dbService.deleteRows(tableName, pkColumn, pkValues);
         return Result.success("批量删除成功", null);
     }
+
+    @PostMapping("/execute")
+    public Result<Map<String, Object>> executeSql(@RequestBody Map<String, String> body) {
+        String sql = body.get("sql");
+        if (sql == null || sql.isBlank()) {
+            return Result.fail(400, "SQL 不能为空");
+        }
+        int rows = dbService.executeSql(sql);
+        Map<String, Object> result = new java.util.HashMap<>();
+        result.put("affectedRows", rows);
+        return Result.success("执行成功", result);
+    }
 }

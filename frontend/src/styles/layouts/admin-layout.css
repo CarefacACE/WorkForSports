@@ -328,6 +328,8 @@
 [data-admin-theme="dark"] .page-title { color: #f0f0f5; }
 [data-admin-theme="dark"] .page-subtitle { color: #4a4e63; }
 [data-admin-theme="dark"] .user-panel { color: #b0b4c0; }
+[data-admin-theme="dark"] .user-avatar { border-color: rgba(91, 124, 247, 0.3); }
+[data-admin-theme="dark"] .user-avatar-placeholder { background: linear-gradient(135deg, #5b7cf7, #818cf8); }
 [data-admin-theme="dark"] .user-dropdown-trigger { color: #b0b4c0 !important; }
 
 /* === Main Content (Level 0) === */
@@ -746,6 +748,14 @@
 }
 [data-admin-theme="dark"] .card-header { color: #f0f0f5 !important; }
 [data-admin-theme="dark"] .card-header .el-icon { color: #818cf8 !important; }
+
+/* Profile avatar upload dark */
+[data-admin-theme="dark"] .avatar-preview { border-color: rgba(91, 124, 247, 0.3) !important; }
+[data-admin-theme="dark"] .avatar-placeholder {
+  background: #222536 !important;
+  color: #6b7084 !important;
+}
+[data-admin-theme="dark"] .avatar-hint { color: #4a4e63 !important; }
 
 /* el-input-number dark */
 [data-admin-theme="dark"] .el-input-number .el-input__wrapper {

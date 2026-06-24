@@ -21,6 +21,14 @@
           <el-button type="danger" :disabled="selectedIds.length === 0" @click="handleBatchDelete">
             批量删除 ({{ selectedIds.length }})
           </el-button>
+          <el-upload
+            :show-file-list="false"
+            :before-upload="beforeImportUpload"
+            :http-request="handleImportMembers"
+            accept=".csv"
+          >
+            <el-button type="success" :loading="importLoading">导入会员 CSV</el-button>
+          </el-upload>
         </div>
       </div>
 
@@ -147,9 +155,11 @@
 import { ref, reactive, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import { getUsers, registerUser, updateUser, deleteUser, deleteUsers, type UserItem } from '../api/user';
+import request from '../utils/request';
 
 const loading = ref(false);
 const submitLoading = ref(false);
+const importLoading = ref(false);
 const dialogVisible = ref(false);
 const addDialogVisible = ref(false);
 const keyword = ref('');
@@ -271,6 +281,33 @@ async function handleBatchDelete() {
     fetchData();
   } catch (error) {
     ElMessage.error(error instanceof Error ? error.message : '批量删除失败');
+  }
+}
+
+function beforeImportUpload(file: File) {
+  if (!file.name.endsWith('.csv')) {
+    ElMessage.error('请选择 CSV 文件');
+    return false;
+  }
+  return true;
+}
+
+async function handleImportMembers(options: { file: File }) {
+  importLoading.value = true;
+  try {
+    const formData = new FormData();
+    formData.append('file', options.file);
+    const result = await request.post<{ total: number; success: number; skipped: number; failed: number }>(
+      '/user/import-members', formData
+    );
+    ElMessage.success(
+      `导入完成：共 ${result.total} 条，成功 ${result.success}，跳过 ${result.skipped}，失败 ${result.failed}`
+    );
+    fetchData();
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '导入失败');
+  } finally {
+    importLoading.value = false;
   }
 }
 

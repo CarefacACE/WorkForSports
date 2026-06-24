@@ -193,8 +193,17 @@ public class EnrollmentService {
                 .eq(Enrollment::getUserId, userId);
 
         if (type != null && !type.isEmpty()) {
-            wrapper.inSql(Enrollment::getCourseId,
-                    "SELECT id FROM course WHERE type = '" + type + "' AND deleted = 0");
+            if ("PRIVATE".equals(type)) {
+                // Include both traditional private courses and private coaching enrollments
+                wrapper.and(w -> w
+                        .inSql(Enrollment::getCourseId,
+                                "SELECT id FROM course WHERE type = 'PRIVATE' AND deleted = 0")
+                        .or().isNotNull(Enrollment::getTotalSessions)
+                );
+            } else {
+                wrapper.inSql(Enrollment::getCourseId,
+                        "SELECT id FROM course WHERE type = '" + type + "' AND deleted = 0");
+            }
         }
 
         wrapper.orderByDesc(Enrollment::getCreateTime);

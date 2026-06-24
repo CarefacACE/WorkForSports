@@ -136,7 +136,11 @@
             </el-form-item>
           </el-col>
           <el-col :span="8">
-            <el-form-item label="热量(kcal)">
+            <el-form-item>
+              <template #label>
+                <span>热量(kcal)</span>
+                <el-tag v-if="caloriesAuto" size="small" type="success" effect="plain" style="margin-left:6px;font-size:10px">Keytel 自动</el-tag>
+              </template>
               <el-input-number v-model="addForm.calories" :min="0" :step="10" style="width:100%" />
             </el-form-item>
           </el-col>
@@ -171,7 +175,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, reactive, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import { ElMessage } from 'element-plus';
 import * as echarts from 'echarts';
 import {
@@ -179,6 +183,7 @@ import {
   addExerciseRecord, deleteExerciseRecord,
   type ExerciseRecord, type ExerciseStats, type TrendPoint,
 } from '../../api/exercise';
+import { getHealthProfile } from '../../api/health';
 import { useUserStore } from '../../stores/user';
 
 const userStore = useUserStore();
@@ -258,6 +263,62 @@ const addForm = reactive({
   notes: '',
 });
 
+// ====== Keytel 公式自动计算热量 ======
+const healthData = reactive({
+  weight: 70,
+  gender: '男',
+  age: 25,
+  loaded: false,
+});
+
+async function fetchHealth() {
+  if (!userId) return;
+  try {
+    const profile = await getHealthProfile(userId);
+    if (profile.weight) healthData.weight = profile.weight;
+    if (profile.gender) healthData.gender = profile.gender;
+    if (userStore.user?.birthday) {
+      const birth = new Date(userStore.user.birthday);
+      const today = new Date();
+      healthData.age = today.getFullYear() - birth.getFullYear();
+    }
+    healthData.loaded = true;
+  } catch {
+    // use defaults if no health profile
+  }
+}
+
+function calcKeytelCalories(): number {
+  const { duration, heartRateAvg } = addForm;
+  if (!duration || !heartRateAvg || duration <= 0 || heartRateAvg <= 0) return 0;
+  const hr = heartRateAvg;
+  const w = healthData.weight;
+  const a = healthData.age;
+  const hours = duration / 60;
+  let kcal: number;
+  if (healthData.gender === '女') {
+    kcal = ((-20.4022 + 0.4472 * hr - 0.1263 * w + 0.074 * a) / 4.184) * 60 * hours;
+  } else {
+    kcal = ((-55.0969 + 0.6309 * hr + 0.1988 * w + 0.2017 * a) / 4.184) * 60 * hours;
+  }
+  return Math.max(0, Math.round(kcal));
+}
+
+const caloriesAuto = ref(false);
+
+watch(
+  () => [addForm.duration, addForm.heartRateAvg],
+  () => {
+    const result = calcKeytelCalories();
+    if (result > 0) {
+      addForm.calories = result;
+      caloriesAuto.value = true;
+    } else {
+      caloriesAuto.value = false;
+    }
+  }
+);
+
 async function handleAdd() {
   if (!userId || !addForm.exerciseDate) {
     ElMessage.warning('请选择日期');
@@ -327,6 +388,7 @@ async function fetchAll() {
 function handleResize() { chart?.resize(); }
 
 onMounted(async () => {
+  await fetchHealth();
   await fetchAll();
   window.addEventListener('resize', handleResize);
 });

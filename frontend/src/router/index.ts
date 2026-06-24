@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import LoginView from '../views/LoginView.vue';
+import RegisterView from '../views/RegisterView.vue';
 import LandingView from '../views/LandingView.vue';
 import AdminLayout from '../layouts/AdminLayout.vue';
 import WorkbenchView from '../views/WorkbenchView.vue';
@@ -14,11 +15,15 @@ import PublicCourseView from '../views/member/PublicCourseView.vue';
 import PrivateCourseView from '../views/member/PrivateCourseView.vue';
 import MyCoursesView from '../views/member/MyCoursesView.vue';
 import MemberProfileView from '../views/member/MemberProfileView.vue';
+import CoachListView from '../views/member/CoachListView.vue';
+import CoachDetailView from '../views/member/CoachDetailView.vue';
+import MyCoachesView from '../views/member/MyCoachesView.vue';
 import CoachPublicCourseView from '../views/coach/CoachPublicCourseView.vue';
 import CoachPrivateCourseView from '../views/coach/CoachPrivateCourseView.vue';
 import CoachMyCoursesView from '../views/coach/CoachMyCoursesView.vue';
 import CoachMyStudentsView from '../views/coach/CoachMyStudentsView.vue';
 import CoachScheduleView from '../views/coach/CoachScheduleView.vue';
+import CoachProfileView from '../views/coach/CoachProfileView.vue';
 import MemberScheduleView from '../views/member/MemberScheduleView.vue';
 import MemberExerciseView from '../views/member/MemberExerciseView.vue';
 import MemberCheckInView from '../views/member/MemberCheckInView.vue';
@@ -30,6 +35,7 @@ import DbControlView from '../views/DbControlView.vue';
 import GroupChatView from '../views/chat/GroupChatView.vue';
 import PrivateChatView from '../views/chat/PrivateChatView.vue';
 import RequestManageView from '../views/chat/RequestManageView.vue';
+import GymView from '../views/GymView.vue';
 import ChatAgentView from '../views/ChatAgentView.vue';
 
 const router = createRouter({
@@ -44,6 +50,11 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: LoginView,
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: RegisterView,
     },
     {
       path: '/dashboard',
@@ -111,6 +122,11 @@ const router = createRouter({
           component: DbControlView,
         },
         {
+          path: 'gym',
+          name: 'gym-manage',
+          component: GymView,
+        },
+        {
           path: 'ai-assistant',
           name: 'ai-assistant',
           component: ChatAgentView,
@@ -129,7 +145,17 @@ const router = createRouter({
         {
           path: 'private-courses',
           name: 'member-private-courses',
-          component: PrivateCourseView,
+          component: CoachListView,
+        },
+        {
+          path: 'coach-detail/:coachId',
+          name: 'member-coach-detail',
+          component: CoachDetailView,
+        },
+        {
+          path: 'my-coaches',
+          name: 'member-my-coaches',
+          component: MyCoachesView,
         },
         {
           path: 'my-courses',
@@ -171,6 +197,11 @@ const router = createRouter({
           name: 'member-chat-requests',
           component: RequestManageView,
         },
+        {
+          path: 'gym',
+          name: 'member-gym',
+          component: GymView,
+        },
       ],
     },
     {
@@ -185,7 +216,7 @@ const router = createRouter({
         {
           path: 'private-courses',
           name: 'coach-private-courses',
-          component: CoachPrivateCourseView,
+          component: CoachProfileView,
         },
         {
           path: 'my-courses',
@@ -242,7 +273,7 @@ router.beforeEach((to) => {
 });
 
 /* Dark theme isolation: only activate on landing + login pages */
-const darkRoutes = ['/', '/login'];
+const darkRoutes = ['/', '/login', '/register'];
 router.afterEach((to) => {
   if (darkRoutes.includes(to.path)) {
     document.documentElement.setAttribute('data-theme', 'dark');

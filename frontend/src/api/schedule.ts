@@ -2,13 +2,16 @@ import request from '../utils/request';
 
 export interface ScheduleEvent {
   id?: number;
-  courseId: number;
+  courseId?: number;
   coachId?: number;
   title: string;
   startTime: string;
   endTime: string;
   location?: string;
   color?: string;
+  memberId?: number;
+  enrollmentId?: number;
+  bookingStatus?: string;
   createTime?: string;
   updateTime?: string;
 }
