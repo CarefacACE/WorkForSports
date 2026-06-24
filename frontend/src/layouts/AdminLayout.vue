@@ -14,6 +14,10 @@
           <el-icon><Monitor /></el-icon>
           <span>工作栏</span>
         </el-menu-item>
+        <el-menu-item index="/dashboard/ai-assistant">
+          <el-icon><ChatDotRound /></el-icon>
+          <span>AI助手</span>
+        </el-menu-item>
         <el-menu-item index="/dashboard/files">
           <el-icon><Folder /></el-icon>
           <span>文件管理</span>

@@ -259,3 +259,12 @@ CREATE TABLE IF NOT EXISTS check_in_record (
     INDEX idx_schedule_user (schedule_id, user_id),
     UNIQUE KEY uk_schedule_user_role (schedule_id, user_id, role)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS agent_chat_message (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    memory_id VARCHAR(64) NOT NULL COMMENT '会话ID(用户ID_角色)',
+    role VARCHAR(16) NOT NULL COMMENT 'SYSTEM/USER/ASSISTANT/AI',
+    content TEXT NOT NULL COMMENT '消息内容',
+    create_time DATETIME,
+    INDEX idx_memory_id (memory_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

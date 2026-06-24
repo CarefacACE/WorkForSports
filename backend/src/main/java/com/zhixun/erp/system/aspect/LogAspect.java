@@ -5,23 +5,24 @@ import com.zhixun.erp.system.entity.SysLog;
 import com.zhixun.erp.system.service.LogService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.time.LocalDateTime;
 
-@Slf4j
 @Aspect
 @Component
 @RequiredArgsConstructor
 public class LogAspect {
 
+    private static final Logger log = LoggerFactory.getLogger(LogAspect.class);
     private final LogService logService;
     private final ObjectMapper objectMapper;
 

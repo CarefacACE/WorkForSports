@@ -14,7 +14,7 @@ spring:
       mode: always
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://localhost:3366/fzqsdata?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    url: jdbc:mariadb://localhost:3366/zhixun_erp?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
     username: root
     password: fzq666
     hikari:
@@ -66,3 +66,16 @@ mybatis-plus:
 
 file:
   upload-dir: ./uploads
+
+langchain4j:
+  open-ai:
+    chat-model:
+      base-url: https://api.deepseek.com
+      api-key: sk-63494e7621bd4e8082832b353f0ad4bd
+      model-name: deepseek-chat
+      temperature: 0.7
+    streaming-chat-model:
+      base-url: https://api.deepseek.com
+      api-key: sk-63494e7621bd4e8082832b353f0ad4bd
+      model-name: deepseek-chat
+      temperature: 0.7

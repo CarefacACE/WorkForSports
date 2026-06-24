@@ -10,7 +10,7 @@ import javax.sql.DataSource;
 @Configuration
 public class DruidDataSourceConfig {
 
-    @Value("${DB_URL:jdbc:mariadb://localhost:3366/fzqsdata?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai}")
+    @Value("${spring.datasource.url}")
     private String url;
 
     @Value("${DB_USERNAME:root}")

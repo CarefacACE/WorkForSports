@@ -30,6 +30,7 @@ import DbControlView from '../views/DbControlView.vue';
 import GroupChatView from '../views/chat/GroupChatView.vue';
 import PrivateChatView from '../views/chat/PrivateChatView.vue';
 import RequestManageView from '../views/chat/RequestManageView.vue';
+import ChatAgentView from '../views/ChatAgentView.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -108,6 +109,11 @@ const router = createRouter({
           path: 'db-control',
           name: 'db-control',
           component: DbControlView,
+        },
+        {
+          path: 'ai-assistant',
+          name: 'ai-assistant',
+          component: ChatAgentView,
         },
       ],
     },
