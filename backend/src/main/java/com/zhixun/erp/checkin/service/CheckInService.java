@@ -74,6 +74,42 @@ public class CheckInService {
         return record;
     }
 
+    @Transactional
+    public CheckInRecord updateCheckInStatus(Long coachId, Long scheduleId, Long userId, String status) {
+        if (!"SIGNED".equals(status) && !"ABSENT".equals(status) && !"PENDING".equals(status)) {
+            throw new RuntimeException("无效的考勤状态");
+        }
+
+        CourseSchedule schedule = scheduleMapper.selectById(scheduleId);
+        if (schedule == null || !schedule.getCoachId().equals(coachId)) {
+            throw new RuntimeException("只能修改自己排课的考勤");
+        }
+
+        CheckInRecord existing = checkInRecordMapper.selectOne(
+                new LambdaQueryWrapper<CheckInRecord>()
+                        .eq(CheckInRecord::getScheduleId, scheduleId)
+                        .eq(CheckInRecord::getUserId, userId)
+                        .eq(CheckInRecord::getRole, "MEMBER"));
+
+        if (existing != null) {
+            existing.setStatus(status);
+            existing.setCheckInTime("SIGNED".equals(status) ? LocalDateTime.now() : null);
+            existing.setUpdateTime(LocalDateTime.now());
+            checkInRecordMapper.updateById(existing);
+            return existing;
+        }
+
+        CheckInRecord record = new CheckInRecord();
+        record.setScheduleId(scheduleId);
+        record.setUserId(userId);
+        record.setRole("MEMBER");
+        record.setStatus(status);
+        record.setCheckInTime("SIGNED".equals(status) ? LocalDateTime.now() : null);
+        record.setCreateTime(LocalDateTime.now());
+        checkInRecordMapper.insert(record);
+        return record;
+    }
+
     public CheckInRecord getCheckInStatus(Long scheduleId, Long userId, String role) {
         return checkInRecordMapper.selectOne(
                 new LambdaQueryWrapper<CheckInRecord>()

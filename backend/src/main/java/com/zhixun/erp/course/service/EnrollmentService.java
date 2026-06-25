@@ -211,15 +211,23 @@ public class EnrollmentService {
     }
 
     public IPage<User> getCourseStudents(Long coachId, Long courseId, String keyword, int pageNum, int pageSize) {
-        Course course = courseMapper.selectById(courseId);
-        if (course == null || !course.getCoachId().equals(coachId)) {
-            throw new RuntimeException("只能查看自己课程的学员");
+        if (courseId != null) {
+            Course course = courseMapper.selectById(courseId);
+            if (course == null || !course.getCoachId().equals(coachId)) {
+                throw new RuntimeException("只能查看自己课程的学员");
+            }
         }
 
         Page<User> page = new Page<>(pageNum, pageSize);
-        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<User>()
-                .inSql(User::getId,
-                        "SELECT user_id FROM enrollment WHERE course_id = " + courseId + " AND deleted = 0");
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<User>();
+
+        if (courseId != null) {
+            wrapper.inSql(User::getId,
+                    "SELECT user_id FROM enrollment WHERE course_id = " + courseId + " AND deleted = 0");
+        } else {
+            wrapper.inSql(User::getId,
+                    "SELECT DISTINCT user_id FROM enrollment WHERE course_id IN (SELECT id FROM course WHERE coach_id = " + coachId + " AND deleted = 0) AND deleted = 0");
+        }
 
         if (keyword != null && !keyword.trim().isEmpty()) {
             String kw = keyword.trim();
@@ -228,6 +236,7 @@ public class EnrollmentService {
                     .or().like(User::getPhone, kw));
         }
 
+        wrapper.orderByDesc(User::getCreateTime);
         return userMapper.selectPage(page, wrapper);
     }
 

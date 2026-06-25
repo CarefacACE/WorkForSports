@@ -8,27 +8,26 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@TableName("gym_card")
-public class GymCard {
+@TableName("gym_product")
+public class GymProduct {
 
     @TableId(type = IdType.AUTO)
     private Long id;
 
     private String name;
 
-    private String cardCategory;
-
-    private String type;
+    private String description;
 
     private BigDecimal price;
 
-    private Integer duration;
+    private String image;
 
-    private Integer subCardLimit;
-
-    private String description;
+    private Integer stock;
 
     private String status;
+
+    /** 成本价（进货价），用于利润计算 */
+    private BigDecimal cost;
 
     private LocalDateTime createTime;
 
@@ -41,20 +40,18 @@ public class GymCard {
     public void setId(Long id) { this.id = id; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
-    public String getCardCategory() { return cardCategory; }
-    public void setCardCategory(String cardCategory) { this.cardCategory = cardCategory; }
-    public String getType() { return type; }
-    public void setType(String type) { this.type = type; }
-    public BigDecimal getPrice() { return price; }
-    public void setPrice(BigDecimal price) { this.price = price; }
-    public Integer getDuration() { return duration; }
-    public void setDuration(Integer duration) { this.duration = duration; }
-    public Integer getSubCardLimit() { return subCardLimit; }
-    public void setSubCardLimit(Integer subCardLimit) { this.subCardLimit = subCardLimit; }
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+    public BigDecimal getPrice() { return price; }
+    public void setPrice(BigDecimal price) { this.price = price; }
+    public String getImage() { return image; }
+    public void setImage(String image) { this.image = image; }
+    public Integer getStock() { return stock; }
+    public void setStock(Integer stock) { this.stock = stock; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public BigDecimal getCost() { return cost; }
+    public void setCost(BigDecimal cost) { this.cost = cost; }
     public LocalDateTime getCreateTime() { return createTime; }
     public void setCreateTime(LocalDateTime createTime) { this.createTime = createTime; }
     public LocalDateTime getUpdateTime() { return updateTime; }

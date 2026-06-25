@@ -160,4 +160,44 @@ public class ChatController {
         chatService.deleteGroupNotice(id);
         return Result.success("公告已删除", null);
     }
+
+    /** 发送消息（REST 接口） */
+    @PostMapping("/messages")
+    public Result<ChatMessage> sendMessage(@RequestBody Map<String, Object> body) {
+        Long conversationId = Long.valueOf(body.get("conversationId").toString());
+        Long senderId = Long.valueOf(body.get("senderId").toString());
+        String content = (String) body.get("content");
+        String msgType = body.get("msgType") != null ? (String) body.get("msgType") : "TEXT";
+        return Result.success(chatService.sendMessage(conversationId, senderId, content, msgType));
+    }
+
+    /* ─── 管理员：聊天管理 ─── */
+
+    /** 管理员查看所有对话 */
+    @GetMapping("/admin/all-conversations")
+    public Result<List<Map<String, Object>>> getAllConversationsForAdmin() {
+        return Result.success(chatService.getAllConversationsForAdmin());
+    }
+
+    /** 管理员加入任意对话 */
+    @PostMapping("/admin/join/{id}")
+    public Result<Void> adminJoinConversation(@PathVariable Long id, @RequestParam Long userId) {
+        chatService.adminJoinConversation(id, userId);
+        return Result.success("已加入对话", null);
+    }
+
+    /** 管理员查看所有用户（用于发起私聊） */
+    @GetMapping("/admin/all-users")
+    public Result<List<Map<String, Object>>> getAllUsersForAdmin() {
+        List<User> users = userMapper.selectList(null);
+        List<Map<String, Object>> result = users.stream().map(u -> {
+            Map<String, Object> info = new java.util.LinkedHashMap<>();
+            info.put("id", u.getId());
+            info.put("username", u.getUsername());
+            info.put("realName", u.getRealName());
+            info.put("role", u.getRole());
+            return info;
+        }).collect(Collectors.toList());
+        return Result.success(result);
+    }
 }

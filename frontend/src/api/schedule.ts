@@ -49,3 +49,19 @@ export function autoSchedule(coachId: number, courseId: number) {
 export function clearAutoSchedule(coachId: number, courseId: number) {
   return request.delete<void>(`/schedule/auto?coachId=${coachId}&courseId=${courseId}`);
 }
+
+/* ─── 管理员：日程管理 ─── */
+export function getAllSchedules(from?: string, to?: string) {
+  const params: Record<string, string> = {};
+  if (from) params.from = from;
+  if (to) params.to = to;
+  return request.get<ScheduleEvent[]>('/schedule/admin/all', params);
+}
+
+export function adminUpdateSchedule(data: ScheduleEvent) {
+  return request.put<ScheduleEvent>('/schedule/admin/update', data);
+}
+
+export function adminDeleteSchedule(id: number) {
+  return request.delete<void>(`/schedule/admin/${id}`);
+}

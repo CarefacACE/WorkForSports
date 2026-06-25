@@ -36,6 +36,12 @@ import GroupChatView from '../views/chat/GroupChatView.vue';
 import PrivateChatView from '../views/chat/PrivateChatView.vue';
 import RequestManageView from '../views/chat/RequestManageView.vue';
 import GymView from '../views/GymView.vue';
+import GymSupermarketView from '../views/GymSupermarketView.vue';
+import GymFinanceView from '../views/GymFinanceView.vue';
+import AdminCourseView from '../views/AdminCourseView.vue';
+import AdminScheduleView from '../views/AdminScheduleView.vue';
+import AdminNotificationView from '../views/AdminNotificationView.vue';
+import AdminChatView from '../views/AdminChatView.vue';
 import ChatAgentView from '../views/ChatAgentView.vue';
 
 const router = createRouter({
@@ -131,6 +137,36 @@ const router = createRouter({
           name: 'ai-assistant',
           component: ChatAgentView,
         },
+        {
+          path: 'supermarket',
+          name: 'admin-supermarket',
+          component: GymSupermarketView,
+        },
+        {
+          path: 'finance',
+          name: 'admin-finance',
+          component: GymFinanceView,
+        },
+        {
+          path: 'course-approval',
+          name: 'admin-course-approval',
+          component: AdminCourseView,
+        },
+        {
+          path: 'schedule-manage',
+          name: 'admin-schedule-manage',
+          component: AdminScheduleView,
+        },
+        {
+          path: 'notification-manage',
+          name: 'admin-notification-manage',
+          component: AdminNotificationView,
+        },
+        {
+          path: 'chat-manage',
+          name: 'admin-chat-manage',
+          component: AdminChatView,
+        },
       ],
     },
     {
@@ -202,6 +238,11 @@ const router = createRouter({
           name: 'member-gym',
           component: GymView,
         },
+        {
+          path: 'supermarket',
+          name: 'member-supermarket',
+          component: GymSupermarketView,
+        },
       ],
     },
     {
@@ -252,6 +293,11 @@ const router = createRouter({
           path: 'chat-requests',
           name: 'coach-chat-requests',
           component: RequestManageView,
+        },
+        {
+          path: 'supermarket',
+          name: 'coach-supermarket',
+          component: GymSupermarketView,
         },
       ],
     },

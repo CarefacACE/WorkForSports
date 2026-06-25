@@ -122,6 +122,40 @@ export function deleteGroupNotice(noticeId: number) {
   return request.delete<void>(`/chat/notice/${noticeId}`);
 }
 
+/* ─── 管理员：聊天管理 ─── */
+
+export interface AdminConversation {
+  id: number;
+  type: string;
+  name: string;
+  ownerId: number;
+  courseId: number;
+  memberCount: number;
+  lastMessage?: string;
+  lastMessageTime?: string;
+  createTime: string;
+  updateTime: string;
+}
+
+export interface AdminUser {
+  id: number;
+  username: string;
+  realName: string;
+  role: string;
+}
+
+export function getAllConversationsForAdmin() {
+  return request.get<AdminConversation[]>('/chat/admin/all-conversations');
+}
+
+export function adminJoinConversation(conversationId: number, userId: number) {
+  return request.post<void>(`/chat/admin/join/${conversationId}?userId=${userId}`);
+}
+
+export function getAllUsersForAdmin() {
+  return request.get<AdminUser[]>('/chat/admin/all-users');
+}
+
 export interface FriendRequest {
   id: number;
   fromUserId: number;

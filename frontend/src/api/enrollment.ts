@@ -39,7 +39,7 @@ export function getMyEnrollments(userId: number, type?: string, pageNum = 1, pag
   return request.get<EnrollmentPage>('/enrollment/my', { userId, type, pageNum, pageSize });
 }
 
-export function getCourseStudents(coachId: number, courseId: number, keyword?: string, pageNum = 1, pageSize = 10) {
+export function getCourseStudents(coachId: number, courseId?: number, keyword?: string, pageNum = 1, pageSize = 10) {
   return request.get<StudentPage>('/enrollment/students', { coachId, courseId, keyword, pageNum, pageSize });
 }
 

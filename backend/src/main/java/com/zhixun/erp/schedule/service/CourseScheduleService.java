@@ -2,8 +2,11 @@ package com.zhixun.erp.schedule.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.zhixun.erp.checkin.service.CheckInService;
+import com.zhixun.erp.chat.service.NotificationService;
 import com.zhixun.erp.course.entity.Course;
+import com.zhixun.erp.course.entity.Enrollment;
 import com.zhixun.erp.course.mapper.CourseMapper;
+import com.zhixun.erp.course.mapper.EnrollmentMapper;
 import com.zhixun.erp.schedule.entity.CourseSchedule;
 import com.zhixun.erp.schedule.mapper.CourseScheduleMapper;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +17,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,7 +27,9 @@ public class CourseScheduleService {
 
     private final CourseScheduleMapper scheduleMapper;
     private final CourseMapper courseMapper;
+    private final EnrollmentMapper enrollmentMapper;
     private final CheckInService checkInService;
+    private final NotificationService notificationService;
 
     private static final String[] TIME_SLOTS = {
             "08:00","09:00","10:00","11:00","12:00","13:00",
@@ -41,6 +47,38 @@ public class CourseScheduleService {
         if (to != null) wrapper.le(CourseSchedule::getEndTime, to);
         wrapper.orderByAsc(CourseSchedule::getStartTime);
         return scheduleMapper.selectList(wrapper);
+    }
+
+    /** 管理员：查看所有日程（不区分教练/学员） */
+    public List<CourseSchedule> getAllSchedules(LocalDateTime from, LocalDateTime to) {
+        LambdaQueryWrapper<CourseSchedule> wrapper = new LambdaQueryWrapper<CourseSchedule>();
+        if (from != null) wrapper.ge(CourseSchedule::getStartTime, from);
+        if (to != null) wrapper.le(CourseSchedule::getEndTime, to);
+        wrapper.orderByAsc(CourseSchedule::getStartTime);
+        return scheduleMapper.selectList(wrapper);
+    }
+
+    /** 管理员：编辑任意日程 */
+    @Transactional
+    public CourseSchedule adminUpdateSchedule(CourseSchedule input) {
+        CourseSchedule existing = scheduleMapper.selectById(input.getId());
+        if (existing == null) throw new RuntimeException("日程不存在");
+        if (input.getTitle() != null) existing.setTitle(input.getTitle());
+        if (input.getStartTime() != null) existing.setStartTime(input.getStartTime());
+        if (input.getEndTime() != null) existing.setEndTime(input.getEndTime());
+        if (input.getLocation() != null) existing.setLocation(input.getLocation());
+        if (input.getColor() != null) existing.setColor(input.getColor());
+        existing.setUpdateTime(LocalDateTime.now());
+        scheduleMapper.updateById(existing);
+        return existing;
+    }
+
+    /** 管理员：删除任意日程 */
+    @Transactional
+    public void adminDeleteSchedule(Long scheduleId) {
+        CourseSchedule existing = scheduleMapper.selectById(scheduleId);
+        if (existing == null) throw new RuntimeException("日程不存在");
+        scheduleMapper.deleteById(scheduleId);
     }
 
     public List<CourseSchedule> getMemberSchedules(Long userId, LocalDateTime from, LocalDateTime to) {
@@ -87,6 +125,16 @@ public class CourseScheduleService {
         if (existing == null || !existing.getCoachId().equals(coachId)) {
             throw new RuntimeException("只能修改自己的排课");
         }
+
+        // 检查是否已经过去的课程
+        if (existing.getEndTime().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("已结束的课程无法修改时间");
+        }
+
+        // 检查时间是否发生变化
+        boolean timeChanged = !existing.getStartTime().equals(input.getStartTime())
+                || !existing.getEndTime().equals(input.getEndTime());
+
         existing.setTitle(input.getTitle());
         existing.setStartTime(input.getStartTime());
         existing.setEndTime(input.getEndTime());
@@ -94,7 +142,37 @@ public class CourseScheduleService {
         existing.setColor(input.getColor());
         existing.setUpdateTime(LocalDateTime.now());
         scheduleMapper.updateById(existing);
+
+        // 如果时间发生变化，通知该课程的所有学员
+        if (timeChanged && existing.getCourseId() != null) {
+            sendTimeChangeNotification(existing);
+        }
+
         return existing;
+    }
+
+    private void sendTimeChangeNotification(CourseSchedule schedule) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        String oldTime = schedule.getStartTime().format(formatter) + " - " + schedule.getEndTime().format(formatter);
+
+        // 查询该课程的所有学员
+        List<Enrollment> enrollments = enrollmentMapper.selectList(
+                new LambdaQueryWrapper<Enrollment>()
+                        .eq(Enrollment::getCourseId, schedule.getCourseId())
+                        .eq(Enrollment::getDeleted, 0));
+
+        String title = "课程时间变更通知";
+        String content = String.format("课程「%s」的时间已变更，新时间：%s，请注意查看。",
+                schedule.getTitle(), oldTime);
+
+        for (Enrollment enrollment : enrollments) {
+            notificationService.sendNotification(
+                    enrollment.getUserId(),
+                    title,
+                    content,
+                    "SCHEDULE_CHANGE",
+                    schedule.getId());
+        }
     }
 
     @Transactional

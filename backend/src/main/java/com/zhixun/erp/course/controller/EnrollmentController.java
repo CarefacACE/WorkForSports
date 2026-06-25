@@ -52,7 +52,7 @@ public class EnrollmentController {
     @GetMapping("/students")
     public Result<IPage<User>> getCourseStudents(
             @RequestParam Long coachId,
-            @RequestParam Long courseId,
+            @RequestParam(required = false) Long courseId,
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "1") int pageNum,
             @RequestParam(defaultValue = "10") int pageSize) {

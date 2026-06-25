@@ -19,6 +19,12 @@ public class GymMembership {
 
     private Long gymCardId;
 
+    private Long primaryMembershipId;
+
+    private String cardHolderType;
+
+    private String holderName;
+
     private LocalDate startDate;
 
     private LocalDate endDate;
@@ -42,6 +48,12 @@ public class GymMembership {
     public void setUserId(Long userId) { this.userId = userId; }
     public Long getGymCardId() { return gymCardId; }
     public void setGymCardId(Long gymCardId) { this.gymCardId = gymCardId; }
+    public Long getPrimaryMembershipId() { return primaryMembershipId; }
+    public void setPrimaryMembershipId(Long primaryMembershipId) { this.primaryMembershipId = primaryMembershipId; }
+    public String getCardHolderType() { return cardHolderType; }
+    public void setCardHolderType(String cardHolderType) { this.cardHolderType = cardHolderType; }
+    public String getHolderName() { return holderName; }
+    public void setHolderName(String holderName) { this.holderName = holderName; }
     public LocalDate getStartDate() { return startDate; }
     public void setStartDate(LocalDate startDate) { this.startDate = startDate; }
     public LocalDate getEndDate() { return endDate; }

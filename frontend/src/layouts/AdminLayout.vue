@@ -26,6 +26,34 @@
           <el-icon><DataAnalysis /></el-icon>
           <span>CSV分析</span>
         </el-menu-item>
+        <el-menu-item v-if="user?.role !== 'ADMIN'" :index="user?.role === 'MEMBER' ? '/member/supermarket' : '/coach/supermarket'">
+          <el-icon><Shop /></el-icon>
+          <span>超市</span>
+        </el-menu-item>
+        <el-menu-item v-if="user?.role === 'ADMIN'" index="/dashboard/supermarket">
+          <el-icon><Shop /></el-icon>
+          <span>超市管理</span>
+        </el-menu-item>
+        <el-menu-item v-if="user?.role === 'ADMIN'" index="/dashboard/finance">
+          <el-icon><DataAnalysis /></el-icon>
+          <span>收支分析</span>
+        </el-menu-item>
+        <el-sub-menu v-if="user?.role === 'ADMIN'" index="course-manage">
+          <template #title>
+            <el-icon><Reading /></el-icon>
+            <span>课程管理</span>
+          </template>
+          <el-menu-item index="/dashboard/course-approval">课程审批</el-menu-item>
+          <el-menu-item index="/dashboard/schedule-manage">日程管理</el-menu-item>
+        </el-sub-menu>
+        <el-menu-item v-if="user?.role === 'ADMIN'" index="/dashboard/notification-manage">
+          <el-icon><Bell /></el-icon>
+          <span>发布通知</span>
+        </el-menu-item>
+        <el-menu-item v-if="user?.role === 'ADMIN'" index="/dashboard/chat-manage">
+          <el-icon><ChatDotRound /></el-icon>
+          <span>聊天管理</span>
+        </el-menu-item>
         <el-sub-menu v-if="user?.role === 'ADMIN'" index="user-manage">
           <template #title>
             <el-icon><User /></el-icon>
@@ -121,6 +149,9 @@
           <template v-if="user?.role !== 'ADMIN'">
             <MessageDropdown ref="messageDropdownRef" />
             <NotificationDropdown ref="notificationDropdownRef" />
+          </template>
+          <template v-if="user?.role === 'ADMIN'">
+            <StockNotificationDropdown />
           </template>
           <el-dropdown @command="handleUserCommand">
             <span class="user-dropdown-trigger">
@@ -240,13 +271,14 @@
 import { computed, reactive, ref, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
-import { Monitor, Folder, DataAnalysis, User, Reading, Setting, ChatDotRound, ArrowDown, Ticket } from '@element-plus/icons-vue';
+import { Monitor, Folder, DataAnalysis, User, Reading, Setting, ChatDotRound, ArrowDown, Ticket, Shop, Bell } from '@element-plus/icons-vue';
 import { gsap } from 'gsap';
 import { changePassword, getProfile, updateProfile, type UserProfile } from '../api/auth';
 import { useUserStore } from '../stores/user';
 import { useAdminThemeStore } from '../stores/adminTheme';
 import MessageDropdown from '../components/MessageDropdown.vue';
 import NotificationDropdown from '../components/NotificationDropdown.vue';
+import StockNotificationDropdown from '../components/StockNotificationDropdown.vue';
 
 const router = useRouter();
 const route = useRoute();

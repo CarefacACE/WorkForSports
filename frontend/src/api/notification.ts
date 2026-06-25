@@ -29,3 +29,12 @@ export function markAsRead(id: number) {
 export function getUnreadCount(userId: number) {
   return request.get<number>('/notification/unread', { userId });
 }
+
+/* ─── 管理员：通知发布 ─── */
+export function broadcastNotification(title: string, content: string) {
+  return request.post<void>('/notification/admin/broadcast', { title, content });
+}
+
+export function sendNotificationToUser(userId: number, title: string, content: string) {
+  return request.post<void>('/notification/admin/send-to-user', { userId, title, content });
+}

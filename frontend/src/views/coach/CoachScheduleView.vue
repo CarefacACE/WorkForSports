@@ -45,8 +45,11 @@
             <!-- 已排课（可拖拽） -->
             <div v-if="getEvent(day.date, slot.start)" class="event-block"
                  :style="{ background: getEvent(day.date, slot.start)!.color }"
-                 draggable="true"
-                 :class="{ dragging: isDragging(getEvent(day.date, slot.start)!) }"
+                 :draggable="!isPast(day.date, slot.start)"
+                 :class="{ 
+                   dragging: isDragging(getEvent(day.date, slot.start)!),
+                   'event-past': isPast(day.date, slot.start)
+                 }"
                  @click.stop="onEventClick(getEvent(day.date, slot.start)!)"
                  @dragstart="onDragStart($event, getEvent(day.date, slot.start)!)">
               <div class="event-title">{{ getEvent(day.date, slot.start)!.title }}</div>
@@ -104,15 +107,21 @@
         <el-row :gutter="16">
           <el-col :span="12">
             <el-form-item label="日期">
-              <el-input :model-value="editForm.dateStr" disabled />
+              <el-date-picker v-model="editForm.date" type="date" placeholder="选择日期" style="width: 100%"
+                value-format="YYYY-MM-DD" :disabled="isPastEvent" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="时间">
-              <el-input :model-value="editForm.timeRange" disabled />
+              <el-select v-model="editForm.timeSlot" placeholder="选择时间" style="width: 100%" :disabled="isPastEvent">
+                <el-option v-for="slot in timeSlots" :key="slot.start" :label="`${slot.start} - ${slot.end}`" :value="slot.start" />
+              </el-select>
             </el-form-item>
           </el-col>
         </el-row>
+        <el-form-item v-if="isPastEvent" label="提示">
+          <el-tag type="info">已结束的课程无法修改时间</el-tag>
+        </el-form-item>
         <el-form-item label="上课地点">
           <el-input v-model="editForm.location" placeholder="可选" />
         </el-form-item>
@@ -129,6 +138,11 @@
               {{ item.status === 'SIGNED' ? '已签到' : item.status === 'ABSENT' ? '缺勤' : '待签到' }}
             </el-tag>
             <span v-if="item.checkInTime" style="margin-left:8px;font-size:12px;color:#909399">{{ item.checkInTime.replace('T',' ').slice(11,16) }}</span>
+            <div class="checkin-actions">
+              <el-button v-if="item.status !== 'SIGNED'" type="success" size="small" link @click="handleUpdateCheckIn(item.userId, 'SIGNED')">标记已到</el-button>
+              <el-button v-if="item.status !== 'ABSENT'" type="danger" size="small" link @click="handleUpdateCheckIn(item.userId, 'ABSENT')">标记缺勤</el-button>
+              <el-button v-if="item.status !== 'PENDING'" type="info" size="small" link @click="handleUpdateCheckIn(item.userId, 'PENDING')">重置</el-button>
+            </div>
           </div>
         </el-form-item>
       </el-form>
@@ -147,7 +161,7 @@ import { ElMessage } from 'element-plus';
 import { Plus } from '@element-plus/icons-vue';
 import { getMyCourses, type Course } from '../../api/course';
 import { getCoachSchedules, createSchedule, updateSchedule, deleteSchedule, type ScheduleEvent } from '../../api/schedule';
-import { checkIn, getCheckInStatus, getScheduleCheckIns, type CheckInRecord } from '../../api/checkin';
+import { checkIn, getCheckInStatus, getScheduleCheckIns, updateCheckInStatus, type CheckInRecord } from '../../api/checkin';
 import { useUserStore } from '../../stores/user';
 
 const userStore = useUserStore();
@@ -298,18 +312,23 @@ async function handleAdd() {
 // ====== 编辑弹窗 ======
 const editDialogVisible = ref(false);
 const editingEvent = ref<(ScheduleEvent & { _date: string; _slot: string }) | null>(null);
-const editForm = ref({ title: '', dateStr: '', timeRange: '', location: '' });
+const editForm = ref({ title: '', date: '', timeSlot: '', location: '' });
 const coachCheckInStatus = ref<string>('PENDING');
 const scheduleCheckIns = ref<CheckInRecord[]>([]);
 const checkInLoading = ref(false);
 
+const isPastEvent = computed(() => {
+  if (!editingEvent.value) return false;
+  const endTime = new Date(editingEvent.value.endTime);
+  return endTime < new Date();
+});
+
 function onEventClick(event: ScheduleEvent & { _date: string; _slot: string }) {
   editingEvent.value = event;
-  const endSlot = event.endTime.slice(11, 16);
   editForm.value = {
     title: event.title,
-    dateStr: event._date,
-    timeRange: `${event._slot} - ${endSlot}`,
+    date: event._date,
+    timeSlot: event._slot,
     location: event.location || '',
   };
   editDialogVisible.value = true;
@@ -346,12 +365,27 @@ async function handleCoachCheckIn() {
   }
 }
 
+async function handleUpdateCheckIn(userId: number, status: string) {
+  if (!coachId || !editingEvent.value?.id) return;
+  try {
+    await updateCheckInStatus(coachId, editingEvent.value.id, userId, status);
+    ElMessage.success('修改成功');
+    await loadCheckInData(editingEvent.value.id);
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '修改失败');
+  }
+}
+
 async function handleEditEvent() {
   if (!coachId || !editingEvent.value) return;
   submitLoading.value = true;
   try {
+    const slot = editForm.value.timeSlot;
+    const endTime = endTimeFromSlot(slot);
     await updateSchedule(coachId, {
       ...editingEvent.value,
+      startTime: `${editForm.value.date}T${slot}:00`,
+      endTime: `${editForm.value.date}T${endTime}:00`,
       location: editForm.value.location,
     });
     ElMessage.success('已更新');
@@ -381,6 +415,13 @@ const draggingEvent = ref<(ScheduleEvent & { _date: string; _slot: string }) | n
 const dragOverCell = ref<string | null>(null); // "YYYY-MM-DD_HH:mm"
 
 function onDragStart(e: DragEvent, event: ScheduleEvent & { _date: string; _slot: string }) {
+  // 不允许拖拽已经过去的课程
+  const eventEndTime = new Date(event.endTime);
+  if (eventEndTime < new Date()) {
+    e.preventDefault();
+    ElMessage.warning('已结束的课程无法修改时间');
+    return;
+  }
   draggingEvent.value = event;
   e.dataTransfer!.effectAllowed = 'move';
   e.dataTransfer!.setData('text/plain', String(event.id));
@@ -426,6 +467,14 @@ async function onDrop(date: Date, slot: string) {
     (el as HTMLElement).style.opacity = '1';
   });
 
+  // 不允许拖拽已经过去的课程
+  const eventEndTime = new Date(event.endTime);
+  if (eventEndTime < new Date()) {
+    ElMessage.warning('已结束的课程无法修改时间');
+    draggingEvent.value = null;
+    return;
+  }
+
   // 不允许放到有课程的格子或自己原来的位置
   const targetDate = formatDate(date);
   if ((targetDate === event._date && slot === event._slot) || getEvent(date, slot)) {
@@ -452,7 +501,6 @@ async function onDrop(date: Date, slot: string) {
     ElMessage.success('已移动');
   } catch (error) {
     ElMessage.error(error instanceof Error ? error.message : '移动失败');
-    await fetchSchedules();
   }
 
   draggingEvent.value = null;
@@ -526,6 +574,8 @@ onMounted(async () => {
 .event-block { width: 100%; padding: 6px 8px; border-radius: 6px; color: #fff; font-size: 12px; text-align: left; cursor: grab; transition: transform 0.1s, opacity 0.15s, box-shadow 0.15s; }
 .event-block:hover { transform: scale(1.02); box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
 .event-block.dragging { opacity: 0.4; cursor: grabbing; }
+.event-block.event-past { opacity: 0.5; cursor: not-allowed; }
+.event-block.event-past:hover { transform: none; box-shadow: none; }
 .event-block .event-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .event-block .event-location { font-size: 10px; opacity: 0.85; margin-top: 2px; }
 .timetable-slot.has-event { padding: 4px; }
@@ -537,4 +587,5 @@ onMounted(async () => {
 /* 弹窗中的课程选项 */
 .option-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
 .checkin-item { display: flex; align-items: center; padding: 4px 0; font-size: 13px; }
+.checkin-actions { margin-left: auto; display: flex; gap: 4px; }
 </style>

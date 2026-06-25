@@ -68,4 +68,24 @@ public class CourseScheduleController {
         scheduleService.clearAutoSchedule(coachId, courseId);
         return Result.success("已清除自动排课", null);
     }
+
+    /* ─── 管理员：查看/编辑/删除所有日程 ─── */
+
+    @GetMapping("/admin/all")
+    public Result<List<CourseSchedule>> getAllSchedules(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to) {
+        return Result.success(scheduleService.getAllSchedules(from, to));
+    }
+
+    @PutMapping("/admin/update")
+    public Result<CourseSchedule> adminUpdateSchedule(@RequestBody CourseSchedule schedule) {
+        return Result.success("更新成功", scheduleService.adminUpdateSchedule(schedule));
+    }
+
+    @DeleteMapping("/admin/{id}")
+    public Result<Void> adminDeleteSchedule(@PathVariable Long id) {
+        scheduleService.adminDeleteSchedule(id);
+        return Result.success("删除成功", null);
+    }
 }

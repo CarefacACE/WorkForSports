@@ -16,7 +16,7 @@ public class DruidDataSourceConfig {
     @Value("${DB_USERNAME:root}")
     private String username;
 
-    @Value("${DB_PASSWORD:123456}")
+    @Value("${DB_PASSWORD:fzq666}")
     private String password;
 
     @Bean

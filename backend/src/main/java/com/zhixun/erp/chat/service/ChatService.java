@@ -381,4 +381,72 @@ public class ChatService {
     public void deleteGroupNotice(Long noticeId) {
         groupNoticeMapper.deleteById(noticeId);
     }
+
+    /* ─── 管理员：聊天管理 ─── */
+
+    /** 管理员查看所有对话（群聊 + 私聊），附带成员数和最后消息 */
+    public List<Map<String, Object>> getAllConversationsForAdmin() {
+        List<ChatConversation> allConvs = conversationMapper.selectList(
+                new LambdaQueryWrapper<ChatConversation>()
+                        .orderByDesc(ChatConversation::getUpdateTime));
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (ChatConversation conv : allConvs) {
+            Map<String, Object> info = new LinkedHashMap<>();
+            info.put("id", conv.getId());
+            info.put("type", conv.getType());
+            info.put("name", conv.getName());
+            info.put("ownerId", conv.getOwnerId());
+            info.put("courseId", conv.getCourseId());
+            info.put("createTime", conv.getCreateTime());
+            info.put("updateTime", conv.getUpdateTime());
+
+            // 成员数
+            long memberCount = memberMapper.selectCount(
+                    new LambdaQueryWrapper<ChatConversationMember>()
+                            .eq(ChatConversationMember::getConversationId, conv.getId()));
+            info.put("memberCount", memberCount);
+
+            // 最后一条消息预览
+            List<ChatMessage> lastMsgs = messageMapper.selectList(
+                    new LambdaQueryWrapper<ChatMessage>()
+                            .eq(ChatMessage::getConversationId, conv.getId())
+                            .orderByDesc(ChatMessage::getCreateTime)
+                            .last("LIMIT 1"));
+            if (!lastMsgs.isEmpty()) {
+                ChatMessage lastMsg = lastMsgs.get(0);
+                String preview = lastMsg.getContent();
+                if (preview.length() > 50) preview = preview.substring(0, 50) + "...";
+                info.put("lastMessage", preview);
+                info.put("lastMessageTime", lastMsg.getCreateTime());
+            }
+
+            result.add(info);
+        }
+        return result;
+    }
+
+    /** 管理员加入任意对话 */
+    public void adminJoinConversation(Long conversationId, Long adminUserId) {
+        ChatConversation conv = conversationMapper.selectById(conversationId);
+        if (conv == null) throw new RuntimeException("对话不存在");
+        // 如果已经是成员就跳过
+        if (isMember(conversationId, adminUserId)) return;
+        addMember(conversationId, adminUserId);
+    }
+
+    /** 发送消息（REST 接口，同时更新对话时间） */
+    public ChatMessage sendMessage(Long conversationId, Long senderId, String content, String msgType) {
+        if (!isMember(conversationId, senderId)) {
+            throw new RuntimeException("你不是该会话的成员");
+        }
+        ChatMessage msg = saveMessage(conversationId, senderId, content, msgType);
+        // 更新对话的最后更新时间
+        ChatConversation conv = conversationMapper.selectById(conversationId);
+        if (conv != null) {
+            conv.setUpdateTime(LocalDateTime.now());
+            conversationMapper.updateById(conv);
+        }
+        return msg;
+    }
 }

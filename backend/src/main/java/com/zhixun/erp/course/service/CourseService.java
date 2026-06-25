@@ -7,6 +7,7 @@ import com.zhixun.erp.course.dto.CreateCourseRequest;
 import com.zhixun.erp.course.dto.UpdateCourseRequest;
 import com.zhixun.erp.course.entity.Course;
 import com.zhixun.erp.course.mapper.CourseMapper;
+import com.zhixun.erp.chat.service.NotificationService;
 import com.zhixun.erp.user.entity.User;
 import com.zhixun.erp.user.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +24,7 @@ public class CourseService {
 
     private final CourseMapper courseMapper;
     private final UserMapper userMapper;
+    private final NotificationService notificationService;
 
     @Transactional
     public Course createCourse(Long coachId, CreateCourseRequest request) {
@@ -53,7 +56,7 @@ public class CourseService {
         course.setFrequency(request.getFrequency());
         course.setScheduleMode(request.getScheduleMode() != null ? request.getScheduleMode() : "MANUAL");
         course.setDefaultTimeSlot(request.getDefaultTimeSlot());
-        course.setStatus("ACTIVE");
+        course.setStatus("PENDING");
         course.setCreateTime(LocalDateTime.now());
         courseMapper.insert(course);
         return course;
@@ -165,5 +168,71 @@ public class CourseService {
                 .eq(Course::getCoachId, coachId)
                 .orderByDesc(Course::getCreateTime);
         return courseMapper.selectPage(page, wrapper);
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       管理员：课程审批
+       ═══════════════════════════════════════════════════════════ */
+
+    /** 获取待审批的课程列表 */
+    public List<Course> getPendingCourses() {
+        return courseMapper.selectList(
+                new LambdaQueryWrapper<Course>()
+                        .eq(Course::getStatus, "PENDING")
+                        .orderByDesc(Course::getCreateTime));
+    }
+
+    /** 获取按状态筛选的所有课程（管理员） */
+    public List<Course> getAllCoursesByStatus(String status) {
+        LambdaQueryWrapper<Course> wrapper = new LambdaQueryWrapper<Course>()
+                .orderByDesc(Course::getCreateTime);
+        if (status != null && !status.isEmpty()) {
+            wrapper.eq(Course::getStatus, status);
+        }
+        return courseMapper.selectList(wrapper);
+    }
+
+    /** 管理员：通过审批 */
+    @Transactional
+    public Course approveCourse(Long courseId) {
+        Course course = courseMapper.selectById(courseId);
+        if (course == null) throw new RuntimeException("课程不存在");
+        if (!"PENDING".equals(course.getStatus())) throw new RuntimeException("该课程不是待审批状态");
+
+        course.setStatus("ACTIVE");
+        course.setUpdateTime(LocalDateTime.now());
+        courseMapper.updateById(course);
+
+        notificationService.sendNotification(
+                course.getCoachId(),
+                "课程审批通过",
+                "您创建的课程「" + course.getName() + "」已通过管理员审核，现已上架。",
+                "COURSE_APPROVED",
+                courseId);
+
+        return course;
+    }
+
+    /** 管理员：驳回审批 */
+    @Transactional
+    public Course rejectCourse(Long courseId, String reason) {
+        Course course = courseMapper.selectById(courseId);
+        if (course == null) throw new RuntimeException("课程不存在");
+        if (!"PENDING".equals(course.getStatus())) throw new RuntimeException("该课程不是待审批状态");
+
+        course.setStatus("REJECTED");
+        course.setUpdateTime(LocalDateTime.now());
+        courseMapper.updateById(course);
+
+        String msg = "您创建的课程「" + course.getName() + "」已被管理员驳回。";
+        if (reason != null && !reason.isEmpty()) msg += " 原因：" + reason;
+        notificationService.sendNotification(
+                course.getCoachId(),
+                "课程审批被驳回",
+                msg,
+                "COURSE_REJECTED",
+                courseId);
+
+        return course;
     }
 }

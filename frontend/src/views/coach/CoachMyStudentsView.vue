@@ -157,16 +157,17 @@ async function fetchCourses() {
   try {
     const res = await getMyCourses(coachId, 1, 100);
     myCourses.value = res.records;
+    fetchStudents();
   } catch (error) {
     ElMessage.error(error instanceof Error ? error.message : '获取课程失败');
   }
 }
 
 async function fetchStudents() {
-  if (!coachId || !selectedCourseId.value) return;
+  if (!coachId) return;
   loading.value = true;
   try {
-    const res = await getCourseStudents(coachId, selectedCourseId.value, keyword.value || undefined, pageNum.value, 10);
+    const res = await getCourseStudents(coachId, selectedCourseId.value || undefined, keyword.value || undefined, pageNum.value, 10);
     students.value = res.records;
     total.value = res.total;
   } catch (error) {
@@ -179,9 +180,7 @@ async function fetchStudents() {
 function handleCourseChange() {
   pageNum.value = 1;
   students.value = [];
-  if (selectedCourseId.value) {
-    fetchStudents();
-  }
+  fetchStudents();
 }
 
 function handleSearch() {

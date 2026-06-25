@@ -27,6 +27,15 @@ public class CheckInController {
         return Result.success("签到成功", checkInService.checkIn(scheduleId, userId, role));
     }
 
+    @PutMapping
+    public Result<CheckInRecord> updateCheckInStatus(
+            @RequestParam Long coachId,
+            @RequestParam Long scheduleId,
+            @RequestParam Long userId,
+            @RequestParam String status) {
+        return Result.success("修改成功", checkInService.updateCheckInStatus(coachId, scheduleId, userId, status));
+    }
+
     @GetMapping("/status")
     public Result<CheckInRecord> getCheckInStatus(
             @RequestParam Long scheduleId,

@@ -51,3 +51,7 @@ export function getCheckInStats(userId: number, role: string) {
     role
   })
 }
+
+export function updateCheckInStatus(coachId: number, scheduleId: number, userId: number, status: string) {
+  return request.put<CheckInRecord>(`/checkin?coachId=${coachId}&scheduleId=${scheduleId}&userId=${userId}&status=${status}`)
+}

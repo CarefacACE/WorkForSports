@@ -260,6 +260,13 @@ CREATE TABLE IF NOT EXISTS check_in_record (
     UNIQUE KEY uk_schedule_user_role (schedule_id, user_id, role)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+ALTER TABLE course_schedule ADD COLUMN IF NOT EXISTS member_id BIGINT DEFAULT NULL COMMENT '私教学员ID';
+ALTER TABLE course_schedule ADD COLUMN IF NOT EXISTS enrollment_id BIGINT DEFAULT NULL COMMENT '关联报名ID';
+ALTER TABLE course_schedule ADD COLUMN IF NOT EXISTS booking_status VARCHAR(16) DEFAULT NULL COMMENT '预约状态';
+
+ALTER TABLE enrollment ADD COLUMN IF NOT EXISTS total_sessions INT DEFAULT 0 COMMENT '总课时';
+ALTER TABLE enrollment ADD COLUMN IF NOT EXISTS remaining_sessions INT DEFAULT 0 COMMENT '剩余课时';
+
 CREATE TABLE IF NOT EXISTS agent_chat_message (
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     memory_id VARCHAR(64) NOT NULL COMMENT '会话ID(用户ID_角色)',
@@ -268,3 +275,117 @@ CREATE TABLE IF NOT EXISTS agent_chat_message (
     create_time DATETIME,
     INDEX idx_memory_id (memory_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS private_coach_profile (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    coach_id BIGINT NOT NULL,
+    description TEXT,
+    specialties VARCHAR(500),
+    price_per_session DECIMAL(10,2) DEFAULT 0.00,
+    session_duration INT DEFAULT 60,
+    cover_image VARCHAR(500),
+    status VARCHAR(16) DEFAULT 'ACTIVE',
+    create_time DATETIME,
+    update_time DATETIME,
+    deleted TINYINT DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================
+-- 健身卡配置表
+-- card_category: SESSION(次卡), TIME(时间卡)
+-- type: SESSION->VISIT, TIME->MONTHLY/QUARTERLY/YEARLY/TRIAL
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `gym_card` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(100) NOT NULL COMMENT '卡名',
+  `card_category` VARCHAR(20) NOT NULL DEFAULT 'SESSION' COMMENT 'SESSION(次卡)/TIME(时间卡)',
+  `type` VARCHAR(20) NOT NULL COMMENT 'VISIT/MONTHLY/QUARTERLY/YEARLY/TRIAL',
+  `price` DECIMAL(10,2) NOT NULL COMMENT '价格',
+  `duration` INT NOT NULL COMMENT '有效期天数(次卡=次数,时间卡=天数)',
+  `sub_card_limit` INT NOT NULL DEFAULT 2 COMMENT '次卡允许的副卡数量',
+  `description` VARCHAR(500) DEFAULT NULL COMMENT '描述',
+  `status` VARCHAR(20) NOT NULL DEFAULT 'ACTIVE' COMMENT 'ACTIVE/INACTIVE',
+  `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `update_time` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `deleted` TINYINT NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='健身卡配置';
+
+-- ============================================================
+-- 会员健身卡持有表
+-- card_holder_type: PRIMARY(主卡)/SUB(副卡)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `gym_membership` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `user_id` BIGINT NOT NULL COMMENT '会员ID',
+  `gym_card_id` BIGINT NOT NULL COMMENT '关联健身卡ID',
+  `primary_membership_id` BIGINT DEFAULT NULL COMMENT '副卡关联的主卡ID',
+  `card_holder_type` VARCHAR(20) NOT NULL DEFAULT 'PRIMARY' COMMENT 'PRIMARY(主卡)/SUB(副卡)',
+  `holder_name` VARCHAR(50) DEFAULT NULL COMMENT '副卡持有人名称',
+  `start_date` DATE NOT NULL COMMENT '生效日期',
+  `end_date` DATE NOT NULL COMMENT '到期日期',
+  `remaining_visits` INT DEFAULT NULL COMMENT '剩余次数(次卡)',
+  `status` VARCHAR(20) NOT NULL DEFAULT 'ACTIVE' COMMENT 'ACTIVE/EXPIRED/USED_UP',
+  `paid_amount` DECIMAL(10,2) NOT NULL COMMENT '支付金额',
+  `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `update_time` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `deleted` TINYINT NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `idx_user_id` (`user_id`),
+  KEY `idx_gym_card_id` (`gym_card_id`),
+  KEY `idx_primary_membership_id` (`primary_membership_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='会员健身卡';
+
+-- ============================================================
+-- 健身房超市商品表
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `gym_product` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(100) NOT NULL COMMENT '商品名称',
+  `description` VARCHAR(500) DEFAULT NULL COMMENT '商品描述',
+  `price` DECIMAL(10,2) NOT NULL COMMENT '价格',
+  `image` VARCHAR(500) DEFAULT NULL COMMENT '商品图片URL',
+  `stock` INT NOT NULL DEFAULT 0 COMMENT '库存数量，0表示缺货',
+  `status` VARCHAR(20) NOT NULL DEFAULT 'ACTIVE' COMMENT 'ACTIVE(上架)/INACTIVE(下架)',
+  `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `update_time` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `deleted` TINYINT NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='健身房超市商品';
+
+ALTER TABLE `gym_product` ADD COLUMN IF NOT EXISTS `cost` DECIMAL(10,2) DEFAULT 0.00 COMMENT '成本价(进货价)';
+
+-- ============================================================
+-- 商品购买记录表
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `product_purchase_record` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `user_id` BIGINT NOT NULL COMMENT '购买用户ID',
+  `product_id` BIGINT NOT NULL COMMENT '商品ID',
+  `product_name` VARCHAR(100) NOT NULL COMMENT '商品名称(快照)',
+  `quantity` INT NOT NULL DEFAULT 1 COMMENT '购买数量',
+  `unit_price` DECIMAL(10,2) NOT NULL COMMENT '单价(快照)',
+  `total_price` DECIMAL(10,2) NOT NULL COMMENT '总价',
+  `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `deleted` TINYINT NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `idx_user_id` (`user_id`),
+  KEY `idx_product_id` (`product_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='商品购买记录';
+
+-- ============================================================
+-- 缺货通知表
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `stock_notification` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `user_id` BIGINT NOT NULL COMMENT '提交通知的用户ID',
+  `product_id` BIGINT NOT NULL COMMENT '商品ID',
+  `status` VARCHAR(20) NOT NULL DEFAULT 'PENDING' COMMENT 'PENDING(待处理)/NOTIFIED(已通知)', 
+  `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `update_time` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `deleted` TINYINT NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `idx_user_id` (`user_id`),
+  KEY `idx_product_id` (`product_id`),
+  UNIQUE KEY `uk_user_product` (`user_id`, `product_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='缺货通知';

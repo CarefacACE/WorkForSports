@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @CrossOrigin
 @RestController
@@ -62,5 +63,30 @@ public class CourseController {
             @RequestParam(defaultValue = "1") int pageNum,
             @RequestParam(defaultValue = "10") int pageSize) {
         return Result.success(courseService.getCoachCourses(coachId, pageNum, pageSize));
+    }
+
+    /* ─── 管理员：课程审批 ─── */
+
+    @GetMapping("/admin/pending")
+    public Result<List<Course>> getPendingCourses() {
+        return Result.success(courseService.getPendingCourses());
+    }
+
+    @GetMapping("/admin/all")
+    public Result<List<Course>> getAllCourses(
+            @RequestParam(required = false) String status) {
+        return Result.success(courseService.getAllCoursesByStatus(status));
+    }
+
+    @PutMapping("/admin/approve/{id}")
+    public Result<Course> approveCourse(@PathVariable Long id) {
+        return Result.success("审批通过", courseService.approveCourse(id));
+    }
+
+    @PutMapping("/admin/reject/{id}")
+    public Result<Course> rejectCourse(
+            @PathVariable Long id,
+            @RequestParam(required = false) String reason) {
+        return Result.success("已驳回", courseService.rejectCourse(id, reason));
     }
 }

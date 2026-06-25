@@ -87,3 +87,20 @@ export function getCourseDetail(id: number) {
 export function getMyCourses(coachId: number, pageNum = 1, pageSize = 10) {
   return request.get<CoursePage>('/course/my', { coachId, pageNum, pageSize });
 }
+
+/* ─── 管理员：课程审批 ─── */
+export function getPendingCourses() {
+  return request.get<Course[]>('/course/admin/pending');
+}
+
+export function getAllCoursesForAdmin(status?: string) {
+  return request.get<Course[]>('/course/admin/all', { status });
+}
+
+export function approveCourse(id: number) {
+  return request.put<Course>(`/course/admin/approve/${id}`);
+}
+
+export function rejectCourse(id: number, reason?: string) {
+  return request.put<Course>(`/course/admin/reject/${id}?reason=${encodeURIComponent(reason || '')}`);
+}
