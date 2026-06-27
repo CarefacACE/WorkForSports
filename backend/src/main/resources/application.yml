@@ -14,9 +14,9 @@ spring:
       mode: always
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://localhost:3366/zhixun_erp?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    url: jdbc:mariadb://localhost:3306/zhixun_erp?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
     username: root
-    password: fzq666
+    password: 123456
     hikari:
       pool-name: ZhixunHikariPool
       minimum-idle: 5
@@ -99,7 +99,7 @@ langchain4j:
   open-ai:
     chat-model:
       base-url: https://api.deepseek.com
-      api-key: sk-63494e7621bd4e8082832b353f0ad4bd
+      api-key: null
       model-name: deepseek-chat
       temperature: 0.7
       timeout: 120s
