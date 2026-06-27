@@ -12,6 +12,7 @@ export interface ScheduleEvent {
   memberId?: number;
   enrollmentId?: number;
   bookingStatus?: string;
+  courseType?: string; // 课程类型 (PUBLIC/PRIVATE)，用于隐私保护显示
   createTime?: string;
   updateTime?: string;
 }

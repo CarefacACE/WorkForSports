@@ -278,7 +278,7 @@ onMounted(fetchAll);
 </script>
 
 <style scoped>
-.finance-page { display: flex; flex-direction: column; gap: 16px; }
+.finance-page { display: flex; flex-direction: column; flex: 1; min-height: 0; gap: 16px; }
 
 /* ─── Filter ─── */
 .filter-card { flex-shrink: 0; }

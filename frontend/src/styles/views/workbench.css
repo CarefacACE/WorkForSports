@@ -3,8 +3,10 @@
    ============================================ */
 
 .wb-page {
-  min-height: calc(100vh - 124px);
-  padding-bottom: 32px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 /* === Welcome Bar === */

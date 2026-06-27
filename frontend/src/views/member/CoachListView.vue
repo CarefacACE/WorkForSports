@@ -1,6 +1,6 @@
 <template>
   <div class="coach-list-page">
-    <el-card shadow="never">
+    <el-card shadow="never" style="flex: 1; display: flex; flex-direction: column; min-height: 0;">
       <template #header>
         <div class="card-header">
           <span>🏋️ 私教教练</span>

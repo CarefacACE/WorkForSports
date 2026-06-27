@@ -9,7 +9,7 @@ import reactor.core.publisher.Flux;
 @AiService(
         streamingChatModel = "openAiStreamingChatModel",
         chatMemoryProvider = "chatMemoryProvider",
-        tools = {"scheduleTool", "financeTool", "exerciseTool", "healthTool", "checkInTool"}
+        tools = {"scheduleTool", "financeTool", "exerciseTool", "healthTool", "checkInTool", "courseTool"}
 )
 public interface AgentChatService {
 

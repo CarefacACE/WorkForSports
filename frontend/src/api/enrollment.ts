@@ -4,8 +4,12 @@ export interface Enrollment {
   id: number;
   userId: number;
   courseId: number;
-  status: 'TRIAL' | 'PAID' | 'CONFIRMED';
+  status: 'TRIAL' | 'PAID' | 'CONFIRMED' | 'CANCELLED';
   paidAmount: number;
+  totalSessions?: number;
+  remainingSessions?: number;
+  coachId?: number;
+  autoDeductAgreed?: number;
   createTime: string;
 }
 
@@ -45,4 +49,8 @@ export function getCourseStudents(coachId: number, courseId?: number, keyword?: 
 
 export function getCoachEnrollments(coachId: number, keyword?: string, pageNum = 1, pageSize = 10) {
   return request.get<EnrollmentPage>('/enrollment/coach', { coachId, keyword, pageNum, pageSize });
+}
+
+export function quitEnrollment(enrollmentId: number) {
+  return request.put<void>(`/enrollment/quit/${enrollmentId}`);
 }

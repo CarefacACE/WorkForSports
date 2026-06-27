@@ -93,6 +93,10 @@ export function getPendingCourses() {
   return request.get<Course[]>('/course/admin/pending');
 }
 
+export function getPendingCourseCount() {
+  return request.get<number>('/course/admin/pending/count');
+}
+
 export function getAllCoursesForAdmin(status?: string) {
   return request.get<Course[]>('/course/admin/all', { status });
 }
@@ -104,3 +108,21 @@ export function approveCourse(id: number) {
 export function rejectCourse(id: number, reason?: string) {
   return request.put<Course>(`/course/admin/reject/${id}?reason=${encodeURIComponent(reason || '')}`);
 }
+
+/** 管理员：替教练创建课程（直接通过审批） */
+export function adminCreateCourse(coachId: number, data: CreateCourseParams) {
+  return request.post<Course>(`/course/admin/create?coachId=${coachId}`, data);
+}
+
+/** 管理员：修改任意课程，通知教练 */
+export function adminUpdateCourse(data: UpdateCourseParams) {
+  return request.put<Course>('/course/admin/update', data);
+}
+
+/** 教练：重新申请被驳回的课程 */
+export function resubmitCourse(id: number, coachId: number) {
+  return request.put<Course>(`/course/resubmit/${id}?coachId=${coachId}`);
+}
+
+
+

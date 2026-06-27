@@ -11,11 +11,12 @@
               <el-button size="small" @click="currentWeekOffset++">下一周</el-button>
             </el-button-group>
             <span class="week-label">{{ weekRangeLabel }}</span>
+            <el-button type="primary" size="small" @click="fetchSchedules">刷新</el-button>
           </div>
         </div>
       </template>
 
-      <div class="timetable">
+      <div class="timetable" v-loading="loading">
         <div class="timetable-header">
           <div class="timetable-cell timetable-corner">时间</div>
           <div v-for="(day, i) in weekDays" :key="i" class="timetable-cell timetable-day"
@@ -36,11 +37,13 @@
               <div class="event-title">{{ getEvent(day.date, slot.start)!.title }}</div>
               <div class="event-location" v-if="getEvent(day.date, slot.start)!.location">{{ getEvent(day.date, slot.start)!.location }}</div>
             </div>
+            <!-- Empty slot: no action in read-only mode -->
+            <div v-else class="empty-slot"></div>
           </div>
         </div>
       </div>
 
-      <el-empty v-if="events.length === 0 && !loading" description="暂无课程安排，请先选课" :image-size="80" />
+      <el-empty v-if="!loading && events.length === 0" description="暂无课程安排" :image-size="80" />
     </el-card>
 
     <!-- 签到弹窗 -->
@@ -121,6 +124,10 @@ function formatDate(date: Date): string {
   return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
 }
 
+function fmtDateTime(date: Date, slot: string): string {
+  return `${formatDate(date)}T${slot}:00`;
+}
+
 const colorPalette = ['#3056d3', '#e6a23c', '#67c23a', '#f56c6c', '#909399', '#9b59b6', '#1abc9c', '#e74c3c'];
 const courseColors = new Map<number, string>();
 function getCourseColor(id: number): string {
@@ -145,7 +152,7 @@ async function fetchSchedules() {
     const data = await getMemberSchedules(userId, start.toISOString(), end.toISOString());
     events.value = data.map(s => ({
       ...s,
-      color: s.color || getCourseColor(s.courseId),
+      color: s.color || getCourseColor(s.courseId ?? 0),
       _date: s.startTime.slice(0, 10),
       _slot: s.startTime.slice(11, 16),
     }));
@@ -191,7 +198,7 @@ async function handleMemberCheckIn() {
 </script>
 
 <style scoped>
-.schedule-page { padding: 0; }
+.schedule-page { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 .card-header { display: flex; align-items: center; justify-content: space-between; font-weight: 600; }
 .header-right { display: flex; align-items: center; gap: 12px; }
 .week-label { font-size: 14px; color: #606266; }
@@ -208,14 +215,13 @@ async function handleMemberCheckIn() {
 .timetable-day.today { background: #ecf5ff; }
 .timetable-time { font-size: 12px; color: #606266; font-weight: 500; background: #fafafa; line-height: 1.6; }
 .timetable-time .time-end { font-size: 11px; color: #909399; font-weight: 400; }
-.timetable-slot { min-height: 56px; }
+.timetable-slot { min-height: 56px; position: relative; }
 .timetable-slot.has-event { padding: 4px; }
 
-.event-block { width: 100%; padding: 6px 8px; border-radius: 6px; color: #fff; font-size: 12px; text-align: left; }
+.event-block { width: 100%; padding: 6px 8px; border-radius: 6px; color: #fff; font-size: 12px; text-align: left; cursor: pointer; }
+.event-block:hover { transform: scale(1.02); box-shadow: 0 2px 8px rgba(0,0,0,0.15); transition: transform 0.1s, box-shadow 0.15s; }
 .event-block .event-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .event-block .event-location { font-size: 10px; opacity: 0.85; margin-top: 2px; }
-.event-block { cursor: pointer; }
-.event-block:hover { transform: scale(1.02); box-shadow: 0 2px 8px rgba(0,0,0,0.15); transition: transform 0.1s, box-shadow 0.15s; }
 
 .checkin-dialog-content { text-align: center; padding: 10px 0; }
 .checkin-course-title { font-size: 18px; font-weight: 700; color: #303133; margin-bottom: 12px; }

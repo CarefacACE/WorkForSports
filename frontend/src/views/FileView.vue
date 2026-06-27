@@ -153,7 +153,10 @@ onMounted(() => {
 
 <style scoped>
 .file-page {
-  padding: 0;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 .card-header {

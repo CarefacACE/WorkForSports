@@ -3,8 +3,10 @@ package com.zhixun.erp.chat.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.zhixun.erp.chat.entity.ChatBlock;
 import com.zhixun.erp.chat.entity.ChatConversation;
 import com.zhixun.erp.chat.entity.ChatFriendRequest;
+import com.zhixun.erp.chat.mapper.ChatBlockMapper;
 import com.zhixun.erp.chat.mapper.ChatConversationMapper;
 import com.zhixun.erp.chat.mapper.ChatFriendRequestMapper;
 import com.zhixun.erp.chat.mapper.ChatConversationMemberMapper;
@@ -15,7 +17,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +32,7 @@ public class FriendService {
     private final ChatService chatService;
     private final NotificationService notificationService;
     private final UserMapper userMapper;
+    private final ChatBlockMapper chatBlockMapper;
 
     public User searchUser(String username) {
         return userMapper.selectOne(
@@ -48,7 +54,6 @@ public class FriendService {
         if (fromUserId.equals(toUserId)) {
             throw new RuntimeException("不能与自己聊天");
         }
-
         User toUser = userMapper.selectById(toUserId);
         if (toUser == null || "ADMIN".equals(toUser.getRole())) {
             throw new RuntimeException("用户不存在");
@@ -67,7 +72,6 @@ public class FriendService {
         if (fromUserId.equals(toUserId)) {
             throw new RuntimeException("不能添加自己为好友");
         }
-
         User toUser = userMapper.selectById(toUserId);
         if (toUser == null || "ADMIN".equals(toUser.getRole())) {
             throw new RuntimeException("用户不存在");
@@ -270,5 +274,82 @@ public class FriendService {
                 new LambdaQueryWrapper<ChatFriendRequest>()
                         .eq(ChatFriendRequest::getFromUserId, userId)
                         .orderByDesc(ChatFriendRequest::getCreateTime));
+    }
+
+    /* ─── 拉黑 / 删除好友 ─── */
+
+    @Transactional
+    public void blockUser(Long userId, Long blockedUserId) {
+        if (userId.equals(blockedUserId)) {
+            throw new RuntimeException("不能拉黑自己");
+        }
+        ChatBlock existing = chatBlockMapper.selectOne(
+                new LambdaQueryWrapper<ChatBlock>()
+                        .eq(ChatBlock::getUserId, userId)
+                        .eq(ChatBlock::getBlockedUserId, blockedUserId));
+        if (existing != null) {
+            throw new RuntimeException("该用户已被拉黑");
+        }
+        ChatBlock block = new ChatBlock();
+        block.setUserId(userId);
+        block.setBlockedUserId(blockedUserId);
+        block.setCreateTime(LocalDateTime.now());
+        chatBlockMapper.insert(block);
+
+        // 拉黑后不删除会话，只插入block记录（微信模式：只是被拉黑方收不到消息）
+    }
+
+    @Transactional
+    public void unblockUser(Long userId, Long blockedUserId) {
+        chatBlockMapper.delete(
+                new LambdaQueryWrapper<ChatBlock>()
+                        .eq(ChatBlock::getUserId, userId)
+                        .eq(ChatBlock::getBlockedUserId, blockedUserId));
+    }
+
+    public boolean isBlocked(Long userId, Long targetUserId) {
+        return chatBlockMapper.selectCount(
+                new LambdaQueryWrapper<ChatBlock>()
+                        .eq(ChatBlock::getUserId, userId)
+                        .eq(ChatBlock::getBlockedUserId, targetUserId)) > 0;
+    }
+
+    public List<Map<String, Object>> getBlockedUsers(Long userId) {
+        List<ChatBlock> blocks = chatBlockMapper.selectList(
+                new LambdaQueryWrapper<ChatBlock>()
+                        .eq(ChatBlock::getUserId, userId)
+                        .orderByDesc(ChatBlock::getCreateTime));
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (ChatBlock b : blocks) {
+            User user = userMapper.selectById(b.getBlockedUserId());
+            if (user != null) {
+                Map<String, Object> item = new LinkedHashMap<>();
+                item.put("userId", user.getId());
+                item.put("username", user.getUsername());
+                item.put("realName", user.getRealName());
+                result.add(item);
+            }
+        }
+        return result;
+    }
+
+    @Transactional
+    public void deleteFriend(Long userId, Long friendUserId) {
+        if (userId.equals(friendUserId)) {
+            throw new RuntimeException("不能删除自己");
+        }
+        List<Long> convIds = chatService.getCommonPrivateConversations(userId, friendUserId);
+        if (convIds.isEmpty()) {
+            throw new RuntimeException("你们不是好友");
+        }
+        for (Long convId : convIds) {
+            chatService.removeMember(convId, userId);
+            chatService.removeMember(convId, friendUserId);
+        }
+        User friend = userMapper.selectById(friendUserId);
+        notificationService.sendNotification(friendUserId,
+                "好友已删除",
+                (userMapper.selectById(userId) != null ? userMapper.selectById(userId).getRealName() : "") + " 已将你从好友中删除",
+                "FRIEND_DELETED", null);
     }
 }

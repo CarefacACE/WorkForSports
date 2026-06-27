@@ -566,7 +566,7 @@ onMounted(fetchAll);
 </script>
 
 <style scoped>
-.gym-page { padding: 0; display: flex; flex-direction: column; min-height: calc(100vh - 120px); }
+.gym-page { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 .gym-page :deep(.el-card) { flex: 1; display: flex; flex-direction: column; }
 .gym-page :deep(.el-card__body) { flex: 1; display: flex; flex-direction: column; }
 .card-header { display: flex; align-items: center; justify-content: space-between; font-weight: 600; }

@@ -14,10 +14,9 @@ import WalletView from '../views/WalletView.vue';
 import PublicCourseView from '../views/member/PublicCourseView.vue';
 import PrivateCourseView from '../views/member/PrivateCourseView.vue';
 import MyCoursesView from '../views/member/MyCoursesView.vue';
-import MemberProfileView from '../views/member/MemberProfileView.vue';
-import CoachListView from '../views/member/CoachListView.vue';
-import CoachDetailView from '../views/member/CoachDetailView.vue';
 import MyCoachesView from '../views/member/MyCoachesView.vue';
+import CoachDetailView from '../views/member/CoachDetailView.vue';
+import MemberProfileView from '../views/member/MemberProfileView.vue';
 import CoachPublicCourseView from '../views/coach/CoachPublicCourseView.vue';
 import CoachPrivateCourseView from '../views/coach/CoachPrivateCourseView.vue';
 import CoachMyCoursesView from '../views/coach/CoachMyCoursesView.vue';
@@ -27,6 +26,7 @@ import CoachProfileView from '../views/coach/CoachProfileView.vue';
 import MemberScheduleView from '../views/member/MemberScheduleView.vue';
 import MemberExerciseView from '../views/member/MemberExerciseView.vue';
 import MemberCheckInView from '../views/member/MemberCheckInView.vue';
+import MyPlanView from '../views/member/MyPlanView.vue';
 import CoachCheckInView from '../views/coach/CoachCheckInView.vue';
 import LogView from '../views/LogView.vue';
 import SqlMonitorView from '../views/SqlMonitorView.vue';
@@ -34,6 +34,7 @@ import SystemMonitorView from '../views/SystemMonitorView.vue';
 import DbControlView from '../views/DbControlView.vue';
 import GroupChatView from '../views/chat/GroupChatView.vue';
 import PrivateChatView from '../views/chat/PrivateChatView.vue';
+import WechatChatView from '../views/chat/WechatChatView.vue';
 import RequestManageView from '../views/chat/RequestManageView.vue';
 import GymView from '../views/GymView.vue';
 import GymSupermarketView from '../views/GymSupermarketView.vue';
@@ -43,6 +44,8 @@ import AdminScheduleView from '../views/AdminScheduleView.vue';
 import AdminNotificationView from '../views/AdminNotificationView.vue';
 import AdminChatView from '../views/AdminChatView.vue';
 import ChatAgentView from '../views/ChatAgentView.vue';
+import AdminRepairView from '../views/AdminRepairView.vue';
+import AdminComplaintView from '../views/AdminComplaintView.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -167,6 +170,16 @@ const router = createRouter({
           name: 'admin-chat-manage',
           component: AdminChatView,
         },
+        {
+          path: 'repair-manage',
+          name: 'admin-repair-manage',
+          component: AdminRepairView,
+        },
+        {
+          path: 'complaint-manage',
+          name: 'admin-complaint-manage',
+          component: AdminComplaintView,
+        },
       ],
     },
     {
@@ -181,7 +194,7 @@ const router = createRouter({
         {
           path: 'private-courses',
           name: 'member-private-courses',
-          component: CoachListView,
+          component: PrivateCourseView,
         },
         {
           path: 'coach-detail/:coachId',
@@ -214,6 +227,11 @@ const router = createRouter({
           component: MemberExerciseView,
         },
         {
+          path: 'my-plan',
+          name: 'member-my-plan',
+          component: MyPlanView,
+        },
+        {
           path: 'checkin',
           name: 'member-checkin',
           component: MemberCheckInView,
@@ -221,12 +239,14 @@ const router = createRouter({
         {
           path: 'chat-group',
           name: 'member-chat-group',
-          component: GroupChatView,
+          component: WechatChatView,
+          props: { chatType: 'GROUP' as const },
         },
         {
           path: 'chat-private',
           name: 'member-chat-private',
-          component: PrivateChatView,
+          component: WechatChatView,
+          props: { chatType: 'PRIVATE' as const },
         },
         {
           path: 'chat-requests',
@@ -282,12 +302,14 @@ const router = createRouter({
         {
           path: 'chat-group',
           name: 'coach-chat-group',
-          component: GroupChatView,
+          component: WechatChatView,
+          props: { chatType: 'GROUP' as const },
         },
         {
           path: 'chat-private',
           name: 'coach-chat-private',
-          component: PrivateChatView,
+          component: WechatChatView,
+          props: { chatType: 'PRIVATE' as const },
         },
         {
           path: 'chat-requests',

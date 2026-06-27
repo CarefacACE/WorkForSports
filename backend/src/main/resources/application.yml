@@ -14,9 +14,9 @@ spring:
       mode: always
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://localhost:3306/zhixun_erp?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    url: jdbc:mariadb://localhost:3366/zhixun_erp?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
     username: root
-    password: 123456
+    password: fzq666
     hikari:
       pool-name: ZhixunHikariPool
       minimum-idle: 5
@@ -67,15 +67,44 @@ mybatis-plus:
 file:
   upload-dir: ./uploads
 
+commission:
+  platform-user-id: 1
+  tiers:
+    - name: 青铜教练
+      min-earnings: 0
+      max-earnings: 1000
+      rate: 0.40
+    - name: 白银教练
+      min-earnings: 1000
+      max-earnings: 5000
+      rate: 0.35
+    - name: 黄金教练
+      min-earnings: 5000
+      max-earnings: 15000
+      rate: 0.28
+    - name: 铂金教练
+      min-earnings: 15000
+      max-earnings: 30000
+      rate: 0.22
+    - name: 钻石教练
+      min-earnings: 30000
+      max-earnings: 60000
+      rate: 0.18
+    - name: 王者教练
+      min-earnings: 60000
+      max-earnings: -1
+      rate: 0.15
+
 langchain4j:
   open-ai:
     chat-model:
       base-url: https://api.deepseek.com
-      api-key: deepseek-api-key
+      api-key: sk-63494e7621bd4e8082832b353f0ad4bd
       model-name: deepseek-chat
       temperature: 0.7
+      timeout: 120s
     streaming-chat-model:
       base-url: https://api.deepseek.com
-      api-key: deepseek-api-key
+      api-key: sk-63494e7621bd4e8082832b353f0ad4bd
       model-name: deepseek-chat
       temperature: 0.7

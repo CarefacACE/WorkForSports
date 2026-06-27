@@ -330,6 +330,10 @@ onMounted(() => {
 
 <style scoped>
 .csv-analysis-page {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
   max-width: 960px;
   margin: 0 auto;
 }

@@ -1,20 +1,32 @@
 package com.zhixun.erp.config;
 
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.server.WebFilter;
+
+import java.io.IOException;
 
 @Configuration
 public class WebFluxConfig {
 
     @Bean
-    public WebFilter utf8SseFilter() {
-        return (exchange, chain) -> {
-            String accept = exchange.getRequest().getHeaders().getFirst("Accept");
-            if (accept != null && accept.contains("text/event-stream")) {
-                exchange.getResponse().getHeaders().set("Content-Type", "text/event-stream;charset=UTF-8");
+    public Filter utf8SseFilter() {
+        return new Filter() {
+            @Override
+            public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+                    throws IOException, ServletException {
+                HttpServletRequest httpRequest = (HttpServletRequest) request;
+                String accept = httpRequest.getHeader("Accept");
+                if (accept != null && accept.contains("text/event-stream")) {
+                    response.setContentType("text/event-stream;charset=UTF-8");
+                }
+                chain.doFilter(request, response);
             }
-            return chain.filter(exchange);
         };
     }
 }

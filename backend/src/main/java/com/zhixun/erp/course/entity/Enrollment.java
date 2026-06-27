@@ -26,6 +26,10 @@ public class Enrollment {
 
     private Integer remainingSessions;
 
+    private Long coachId;
+
+    private Integer autoDeductAgreed;
+
     private LocalDateTime createTime;
 
     private LocalDateTime updateTime;
@@ -53,6 +57,12 @@ public class Enrollment {
 
     public Integer getRemainingSessions() { return remainingSessions; }
     public void setRemainingSessions(Integer remainingSessions) { this.remainingSessions = remainingSessions; }
+
+    public Long getCoachId() { return coachId; }
+    public void setCoachId(Long coachId) { this.coachId = coachId; }
+
+    public Integer getAutoDeductAgreed() { return autoDeductAgreed; }
+    public void setAutoDeductAgreed(Integer autoDeductAgreed) { this.autoDeductAgreed = autoDeductAgreed; }
 
     public LocalDateTime getCreateTime() { return createTime; }
     public void setCreateTime(LocalDateTime createTime) { this.createTime = createTime; }

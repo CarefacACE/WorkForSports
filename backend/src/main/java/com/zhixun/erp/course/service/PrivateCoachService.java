@@ -3,6 +3,7 @@ package com.zhixun.erp.course.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.zhixun.erp.chat.service.NotificationService;
 import com.zhixun.erp.course.entity.Enrollment;
 import com.zhixun.erp.course.entity.PrivateCoachProfile;
 import com.zhixun.erp.course.mapper.EnrollmentMapper;
@@ -11,10 +12,9 @@ import com.zhixun.erp.schedule.entity.CourseSchedule;
 import com.zhixun.erp.schedule.mapper.CourseScheduleMapper;
 import com.zhixun.erp.user.entity.User;
 import com.zhixun.erp.user.mapper.UserMapper;
-import com.zhixun.erp.finance.entity.WalletTransaction;
-import com.zhixun.erp.finance.mapper.WalletTransactionMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -28,7 +28,7 @@ public class PrivateCoachService {
     private final UserMapper userMapper;
     private final EnrollmentMapper enrollmentMapper;
     private final CourseScheduleMapper scheduleMapper;
-    private final WalletTransactionMapper walletTransactionMapper;
+    private final NotificationService notificationService;
 
     /* ─── Coach Profile ─── */
 
@@ -68,7 +68,6 @@ public class PrivateCoachService {
     /* ─── List Coaches (for members) ─── */
 
     public IPage<Map<String, Object>> listCoaches(String keyword, int pageNum, int pageSize) {
-        // Find all active profiles
         LambdaQueryWrapper<PrivateCoachProfile> wrapper = new LambdaQueryWrapper<PrivateCoachProfile>()
                 .eq(PrivateCoachProfile::getStatus, "ACTIVE");
 
@@ -99,7 +98,6 @@ public class PrivateCoachService {
             result.add(item);
         }
 
-        // Wrap in page
         Page<Map<String, Object>> resultPage = new Page<>(pageNum, pageSize);
         resultPage.setRecords(result);
         resultPage.setTotal(profilePage.getTotal());
@@ -126,7 +124,6 @@ public class PrivateCoachService {
         detail.put("sessionDuration", profile.getSessionDuration());
         detail.put("coverImage", profile.getCoverImage());
 
-        // Include available schedules
         List<CourseSchedule> schedules = scheduleMapper.selectList(
                 new LambdaQueryWrapper<CourseSchedule>()
                         .eq(CourseSchedule::getCoachId, coachId)
@@ -139,11 +136,10 @@ public class PrivateCoachService {
         return detail;
     }
 
-    /* ─── Purchase ─── */
+    /* ─── Enroll (join coach, no upfront payment) ─── */
 
-    public Enrollment purchaseSessions(Long memberId, Long coachId, Integer sessions) {
-        if (sessions == null || sessions <= 0) throw new RuntimeException("购买节数必须大于0");
-
+    @Transactional
+    public Enrollment enrollCoach(Long memberId, Long coachId, Integer autoDeductAgreed) {
         PrivateCoachProfile profile = getCoachProfile(coachId);
         if (profile == null || !"ACTIVE".equals(profile.getStatus())) {
             throw new RuntimeException("该教练暂未开放私教主页");
@@ -152,145 +148,41 @@ public class PrivateCoachService {
         User member = userMapper.selectById(memberId);
         if (member == null) throw new RuntimeException("会员不存在");
 
-        BigDecimal totalCost = profile.getPricePerSession().multiply(new BigDecimal(sessions));
-
-        // Check balance
-        if (member.getBalance() == null || member.getBalance().compareTo(totalCost) < 0) {
-            throw new RuntimeException("余额不足，需要 " + totalCost + " 元，当前余额 " + member.getBalance());
-        }
-
-        // Deduct member balance
-        member.setBalance(member.getBalance().subtract(totalCost));
-        userMapper.updateById(member);
-
-        // Record member transaction
-        WalletTransaction memberTx = new WalletTransaction();
-        memberTx.setUserId(memberId);
-        memberTx.setAmount(totalCost.negate());
-        memberTx.setType("CONSUME");
-        memberTx.setRemark("购买私教课 - " + sessions + "节");
-        memberTx.setCreateTime(LocalDateTime.now());
-        walletTransactionMapper.insert(memberTx);
-
-        // Credit coach
-        User coach = userMapper.selectById(coachId);
-        BigDecimal coachBalance = coach.getBalance() != null ? coach.getBalance() : BigDecimal.ZERO;
-        coach.setBalance(coachBalance.add(totalCost));
-        userMapper.updateById(coach);
-
-        // Record coach transaction
-        WalletTransaction coachTx = new WalletTransaction();
-        coachTx.setUserId(coachId);
-        coachTx.setAmount(totalCost);
-        coachTx.setType("COURSE_INCOME");
-        coachTx.setRemark("私教课收入 - " + sessions + "节");
-        coachTx.setCreateTime(LocalDateTime.now());
-        walletTransactionMapper.insert(coachTx);
-
-        // Create or update enrollment (use courseId = coachId as a convention for private coaching)
-        Enrollment enrollment = enrollmentMapper.selectOne(new LambdaQueryWrapper<Enrollment>()
+        // Check if already enrolled
+        Enrollment existing = enrollmentMapper.selectOne(new LambdaQueryWrapper<Enrollment>()
                 .eq(Enrollment::getUserId, memberId)
-                .eq(Enrollment::getCourseId, coachId)
-                .eq(Enrollment::getStatus, "PAID"));
-
-        if (enrollment != null) {
-            enrollment.setTotalSessions(enrollment.getTotalSessions() + sessions);
-            enrollment.setRemainingSessions(enrollment.getRemainingSessions() + sessions);
-            enrollment.setPaidAmount(enrollment.getPaidAmount().add(totalCost));
-            enrollment.setUpdateTime(LocalDateTime.now());
-            enrollmentMapper.updateById(enrollment);
-        } else {
-            enrollment = new Enrollment();
-            enrollment.setUserId(memberId);
-            enrollment.setCourseId(coachId); // coachId as courseId for private coaching
-            enrollment.setStatus("PAID");
-            enrollment.setPaidAmount(totalCost);
-            enrollment.setTotalSessions(sessions);
-            enrollment.setRemainingSessions(sessions);
-            enrollment.setCreateTime(LocalDateTime.now());
-            enrollmentMapper.insert(enrollment);
+                .eq(Enrollment::getCoachId, coachId)
+                .ne(Enrollment::getStatus, "CANCELLED"));
+        if (existing != null) {
+            throw new RuntimeException("您已加入该教练的私教课程");
         }
+
+        Enrollment enrollment = new Enrollment();
+        enrollment.setUserId(memberId);
+        enrollment.setCoachId(coachId);
+        enrollment.setCourseId(null); // No course association
+        enrollment.setStatus("PAID"); // Active enrollment
+        enrollment.setPaidAmount(BigDecimal.ZERO);
+        enrollment.setTotalSessions(null);
+        enrollment.setRemainingSessions(null);
+        enrollment.setAutoDeductAgreed(autoDeductAgreed != null ? autoDeductAgreed : 0);
+        enrollment.setCreateTime(LocalDateTime.now());
+        enrollmentMapper.insert(enrollment);
 
         return enrollment;
     }
 
-    /* ─── My Coaches ─── */
+    /* ─── Request Session (member → coach approval) ─── */
 
-    public List<Map<String, Object>> getMyCoaches(Long memberId) {
-        List<Enrollment> enrollments = enrollmentMapper.selectList(
-                new LambdaQueryWrapper<Enrollment>()
-                        .eq(Enrollment::getUserId, memberId)
-                        .eq(Enrollment::getStatus, "PAID")
-                        .isNotNull(Enrollment::getTotalSessions));
-
-        List<Map<String, Object>> result = new ArrayList<>();
-        for (Enrollment e : enrollments) {
-            PrivateCoachProfile profile = getCoachProfile(e.getCourseId());
-            if (profile == null) continue;
-            User coach = userMapper.selectById(e.getCourseId());
-            if (coach == null) continue;
-
-            Map<String, Object> item = new LinkedHashMap<>();
-            item.put("enrollmentId", e.getId());
-            item.put("coachId", coach.getId());
-            item.put("realName", coach.getRealName());
-            item.put("avatar", coach.getAvatar());
-            item.put("specialties", profile.getSpecialties());
-            item.put("pricePerSession", profile.getPricePerSession());
-            item.put("totalSessions", e.getTotalSessions());
-            item.put("remainingSessions", e.getRemainingSessions());
-            item.put("paidAmount", e.getPaidAmount());
-            result.add(item);
-        }
-        return result;
-    }
-
-    /* ─── Book Session ─── */
-
-    public void bookSession(Long memberId, Long scheduleId) {
-        CourseSchedule schedule = scheduleMapper.selectById(scheduleId);
-        if (schedule == null) throw new RuntimeException("课表不存在");
-
-        // Check if AVAILABLE
-        if (schedule.getBookingStatus() != null && !"AVAILABLE".equals(schedule.getBookingStatus())) {
-            throw new RuntimeException("该时段已被预约");
-        }
-
-        // Find enrollment for this coach
+    @Transactional
+    public CourseSchedule requestSession(Long memberId, Long coachId, LocalDateTime startTime, LocalDateTime endTime) {
+        // Check enrollment
         Enrollment enrollment = enrollmentMapper.selectOne(new LambdaQueryWrapper<Enrollment>()
                 .eq(Enrollment::getUserId, memberId)
-                .eq(Enrollment::getCourseId, schedule.getCoachId())
-                .eq(Enrollment::getStatus, "PAID")
-                .gt(Enrollment::getRemainingSessions, 0));
-
+                .eq(Enrollment::getCoachId, coachId)
+                .eq(Enrollment::getStatus, "PAID"));
         if (enrollment == null) {
-            throw new RuntimeException("您尚未购买该教练的私教课或课时已用完");
-        }
-
-        // Book
-        schedule.setMemberId(memberId);
-        schedule.setEnrollmentId(enrollment.getId());
-        schedule.setBookingStatus("BOOKED");
-        schedule.setUpdateTime(LocalDateTime.now());
-        scheduleMapper.updateById(schedule);
-
-        // Deduct remaining session
-        enrollment.setRemainingSessions(enrollment.getRemainingSessions() - 1);
-        enrollment.setUpdateTime(LocalDateTime.now());
-        enrollmentMapper.updateById(enrollment);
-    }
-
-    /* ─── Book Direct (empty slot) ─── */
-
-    public CourseSchedule bookDirect(Long memberId, Long coachId, LocalDateTime startTime, LocalDateTime endTime) {
-        // Find enrollment
-        Enrollment enrollment = enrollmentMapper.selectOne(new LambdaQueryWrapper<Enrollment>()
-                .eq(Enrollment::getUserId, memberId)
-                .eq(Enrollment::getCourseId, coachId)
-                .eq(Enrollment::getStatus, "PAID")
-                .gt(Enrollment::getRemainingSessions, 0));
-        if (enrollment == null) {
-            throw new RuntimeException("您尚未购买该教练的私教课或课时已用完");
+            throw new RuntimeException("您尚未加入该教练的私教课程");
         }
 
         // Check for conflicts
@@ -303,107 +195,226 @@ public class PrivateCoachService {
             throw new RuntimeException("该时段教练已有安排");
         }
 
-        // Get coach profile for location
-        PrivateCoachProfile profile = getCoachProfile(coachId);
+        User member = userMapper.selectById(memberId);
+        String memberName = member != null && member.getRealName() != null ? member.getRealName() : member.getUsername();
 
-        // Create BOOKED entry directly
         CourseSchedule schedule = new CourseSchedule();
         schedule.setCoachId(coachId);
         schedule.setMemberId(memberId);
         schedule.setEnrollmentId(enrollment.getId());
-        schedule.setTitle("私教课");
+        schedule.setTitle(memberName + "的私教课(待确认)");
         schedule.setStartTime(startTime);
         schedule.setEndTime(endTime);
-        schedule.setLocation(profile != null ? "私教课" : null);
+        schedule.setLocation("私教课");
+        schedule.setColor("#f59e0b"); // Orange for pending
+        schedule.setBookingStatus("REQUESTED");
+        schedule.setCreateTime(LocalDateTime.now());
+        scheduleMapper.insert(schedule);
+
+        // 通知教练有新的预约请求
+        User coach = userMapper.selectById(coachId);
+        String coachName = coach != null && coach.getRealName() != null ? coach.getRealName() : "教练";
+        String timeStr = startTime.format(java.time.format.DateTimeFormatter.ofPattern("MM-dd HH:mm"));
+        notificationService.sendNotification(coachId,
+                "新的私教预约请求",
+                memberName + " 请求预约 " + timeStr + " 的私教课",
+                "SESSION_REQUEST", schedule.getId());
+
+        return schedule;
+    }
+
+    /* ─── Approve Session (coach approves member's request) ─── */
+
+    @Transactional
+    public void approveSession(Long coachId, Long scheduleId) {
+        CourseSchedule schedule = scheduleMapper.selectById(scheduleId);
+        if (schedule == null) throw new RuntimeException("预约记录不存在");
+        if (!coachId.equals(schedule.getCoachId())) {
+            throw new RuntimeException("只能审批自己的预约请求");
+        }
+        if (!"REQUESTED".equals(schedule.getBookingStatus())) {
+            throw new RuntimeException("该预约已处理过");
+        }
+
+        schedule.setBookingStatus("BOOKED");
+        schedule.setColor("#3056d3"); // Blue for approved
+        schedule.setUpdateTime(LocalDateTime.now());
+
+        // Update title to remove pending marker
+        if (schedule.getTitle() != null && schedule.getTitle().contains("待确认")) {
+            schedule.setTitle(schedule.getTitle().replace("(待确认)", ""));
+        }
+        scheduleMapper.updateById(schedule);
+
+        // 通知会员预约已通过
+        User coach = userMapper.selectById(coachId);
+        String coachName = coach != null && coach.getRealName() != null ? coach.getRealName() : "教练";
+        String timeStr = schedule.getStartTime().format(java.time.format.DateTimeFormatter.ofPattern("MM-dd HH:mm"));
+        notificationService.sendNotification(schedule.getMemberId(),
+                "私教预约已通过",
+                "教练 " + coachName + " 已通过您在 " + timeStr + " 的私教预约",
+                "SESSION_APPROVED", scheduleId);
+    }
+
+    /* ─── Reject Session (coach rejects member's request) ─── */
+
+    @Transactional
+    public void rejectSession(Long coachId, Long scheduleId, String reason) {
+        CourseSchedule schedule = scheduleMapper.selectById(scheduleId);
+        if (schedule == null) throw new RuntimeException("预约记录不存在");
+        if (!coachId.equals(schedule.getCoachId())) {
+            throw new RuntimeException("只能处理自己的预约请求");
+        }
+        if (!"REQUESTED".equals(schedule.getBookingStatus())) {
+            throw new RuntimeException("该预约已处理过");
+        }
+
+        schedule.setBookingStatus("REJECTED");
+        schedule.setRejectReason(reason);
+        schedule.setUpdateTime(LocalDateTime.now());
+        schedule.setColor("#ef4444"); // Red for rejected
+        scheduleMapper.updateById(schedule);
+
+        // 通知会员预约被拒绝
+        User coach = userMapper.selectById(coachId);
+        String coachName = coach != null && coach.getRealName() != null ? coach.getRealName() : "教练";
+        String timeStr = schedule.getStartTime().format(java.time.format.DateTimeFormatter.ofPattern("MM-dd HH:mm"));
+        String content = "教练 " + coachName + " 拒绝了您在 " + timeStr + " 的私教预约";
+        if (reason != null && !reason.trim().isEmpty()) {
+            content += "，原因：" + reason;
+        }
+        notificationService.sendNotification(schedule.getMemberId(),
+                "私教预约已拒绝",
+                content,
+                "SESSION_REJECTED", scheduleId);
+    }
+
+    /* ─── Quit Coach (member leaves) ─── */
+
+    @Transactional
+    public void quitCoach(Long memberId, Long coachId) {
+        Enrollment enrollment = enrollmentMapper.selectOne(new LambdaQueryWrapper<Enrollment>()
+                .eq(Enrollment::getUserId, memberId)
+                .eq(Enrollment::getCoachId, coachId)
+                .eq(Enrollment::getStatus, "PAID"));
+        if (enrollment == null) {
+            throw new RuntimeException("未找到该私教报名记录");
+        }
+
+        // Cancel all REQUESTED schedules for this member + coach
+        List<CourseSchedule> pendingSchedules = scheduleMapper.selectList(
+                new LambdaQueryWrapper<CourseSchedule>()
+                        .eq(CourseSchedule::getCoachId, coachId)
+                        .eq(CourseSchedule::getMemberId, memberId)
+                        .eq(CourseSchedule::getBookingStatus, "REQUESTED"));
+        for (CourseSchedule s : pendingSchedules) {
+            scheduleMapper.deleteById(s.getId());
+        }
+
+        // Mark enrollment as CANCELLED
+        enrollment.setStatus("CANCELLED");
+        enrollment.setUpdateTime(LocalDateTime.now());
+        enrollmentMapper.updateById(enrollment);
+    }
+
+    /* ─── My Coaches (via coachId) ─── */
+
+    public List<Map<String, Object>> getMyCoaches(Long memberId) {
+        List<Enrollment> enrollments = enrollmentMapper.selectList(
+                new LambdaQueryWrapper<Enrollment>()
+                        .eq(Enrollment::getUserId, memberId)
+                        .eq(Enrollment::getStatus, "PAID")
+                        .isNotNull(Enrollment::getCoachId));
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Enrollment e : enrollments) {
+            PrivateCoachProfile profile = getCoachProfile(e.getCoachId());
+            if (profile == null) continue;
+            User coach = userMapper.selectById(e.getCoachId());
+            if (coach == null) continue;
+
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("enrollmentId", e.getId());
+            item.put("coachId", coach.getId());
+            item.put("realName", coach.getRealName());
+            item.put("avatar", coach.getAvatar());
+            item.put("specialties", profile.getSpecialties());
+            item.put("pricePerSession", profile.getPricePerSession());
+            item.put("totalSessions", e.getTotalSessions());
+            item.put("remainingSessions", e.getRemainingSessions());
+            item.put("paidAmount", e.getPaidAmount());
+            item.put("autoDeductAgreed", e.getAutoDeductAgreed());
+            result.add(item);
+        }
+        return result;
+    }
+
+    /* ─── Book Direct (member clicks empty slot → directly book) ─── */
+
+    @Transactional
+    public CourseSchedule bookDirect(Long memberId, Long coachId, LocalDateTime startTime, LocalDateTime endTime) {
+        // Verify enrollment
+        Enrollment enrollment = enrollmentMapper.selectOne(new LambdaQueryWrapper<Enrollment>()
+                .eq(Enrollment::getUserId, memberId)
+                .eq(Enrollment::getCoachId, coachId)
+                .eq(Enrollment::getStatus, "PAID"));
+        if (enrollment == null) {
+            throw new RuntimeException("您尚未加入该教练的私教课程");
+        }
+
+        // Check remaining sessions (only when explicitly set, null = unlimited)
+        if (enrollment.getRemainingSessions() != null && enrollment.getRemainingSessions() <= 0) {
+            throw new RuntimeException("该教练课时不足");
+        }
+
+        // Check for conflicts
+        List<CourseSchedule> conflicts = scheduleMapper.selectList(
+                new LambdaQueryWrapper<CourseSchedule>()
+                        .eq(CourseSchedule::getCoachId, coachId)
+                        .lt(CourseSchedule::getStartTime, endTime)
+                        .gt(CourseSchedule::getEndTime, startTime));
+        if (!conflicts.isEmpty()) {
+            throw new RuntimeException("该时段教练已有安排");
+        }
+
+        User member = userMapper.selectById(memberId);
+        String memberName = member != null && member.getRealName() != null ? member.getRealName() : member.getUsername();
+
+        CourseSchedule schedule = new CourseSchedule();
+        schedule.setCoachId(coachId);
+        schedule.setMemberId(memberId);
+        schedule.setEnrollmentId(enrollment.getId());
+        schedule.setTitle(memberName + "的私教课");
+        schedule.setStartTime(startTime);
+        schedule.setEndTime(endTime);
+        schedule.setLocation("私教课");
         schedule.setColor("#3056d3");
         schedule.setBookingStatus("BOOKED");
         schedule.setCreateTime(LocalDateTime.now());
         scheduleMapper.insert(schedule);
 
-        // Deduct
-        enrollment.setRemainingSessions(enrollment.getRemainingSessions() - 1);
-        enrollment.setUpdateTime(LocalDateTime.now());
-        enrollmentMapper.updateById(enrollment);
+        // Deduct remaining sessions if applicable
+        if (enrollment.getRemainingSessions() != null && enrollment.getRemainingSessions() > 0) {
+            enrollment.setRemainingSessions(enrollment.getRemainingSessions() - 1);
+            enrollment.setUpdateTime(LocalDateTime.now());
+            enrollmentMapper.updateById(enrollment);
+        }
 
         return schedule;
     }
 
     /* ─── Cancel Booking ─── */
 
+    @Transactional
     public void cancelBooking(Long memberId, Long scheduleId) {
         CourseSchedule schedule = scheduleMapper.selectById(scheduleId);
         if (schedule == null) throw new RuntimeException("课表不存在");
-
         if (!memberId.equals(schedule.getMemberId())) {
             throw new RuntimeException("只能取消自己的预约");
         }
-
-        if (!"BOOKED".equals(schedule.getBookingStatus())) {
-            throw new RuntimeException("该时段未处于已预约状态");
+        if (!"BOOKED".equals(schedule.getBookingStatus()) && !"REQUESTED".equals(schedule.getBookingStatus())) {
+            throw new RuntimeException("该时段不允许取消");
         }
-
-        Long savedEnrollmentId = schedule.getEnrollmentId();
-
-        // Delete the entry entirely — empty slot is implicitly available
         scheduleMapper.deleteById(scheduleId);
-
-        // Return session
-        Enrollment enrollment = enrollmentMapper.selectById(savedEnrollmentId);
-        if (enrollment != null) {
-            enrollment.setRemainingSessions(enrollment.getRemainingSessions() + 1);
-            enrollment.setUpdateTime(LocalDateTime.now());
-            enrollmentMapper.updateById(enrollment);
-        }
-    }
-
-    /* ─── Reschedule Booking (to any empty time) ─── */
-
-    public void rescheduleBooking(Long memberId, Long currentScheduleId, LocalDateTime targetStart, LocalDateTime targetEnd) {
-        CourseSchedule current = scheduleMapper.selectById(currentScheduleId);
-        if (current == null) throw new RuntimeException("当前预约不存在");
-
-        if (!memberId.equals(current.getMemberId())) {
-            throw new RuntimeException("只能改期自己的预约");
-        }
-        if (!"BOOKED".equals(current.getBookingStatus())) {
-            throw new RuntimeException("该时段未处于已预约状态");
-        }
-
-        // Same time → no-op
-        if (current.getStartTime().equals(targetStart) && current.getEndTime().equals(targetEnd)) {
-            return;
-        }
-
-        // Check conflicts at target time (excluding the current entry itself)
-        List<CourseSchedule> conflicts = scheduleMapper.selectList(
-                new LambdaQueryWrapper<CourseSchedule>()
-                        .eq(CourseSchedule::getCoachId, current.getCoachId())
-                        .lt(CourseSchedule::getStartTime, targetEnd)
-                        .gt(CourseSchedule::getEndTime, targetStart)
-                        .ne(CourseSchedule::getId, currentScheduleId));
-        if (!conflicts.isEmpty()) {
-            throw new RuntimeException("目标时段教练已有安排");
-        }
-
-        Long savedEnrollmentId = current.getEnrollmentId();
-
-        // Delete old entry — empty slot is implicitly available
-        scheduleMapper.deleteById(currentScheduleId);
-
-        // Create new BOOKED entry at target time
-        CourseSchedule newSchedule = new CourseSchedule();
-        newSchedule.setCoachId(current.getCoachId());
-        newSchedule.setMemberId(memberId);
-        newSchedule.setEnrollmentId(savedEnrollmentId);
-        newSchedule.setTitle(current.getTitle());
-        newSchedule.setStartTime(targetStart);
-        newSchedule.setEndTime(targetEnd);
-        newSchedule.setLocation(current.getLocation());
-        newSchedule.setColor(current.getColor());
-        newSchedule.setBookingStatus("BOOKED");
-        newSchedule.setCreateTime(LocalDateTime.now());
-        scheduleMapper.insert(newSchedule);
-
-        // remainingSessions unchanged (swap)
     }
 }

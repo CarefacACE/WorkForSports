@@ -43,6 +43,8 @@ public class User {
 
     private BigDecimal balance;
 
+    private BigDecimal totalEarnings;
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -87,4 +89,7 @@ public class User {
 
     public BigDecimal getBalance() { return balance; }
     public void setBalance(BigDecimal balance) { this.balance = balance; }
+
+    public BigDecimal getTotalEarnings() { return totalEarnings; }
+    public void setTotalEarnings(BigDecimal totalEarnings) { this.totalEarnings = totalEarnings; }
 }

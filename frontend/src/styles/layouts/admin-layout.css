@@ -3,8 +3,13 @@
    ============================================ */
 
 .admin-layout {
-  min-height: 100vh;
+  height: 100vh;
   background: #f8fafc;
+}
+
+.admin-layout > .el-container {
+  flex: 1;
+  overflow: hidden;
 }
 
 /* === Sidebar === */
@@ -155,8 +160,34 @@
 
 /* === Main Content === */
 .main-content {
-  padding: 28px 32px;
+  padding: 24px;
   background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  min-height: 0;
+  flex: 1;
+}
+
+/* Ensure ALL direct children of main-content fill the space */
+.main-content > * {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.main-content .el-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content .el-card .el-card__body {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 /* === Profile Dialog === */

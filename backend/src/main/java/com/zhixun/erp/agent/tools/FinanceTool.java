@@ -48,6 +48,7 @@ public class FinanceTool {
                 case "WITHDRAW" -> "提现";
                 case "CONSUME" -> "课程消费";
                 case "COURSE_INCOME" -> "卖课收入";
+                case "COMMISSION" -> "平台抽成";
                 case "ADJUST" -> "余额调整";
                 default -> t.getType();
             };

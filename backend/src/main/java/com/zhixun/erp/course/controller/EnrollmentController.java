@@ -67,4 +67,12 @@ public class EnrollmentController {
             @RequestParam(defaultValue = "10") int pageSize) {
         return Result.success(enrollmentService.getCoachEnrollments(coachId, keyword, pageNum, pageSize));
     }
+
+    /* ─── 退出课程 (公共课/私教通用) ─── */
+
+    @PutMapping("/quit/{enrollmentId}")
+    public Result<Void> quitEnrollment(@PathVariable Long enrollmentId) {
+        enrollmentService.quitEnrollment(enrollmentId);
+        return Result.success("已退出课程", null);
+    }
 }

@@ -6,6 +6,15 @@ export interface RechargeParams {
   remark?: string;
 }
 
+export interface WithdrawResult {
+  grossAmount: number;
+  tierName: string;
+  commissionRate: number;
+  commissionAmount: number;
+  netAmount: number;
+  balanceAfter: number;
+}
+
 export interface WalletTransaction {
   id: number;
   userId: number;
@@ -27,11 +36,38 @@ export function recharge(data: RechargeParams) {
 }
 
 export function withdraw(data: RechargeParams) {
-  return request.post<{ id: number; balance: number }>('/finance/withdraw', data);
+  return request.post<WithdrawResult>('/finance/withdraw', data);
 }
 
 export function getBalance(userId: number) {
   return request.get<number>(`/finance/balance/${userId}`);
+}
+
+export function getCommissionTier(userId: number) {
+  return request.get<WithdrawResult>(`/finance/commission-tier/${userId}`);
+}
+
+export interface TierDetail {
+  name: string;
+  rate: number;
+  minEarnings: number;
+  maxEarnings: number;
+  isCurrent: boolean;
+  reached: boolean;
+  amountToNextTier: number;
+  progressPercent: number;
+}
+
+export interface CommissionDetailResult {
+  currentTierName: string;
+  currentRate: number;
+  totalEarnings: number;
+  balance: number;
+  allTiers: TierDetail[];
+}
+
+export function getCommissionDetail(userId: number) {
+  return request.get<CommissionDetailResult>(`/finance/commission-detail/${userId}`);
 }
 
 export function getTransactions(userId: number, pageNum = 1, pageSize = 10) {

@@ -2,9 +2,11 @@ package com.zhixun.erp.finance.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.zhixun.erp.common.response.Result;
+import com.zhixun.erp.finance.dto.CommissionDetailResponse;
 import com.zhixun.erp.finance.dto.RechargeRequest;
 import com.zhixun.erp.finance.dto.UpdateBalanceRequest;
 import com.zhixun.erp.finance.dto.WithdrawRequest;
+import com.zhixun.erp.finance.dto.WithdrawResponse;
 import com.zhixun.erp.finance.entity.WalletTransaction;
 import com.zhixun.erp.finance.service.FinanceService;
 import com.zhixun.erp.user.entity.User;
@@ -39,14 +41,26 @@ public class FinanceController {
     }
 
     @PostMapping("/withdraw")
-    public Result<User> withdraw(@RequestBody WithdrawRequest request) {
-        User user = financeService.withdraw(request.getUserId(), request.getAmount(), request.getRemark());
-        return Result.success("提现成功", user);
+    public Result<WithdrawResponse> withdraw(@RequestBody WithdrawRequest request) {
+        WithdrawResponse response = financeService.withdraw(request.getUserId(), request.getAmount(), request.getRemark());
+        return Result.success("提现成功", response);
     }
 
     @GetMapping("/balance/{userId}")
     public Result<BigDecimal> getBalance(@PathVariable Long userId) {
         return Result.success(financeService.getBalance(userId));
+    }
+
+    @GetMapping("/commission-tier/{userId}")
+    public Result<WithdrawResponse> getCommissionTier(@PathVariable Long userId) {
+        WithdrawResponse response = financeService.getCommissionTier(userId);
+        return Result.success(response);
+    }
+
+    @GetMapping("/commission-detail/{userId}")
+    public Result<CommissionDetailResponse> getCommissionDetail(@PathVariable Long userId) {
+        CommissionDetailResponse response = financeService.getCommissionDetail(userId);
+        return Result.success(response);
     }
 
     @GetMapping("/transactions")
@@ -99,6 +113,7 @@ public class FinanceController {
             case "WITHDRAW": return "提现";
             case "CONSUME": return "课程消费";
             case "COURSE_INCOME": return "卖课收入";
+            case "COMMISSION": return "平台抽成";
             case "ADJUST": return "余额调整";
             default: return type;
         }

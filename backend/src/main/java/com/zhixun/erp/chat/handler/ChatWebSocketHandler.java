@@ -3,12 +3,15 @@ package com.zhixun.erp.chat.handler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zhixun.erp.chat.entity.ChatMessage;
 import com.zhixun.erp.chat.service.ChatService;
+import com.zhixun.erp.chat.service.FriendService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.socket.*;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -16,12 +19,14 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ChatWebSocketHandler.class);
     private final ChatService chatService;
+    private final FriendService friendService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private static final ConcurrentHashMap<Long, WebSocketSession> onlineUsers = new ConcurrentHashMap<>();
 
-    public ChatWebSocketHandler(ChatService chatService) {
+    public ChatWebSocketHandler(ChatService chatService, FriendService friendService) {
         this.chatService = chatService;
+        this.friendService = friendService;
     }
 
     @Override
@@ -61,7 +66,22 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                 return;
             }
 
-            ChatMessage msg = chatService.saveMessage(conversationId, senderId, content, msgType);
+            // 保存消息（会检查禁言，禁言抛出异常）
+            ChatMessage msg;
+            try {
+                msg = chatService.saveMessage(conversationId, senderId, content, msgType);
+            } catch (RuntimeException e) {
+                String errMsg = e.getMessage();
+                // 如果是禁言，补充剩余时长
+                if (errMsg != null && errMsg.contains("已被禁言")) {
+                    try {
+                        String remaining = chatService.getMuteRemaining(conversationId, senderId);
+                        if (remaining != null) errMsg += "，剩余" + remaining;
+                    } catch (Exception ignored) {}
+                }
+                sendMessage(session, Map.of("type", "error", "message", errMsg));
+                return;
+            }
 
             Map<String, Object> wsMsg = Map.of(
                     "type", "message",
@@ -75,6 +95,8 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
             String json = objectMapper.writeValueAsString(wsMsg);
             chatService.getMemberIds(conversationId).forEach(memberId -> {
+                // 被拉黑方收不到消息（接收方拉黑了发送方）
+                if (friendService.isBlocked(memberId, senderId)) return;
                 WebSocketSession memberSession = onlineUsers.get(memberId);
                 if (memberSession != null && memberSession.isOpen()) {
                     try {

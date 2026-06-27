@@ -72,6 +72,11 @@ public class CourseController {
         return Result.success(courseService.getPendingCourses());
     }
 
+    @GetMapping("/admin/pending/count")
+    public Result<Long> getPendingCount() {
+        return Result.success(courseService.getPendingCount());
+    }
+
     @GetMapping("/admin/all")
     public Result<List<Course>> getAllCourses(
             @RequestParam(required = false) String status) {
@@ -88,5 +93,25 @@ public class CourseController {
             @PathVariable Long id,
             @RequestParam(required = false) String reason) {
         return Result.success("已驳回", courseService.rejectCourse(id, reason));
+    }
+
+    /** 管理员：替任意教练创建课程，直接通过审批并通知教练 */
+    @PostMapping("/admin/create")
+    public Result<Course> adminCreateCourse(@RequestParam Long coachId, @RequestBody CreateCourseRequest request) {
+        return Result.success("课程创建成功", courseService.adminCreateCourse(coachId, request));
+    }
+
+    /** 管理员：修改任意课程并通知教练 */
+    @PutMapping("/admin/update")
+    public Result<Course> adminUpdateCourse(@RequestBody UpdateCourseRequest request) {
+        return Result.success("课程更新成功", courseService.adminUpdateCourse(request));
+    }
+
+    /** 教练：重新申请被驳回的课程 */
+    @PutMapping("/resubmit/{id}")
+    public Result<Course> resubmitCourse(
+            @PathVariable Long id,
+            @RequestParam Long coachId) {
+        return Result.success("已重新提交审核", courseService.resubmitCourse(coachId, id));
     }
 }

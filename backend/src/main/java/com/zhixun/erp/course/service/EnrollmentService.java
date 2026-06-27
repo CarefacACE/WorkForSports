@@ -3,6 +3,8 @@ package com.zhixun.erp.course.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.zhixun.erp.checkin.entity.CheckInRecord;
+import com.zhixun.erp.checkin.mapper.CheckInRecordMapper;
 import com.zhixun.erp.checkin.service.CheckInService;
 import com.zhixun.erp.course.entity.Course;
 import com.zhixun.erp.course.entity.Enrollment;
@@ -39,6 +41,7 @@ public class EnrollmentService {
     private final NotificationService notificationService;
     private final CheckInService checkInService;
     private final CourseScheduleMapper courseScheduleMapper;
+    private final CheckInRecordMapper checkInRecordMapper;
 
     @Transactional
     public Enrollment enroll(Long userId, Long courseId) {
@@ -150,6 +153,11 @@ public class EnrollmentService {
             BigDecimal coachBalance = coach.getBalance() == null ? BigDecimal.ZERO : coach.getBalance();
             coach.setBalance(coachBalance.add(price));
             coach.setUpdateTime(LocalDateTime.now());
+
+            // 累计收入（只增不减，用于段位判定）
+            BigDecimal coachEarnings = coach.getTotalEarnings() == null ? BigDecimal.ZERO : coach.getTotalEarnings();
+            coach.setTotalEarnings(coachEarnings.add(price));
+
             userMapper.updateById(coach);
 
             WalletTransaction incomeTransaction = new WalletTransaction();
@@ -187,6 +195,54 @@ public class EnrollmentService {
         return enrollment;
     }
 
+    /* ─── Quit Enrollment (通用: 公共课 + 私教) ─── */
+
+    @Transactional
+    public void quitEnrollment(Long enrollmentId) {
+        Enrollment enrollment = enrollmentMapper.selectById(enrollmentId);
+        if (enrollment == null) {
+            throw new RuntimeException("选课记录不存在");
+        }
+        if ("CANCELLED".equals(enrollment.getStatus())) {
+            throw new RuntimeException("已退出该课程");
+        }
+
+        Long coachId = enrollment.getCoachId();
+
+        if (coachId != null) {
+            // 私教: 清理该学员的所有 REQUESTED 状态预约
+            List<CourseSchedule> pendingSchedules = courseScheduleMapper.selectList(
+                    new LambdaQueryWrapper<CourseSchedule>()
+                            .eq(CourseSchedule::getCoachId, coachId)
+                            .eq(CourseSchedule::getMemberId, enrollment.getUserId())
+                            .eq(CourseSchedule::getBookingStatus, "REQUESTED"));
+            for (CourseSchedule s : pendingSchedules) {
+                courseScheduleMapper.deleteById(s.getId());
+            }
+        } else if (enrollment.getCourseId() != null) {
+            // 公共课: 清理该学员所有未来的签到记录
+            List<CourseSchedule> schedules = courseScheduleMapper.selectList(
+                    new LambdaQueryWrapper<CourseSchedule>()
+                            .eq(CourseSchedule::getCourseId, enrollment.getCourseId())
+                            .ge(CourseSchedule::getStartTime, LocalDateTime.now()));
+            for (CourseSchedule schedule : schedules) {
+                List<CheckInRecord> pendingRecords = checkInRecordMapper.selectList(
+                        new LambdaQueryWrapper<CheckInRecord>()
+                                .eq(CheckInRecord::getScheduleId, schedule.getId())
+                                .eq(CheckInRecord::getUserId, enrollment.getUserId())
+                                .eq(CheckInRecord::getRole, "MEMBER")
+                                .eq(CheckInRecord::getStatus, "PENDING"));
+                for (CheckInRecord r : pendingRecords) {
+                    checkInRecordMapper.deleteById(r.getId());
+                }
+            }
+        }
+
+        enrollment.setStatus("CANCELLED");
+        enrollment.setUpdateTime(LocalDateTime.now());
+        enrollmentMapper.updateById(enrollment);
+    }
+
     public IPage<Enrollment> getMyEnrollments(Long userId, String type, int pageNum, int pageSize) {
         Page<Enrollment> page = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<Enrollment> wrapper = new LambdaQueryWrapper<Enrollment>()
@@ -194,15 +250,14 @@ public class EnrollmentService {
 
         if (type != null && !type.isEmpty()) {
             if ("PRIVATE".equals(type)) {
-                // Include both traditional private courses and private coaching enrollments
-                wrapper.and(w -> w
-                        .inSql(Enrollment::getCourseId,
-                                "SELECT id FROM course WHERE type = 'PRIVATE' AND deleted = 0")
-                        .or().isNotNull(Enrollment::getTotalSessions)
-                );
+                // 私教: coachId NOT NULL, 且状态不是 CANCELLED
+                wrapper.isNotNull(Enrollment::getCoachId)
+                       .ne(Enrollment::getStatus, "CANCELLED");
             } else {
+                // 公共课: courseId 在 course 表中, 且状态不是 CANCELLED
                 wrapper.inSql(Enrollment::getCourseId,
                         "SELECT id FROM course WHERE type = '" + type + "' AND deleted = 0");
+                wrapper.ne(Enrollment::getStatus, "CANCELLED");
             }
         }
 
@@ -223,10 +278,10 @@ public class EnrollmentService {
 
         if (courseId != null) {
             wrapper.inSql(User::getId,
-                    "SELECT user_id FROM enrollment WHERE course_id = " + courseId + " AND deleted = 0");
+                    "SELECT user_id FROM enrollment WHERE course_id = " + courseId + " AND deleted = 0 AND status != 'CANCELLED'");
         } else {
             wrapper.inSql(User::getId,
-                    "SELECT DISTINCT user_id FROM enrollment WHERE course_id IN (SELECT id FROM course WHERE coach_id = " + coachId + " AND deleted = 0) AND deleted = 0");
+                    "SELECT DISTINCT user_id FROM enrollment WHERE course_id IN (SELECT id FROM course WHERE coach_id = " + coachId + " AND deleted = 0) AND status != 'CANCELLED' AND deleted = 0");
         }
 
         if (keyword != null && !keyword.trim().isEmpty()) {
@@ -243,8 +298,16 @@ public class EnrollmentService {
     public IPage<Enrollment> getCoachEnrollments(Long coachId, String keyword, int pageNum, int pageSize) {
         Page<Enrollment> page = new Page<>(pageNum, pageSize);
         LambdaQueryWrapper<Enrollment> wrapper = new LambdaQueryWrapper<Enrollment>()
-                .inSql(Enrollment::getCourseId,
-                        "SELECT id FROM course WHERE coach_id = " + coachId + " AND deleted = 0");
+                .and(w -> w
+                        // 传统课程报名（通过 course 表关联）
+                        .inSql(Enrollment::getCourseId,
+                                "SELECT id FROM course WHERE coach_id = " + coachId + " AND deleted = 0")
+                        // 私教学员（coach_id 直接指向教练）
+                        .or().eq(Enrollment::getCoachId, coachId)
+                );
+
+        // 过滤已退出的
+        wrapper.ne(Enrollment::getStatus, "CANCELLED");
 
         if (keyword != null && !keyword.trim().isEmpty()) {
             wrapper.inSql(Enrollment::getUserId,

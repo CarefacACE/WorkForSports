@@ -213,7 +213,7 @@ onMounted(() => fetchCourses());
 </script>
 
 <style scoped>
-.my-students-page { padding: 0; }
+.my-students-page { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 .card-header { font-weight: 600; }
 .toolbar { display: flex; align-items: center; margin-bottom: 16px; }
 .pagination-wrapper { display: flex; justify-content: flex-end; margin-top: 16px; }

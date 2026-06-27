@@ -3,11 +3,13 @@ package com.zhixun.erp.chat.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.zhixun.erp.chat.entity.ChatBlock;
 import com.zhixun.erp.chat.entity.ChatConversation;
 import com.zhixun.erp.chat.entity.ChatConversationMember;
 import com.zhixun.erp.chat.entity.ChatGroupNotice;
 import com.zhixun.erp.chat.entity.ChatMessage;
 import com.zhixun.erp.chat.entity.ChatReadStatus;
+import com.zhixun.erp.chat.mapper.ChatBlockMapper;
 import com.zhixun.erp.chat.mapper.ChatConversationMapper;
 import com.zhixun.erp.chat.mapper.ChatConversationMemberMapper;
 import com.zhixun.erp.chat.mapper.ChatGroupNoticeMapper;
@@ -19,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -33,6 +36,7 @@ public class ChatService {
     private final ChatMessageMapper messageMapper;
     private final ChatReadStatusMapper readStatusMapper;
     private final UserMapper userMapper;
+    private final ChatBlockMapper chatBlockMapper;
 
     @Transactional
     public ChatConversation createConversation(String type, String name, Long courseId, Long ownerId, List<Long> memberIds) {
@@ -102,6 +106,53 @@ public class ChatService {
     }
 
     public ChatMessage saveMessage(Long conversationId, Long senderId, String content, String msgType) {
+        // 管理员无视禁言和拉黑
+        User sender = userMapper.selectById(senderId);
+        boolean isAdmin = sender != null && "ADMIN".equals(sender.getRole());
+
+        ChatConversation conv = conversationMapper.selectById(conversationId);
+
+        // 检查是否被禁言（仅群聊，管理员跳过禁言检查）
+        if (!isAdmin && conv != null && "GROUP".equals(conv.getType())) {
+            ChatConversationMember member = memberMapper.selectOne(
+                    new LambdaQueryWrapper<ChatConversationMember>()
+                            .eq(ChatConversationMember::getConversationId, conversationId)
+                            .eq(ChatConversationMember::getUserId, senderId));
+            if (member != null && member.getIsMuted() != null && member.getIsMuted() == 1) {
+                if (member.getMutedUntil() == null || member.getMutedUntil().isAfter(LocalDateTime.now())) {
+                    String remaining = getMuteRemaining(conversationId, senderId);
+                    throw new RuntimeException("你已被禁言，无法发送消息" + (remaining != null ? "，剩余" + remaining : ""));
+                } else {
+                    // 禁言已到期，自动解禁
+                    member.setIsMuted(0);
+                    member.setMutedUntil(null);
+                    memberMapper.updateById(member);
+                }
+            }
+        }
+
+        // 拉黑检查（私聊）：被拉黑方无法向拉黑方发送消息（微信模式）
+        if (!isAdmin && conv != null && "PRIVATE".equals(conv.getType())) {
+            List<Long> memberIds = memberMapper.selectList(
+                    new LambdaQueryWrapper<ChatConversationMember>()
+                            .eq(ChatConversationMember::getConversationId, conversationId))
+                    .stream().map(ChatConversationMember::getUserId).collect(Collectors.toList());
+            Long otherUserId = memberIds.stream().filter(id -> !id.equals(senderId)).findFirst().orElse(null);
+            if (otherUserId != null) {
+                User otherUser = userMapper.selectById(otherUserId);
+                boolean otherIsAdmin = otherUser != null && "ADMIN".equals(otherUser.getRole());
+                if (!otherIsAdmin) {
+                    long blockCount = chatBlockMapper.selectCount(
+                            new LambdaQueryWrapper<ChatBlock>()
+                                    .eq(ChatBlock::getUserId, otherUserId)
+                                    .eq(ChatBlock::getBlockedUserId, senderId));
+                    if (blockCount > 0) {
+                        throw new RuntimeException("消息已发出，但被对方拒收了");
+                    }
+                }
+            }
+        }
+
         ChatMessage msg = new ChatMessage();
         msg.setConversationId(conversationId);
         msg.setSenderId(senderId);
@@ -382,6 +433,192 @@ public class ChatService {
         groupNoticeMapper.deleteById(noticeId);
     }
 
+    /* ─── 群管理：禁言 / 群昵称 ─── */
+
+    public void muteAllMembers(Long conversationId, Long operatorId) {
+        ChatConversation conv = conversationMapper.selectById(conversationId);
+        if (conv == null || !"GROUP".equals(conv.getType())) {
+            throw new RuntimeException("群聊不存在");
+        }
+        if (!operatorId.equals(conv.getOwnerId())) {
+            throw new RuntimeException("只有群主可以全员禁言");
+        }
+        List<ChatConversationMember> members = memberMapper.selectList(
+                new LambdaQueryWrapper<ChatConversationMember>()
+                        .eq(ChatConversationMember::getConversationId, conversationId));
+        for (ChatConversationMember m : members) {
+            if (m.getUserId().equals(operatorId)) continue; // 不给自己禁言
+            m.setIsMuted(1);
+            m.setMutedUntil(null); // 永久禁言
+            memberMapper.updateById(m);
+        }
+
+        User operator = userMapper.selectById(operatorId);
+        String opName = operator != null ? (operator.getRealName() != null ? operator.getRealName() : operator.getUsername()) : "群主";
+        ChatMessage sysMsg = new ChatMessage();
+        sysMsg.setConversationId(conversationId);
+        sysMsg.setSenderId(0L);
+        sysMsg.setContent(opName + " 已开启全员禁言");
+        sysMsg.setMsgType("SYSTEM");
+        sysMsg.setCreateTime(LocalDateTime.now());
+        messageMapper.insert(sysMsg);
+    }
+
+    public void unmuteAllMembers(Long conversationId, Long operatorId) {
+        ChatConversation conv = conversationMapper.selectById(conversationId);
+        if (conv == null || !"GROUP".equals(conv.getType())) {
+            throw new RuntimeException("群聊不存在");
+        }
+        if (!operatorId.equals(conv.getOwnerId())) {
+            throw new RuntimeException("只有群主可以解除全员禁言");
+        }
+        List<ChatConversationMember> members = memberMapper.selectList(
+                new LambdaQueryWrapper<ChatConversationMember>()
+                        .eq(ChatConversationMember::getConversationId, conversationId));
+        for (ChatConversationMember m : members) {
+            m.setIsMuted(0);
+            m.setMutedUntil(null);
+            memberMapper.updateById(m);
+        }
+
+        User operator = userMapper.selectById(operatorId);
+        String opName = operator != null ? (operator.getRealName() != null ? operator.getRealName() : operator.getUsername()) : "群主";
+        ChatMessage sysMsg = new ChatMessage();
+        sysMsg.setConversationId(conversationId);
+        sysMsg.setSenderId(0L);
+        sysMsg.setContent(opName + " 已关闭全员禁言");
+        sysMsg.setMsgType("SYSTEM");
+        sysMsg.setCreateTime(LocalDateTime.now());
+        messageMapper.insert(sysMsg);
+    }
+
+    public void setMemberNickname(Long conversationId, Long operatorId, Long targetUserId, String nickname) {
+        ChatConversation conv = conversationMapper.selectById(conversationId);
+        if (conv == null || !"GROUP".equals(conv.getType())) {
+            throw new RuntimeException("群聊不存在");
+        }
+        if (!operatorId.equals(conv.getOwnerId())) {
+            throw new RuntimeException("只有群主可以设置群昵称");
+        }
+        ChatConversationMember member = memberMapper.selectOne(
+                new LambdaQueryWrapper<ChatConversationMember>()
+                        .eq(ChatConversationMember::getConversationId, conversationId)
+                        .eq(ChatConversationMember::getUserId, targetUserId));
+        if (member == null) {
+            throw new RuntimeException("该成员不在群聊中");
+        }
+        member.setNickname(nickname);
+        memberMapper.updateById(member);
+    }
+
+    public void muteMember(Long conversationId, Long operatorId, Long targetUserId, Integer durationMinutes) {
+        ChatConversation conv = conversationMapper.selectById(conversationId);
+        if (conv == null || !"GROUP".equals(conv.getType())) {
+            throw new RuntimeException("群聊不存在");
+        }
+        if (!operatorId.equals(conv.getOwnerId())) {
+            throw new RuntimeException("只有群主可以禁言成员");
+        }
+        if (targetUserId.equals(conv.getOwnerId())) {
+            throw new RuntimeException("不能禁言群主");
+        }
+        ChatConversationMember member = memberMapper.selectOne(
+                new LambdaQueryWrapper<ChatConversationMember>()
+                        .eq(ChatConversationMember::getConversationId, conversationId)
+                        .eq(ChatConversationMember::getUserId, targetUserId));
+        if (member == null) {
+            throw new RuntimeException("该成员不在群聊中");
+        }
+        member.setIsMuted(1);
+        member.setMutedUntil(durationMinutes != null && durationMinutes > 0
+                ? LocalDateTime.now().plusMinutes(durationMinutes) : null);
+        memberMapper.updateById(member);
+
+        // 在群里发送系统消息通知
+        User operator = userMapper.selectById(operatorId);
+        User target = userMapper.selectById(targetUserId);
+        String opName = operator != null ? (operator.getRealName() != null ? operator.getRealName() : operator.getUsername()) : "群主";
+        String targetName = target != null ? (target.getRealName() != null ? target.getRealName() : target.getUsername()) : "该成员";
+        String muteDesc = durationMinutes != null && durationMinutes > 0 ? durationMinutes + "分钟" : "永久";
+        String sysContent = opName + " 将 " + targetName + " 禁言" + muteDesc;
+        ChatMessage sysMsg = new ChatMessage();
+        sysMsg.setConversationId(conversationId);
+        sysMsg.setSenderId(0L);
+        sysMsg.setContent(sysContent);
+        sysMsg.setMsgType("SYSTEM");
+        sysMsg.setCreateTime(LocalDateTime.now());
+        messageMapper.insert(sysMsg);
+    }
+
+    public String getMuteRemaining(Long conversationId, Long userId) {
+        ChatConversationMember member = memberMapper.selectOne(
+                new LambdaQueryWrapper<ChatConversationMember>()
+                        .eq(ChatConversationMember::getConversationId, conversationId)
+                        .eq(ChatConversationMember::getUserId, userId));
+        if (member == null || member.getIsMuted() == null || member.getIsMuted() != 1) return null;
+        if (member.getMutedUntil() == null) return "永久";
+        long remaining = Duration.between(LocalDateTime.now(), member.getMutedUntil()).toMinutes();
+        if (remaining <= 0) return null;
+        if (remaining >= 60) return (remaining / 60) + "小时" + (remaining % 60 > 0 ? (remaining % 60) + "分钟" : "");
+        return remaining + "分钟";
+    }
+
+    public void unmuteMember(Long conversationId, Long operatorId, Long targetUserId) {
+        ChatConversation conv = conversationMapper.selectById(conversationId);
+        if (conv == null || !"GROUP".equals(conv.getType())) {
+            throw new RuntimeException("群聊不存在");
+        }
+        if (!operatorId.equals(conv.getOwnerId())) {
+            throw new RuntimeException("只有群主可以取消禁言");
+        }
+        ChatConversationMember member = memberMapper.selectOne(
+                new LambdaQueryWrapper<ChatConversationMember>()
+                        .eq(ChatConversationMember::getConversationId, conversationId)
+                        .eq(ChatConversationMember::getUserId, targetUserId));
+        if (member == null) {
+            throw new RuntimeException("该成员不在群聊中");
+        }
+        member.setIsMuted(0);
+        member.setMutedUntil(null);
+        memberMapper.updateById(member);
+
+        // 在群里发送系统消息通知
+        User operator = userMapper.selectById(operatorId);
+        User target = userMapper.selectById(targetUserId);
+        String opName = operator != null ? (operator.getRealName() != null ? operator.getRealName() : operator.getUsername()) : "群主";
+        String targetName = target != null ? (target.getRealName() != null ? target.getRealName() : target.getUsername()) : "该成员";
+        ChatMessage sysMsg = new ChatMessage();
+        sysMsg.setConversationId(conversationId);
+        sysMsg.setSenderId(0L);
+        sysMsg.setContent(opName + " 已解除对 " + targetName + " 的禁言");
+        sysMsg.setMsgType("SYSTEM");
+        sysMsg.setCreateTime(LocalDateTime.now());
+        messageMapper.insert(sysMsg);
+    }
+
+    public List<Map<String, Object>> getGroupMembersWithDetails(Long conversationId) {
+        List<ChatConversationMember> members = memberMapper.selectList(
+                new LambdaQueryWrapper<ChatConversationMember>()
+                        .eq(ChatConversationMember::getConversationId, conversationId));
+        ChatConversation conv = conversationMapper.selectById(conversationId);
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (ChatConversationMember m : members) {
+            User user = userMapper.selectById(m.getUserId());
+            if (user == null) continue;
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("userId", user.getId());
+            item.put("username", user.getUsername());
+            item.put("realName", user.getRealName());
+            item.put("role", user.getRole());
+            item.put("nickname", m.getNickname());
+            item.put("isMuted", m.getIsMuted());
+            item.put("mutedUntil", m.getMutedUntil());
+            item.put("isOwner", conv != null && conv.getOwnerId() != null && conv.getOwnerId().equals(user.getId()));
+            result.add(item);
+        }
+        return result;
+    }
+
     /* ─── 管理员：聊天管理 ─── */
 
     /** 管理员查看所有对话（群聊 + 私聊），附带成员数和最后消息 */
@@ -395,17 +632,33 @@ public class ChatService {
             Map<String, Object> info = new LinkedHashMap<>();
             info.put("id", conv.getId());
             info.put("type", conv.getType());
-            info.put("name", conv.getName());
             info.put("ownerId", conv.getOwnerId());
             info.put("courseId", conv.getCourseId());
             info.put("createTime", conv.getCreateTime());
             info.put("updateTime", conv.getUpdateTime());
 
-            // 成员数
-            long memberCount = memberMapper.selectCount(
-                    new LambdaQueryWrapper<ChatConversationMember>()
-                            .eq(ChatConversationMember::getConversationId, conv.getId()));
+            // 获取成员信息
+            List<Long> memberIds = getMemberIds(conv.getId());
+            int memberCount = memberIds.size();
             info.put("memberCount", memberCount);
+
+            // 私聊：拼双方姓名作为显示名称
+            if ("PRIVATE".equals(conv.getType()) && memberCount >= 2) {
+                List<String> names = new ArrayList<>();
+                for (Long uid : memberIds) {
+                    User u = userMapper.selectById(uid);
+                    if (u != null) names.add(u.getRealName() != null && !u.getRealName().isEmpty()
+                            ? u.getRealName() : u.getUsername());
+                }
+                if (names.size() == 2) {
+                    info.put("name", names.get(0) + " & " + names.get(1) + " 的私聊");
+                } else {
+                    info.put("name", String.join("、", names) + " 的私聊");
+                }
+                info.put("memberNames", names);
+            } else {
+                info.put("name", conv.getName());
+            }
 
             // 最后一条消息预览
             List<ChatMessage> lastMsgs = messageMapper.selectList(

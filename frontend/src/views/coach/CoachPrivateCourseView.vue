@@ -552,7 +552,7 @@ onMounted(() => fetchData());
 </script>
 
 <style scoped>
-.course-page { padding: 0; }
+.course-page { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 .card-header { display: flex; align-items: center; justify-content: space-between; font-weight: 600; }
 .toolbar { margin-bottom: 16px; }
 .pagination-wrapper { display: flex; justify-content: flex-end; margin-top: 16px; }

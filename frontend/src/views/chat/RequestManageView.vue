@@ -1,6 +1,6 @@
 <template>
-  <div class="request-manage-view">
-    <el-card>
+  <div class="request-manage-full">
+    <el-card class="request-card">
       <template #header>
         <div class="card-header">
           <span>好友/加群申请</span>
@@ -299,8 +299,56 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.request-manage-view {
-  padding: 0;
+.request-manage-full {
+  display: flex;
+  flex-direction: row !important;
+  flex: 1;
+  margin: -24px;
+  background: #f8fafc;
+  overflow: hidden;
+}
+
+.request-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border-radius: 0;
+}
+
+.request-card :deep(.el-card__body) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.request-card :deep(.el-tabs) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.request-card :deep(.el-tabs__content) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.request-card :deep(.el-tab-pane) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.request-card :deep(.el-table) {
+  flex: 1;
+}
+
+.request-card :deep(.el-table__body-wrapper) {
+  flex: 1;
+  overflow-y: auto;
 }
 
 .card-header {

@@ -104,17 +104,7 @@ public class ChatController {
 
     @GetMapping("/conversations/{id}/members")
     public Result<List<Map<String, Object>>> getGroupMembers(@PathVariable Long id) {
-        List<Long> memberIds = chatService.getMemberIds(id);
-        List<Map<String, Object>> members = memberIds.stream().map(uid -> {
-            User user = userMapper.selectById(uid);
-            Map<String, Object> info = new java.util.LinkedHashMap<>();
-            info.put("userId", uid);
-            info.put("username", user != null ? user.getUsername() : "");
-            info.put("realName", user != null ? user.getRealName() : "");
-            info.put("role", user != null ? user.getRole() : "");
-            return info;
-        }).collect(Collectors.toList());
-        return Result.success(members);
+        return Result.success(chatService.getGroupMembersWithDetails(id));
     }
 
     @PostMapping("/conversations/{id}/members")
@@ -159,6 +149,47 @@ public class ChatController {
     public Result<Void> deleteGroupNotice(@PathVariable Long id) {
         chatService.deleteGroupNotice(id);
         return Result.success("公告已删除", null);
+    }
+
+    /* ─── 群管理：禁言 / 群昵称 ─── */
+
+    @PutMapping("/conversations/{id}/members/{userId}/nickname")
+    public Result<Void> setMemberNickname(@PathVariable Long id, @PathVariable Long userId,
+                                          @RequestBody Map<String, Object> body) {
+        Long operatorId = Long.valueOf(body.get("operatorId").toString());
+        String nickname = (String) body.get("nickname");
+        chatService.setMemberNickname(id, operatorId, userId, nickname);
+        return Result.success("修改成功", null);
+    }
+
+    @PostMapping("/conversations/{id}/members/{userId}/mute")
+    public Result<Void> muteMember(@PathVariable Long id, @PathVariable Long userId,
+                                   @RequestBody Map<String, Object> body) {
+        Long operatorId = Long.valueOf(body.get("operatorId").toString());
+        Integer durationMinutes = body.get("durationMinutes") != null
+                ? Integer.valueOf(body.get("durationMinutes").toString()) : null;
+        chatService.muteMember(id, operatorId, userId, durationMinutes);
+        return Result.success("已禁言", null);
+    }
+
+    @DeleteMapping("/conversations/{id}/members/{userId}/mute")
+    public Result<Void> unmuteMember(@PathVariable Long id, @PathVariable Long userId,
+                                     @RequestParam Long operatorId) {
+        chatService.unmuteMember(id, operatorId, userId);
+        return Result.success("已取消禁言", null);
+    }
+
+    @PostMapping("/conversations/{id}/mute-all")
+    public Result<Void> muteAllMembers(@PathVariable Long id, @RequestBody Map<String, Object> body) {
+        Long operatorId = Long.valueOf(body.get("operatorId").toString());
+        chatService.muteAllMembers(id, operatorId);
+        return Result.success("已开启全员禁言", null);
+    }
+
+    @DeleteMapping("/conversations/{id}/mute-all")
+    public Result<Void> unmuteAllMembers(@PathVariable Long id, @RequestParam Long operatorId) {
+        chatService.unmuteAllMembers(id, operatorId);
+        return Result.success("已关闭全员禁言", null);
     }
 
     /** 发送消息（REST 接口） */

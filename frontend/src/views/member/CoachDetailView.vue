@@ -31,14 +31,14 @@
 
       <el-divider />
 
-      <!-- Purchase Section -->
+      <!-- Enroll Section -->
       <div class="purchase-section">
-        <h3>购买课程</h3>
+        <h3>加入私教</h3>
         <div class="purchase-row">
-          <span>节数：</span>
-          <el-input-number v-model="sessions" :min="1" :max="100" size="large" />
-          <span class="purchase-total">合计：<strong>¥{{ totalCost }}</strong></span>
-          <el-button type="primary" size="large" :loading="purchasing" @click="handlePurchase">立即购买</el-button>
+          <el-checkbox v-model="autoDeductAgreed" size="large">
+            我同意每次上课双方签到后，系统自动从我的余额扣除一节私教课费用（¥{{ coach.pricePerSession }}/节）
+          </el-checkbox>
+          <el-button type="primary" size="large" :loading="purchasing" :disabled="!autoDeductAgreed" @click="handleEnroll">加入私教</el-button>
         </div>
       </div>
 
@@ -62,10 +62,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
-import { getCoachDetail, purchaseSessions, type CoachDetail } from '../../api/privateCoach';
+import { getCoachDetail, enrollCoach, type CoachDetail } from '../../api/privateCoach';
 import { useUserStore } from '../../stores/user';
 
 const route = useRoute();
@@ -77,12 +77,7 @@ const coachId = Number(route.params.coachId);
 const loading = ref(false);
 const purchasing = ref(false);
 const coach = ref<CoachDetail | null>(null);
-const sessions = ref(1);
-
-const totalCost = computed(() => {
-  if (!coach.value) return 0;
-  return (coach.value.pricePerSession * sessions.value).toFixed(0);
-});
+const autoDeductAgreed = ref(false);
 
 function formatTime(dt: string) {
   if (!dt) return '';
@@ -105,15 +100,16 @@ async function fetchDetail() {
   } finally { loading.value = false; }
 }
 
-async function handlePurchase() {
+async function handleEnroll() {
   if (!userId) { ElMessage.warning('请先登录'); return; }
+  if (!autoDeductAgreed.value) { ElMessage.warning('请先同意自动扣费协议'); return; }
   purchasing.value = true;
   try {
-    await purchaseSessions(userId, coachId, sessions.value);
-    ElMessage.success(`成功购买 ${sessions.value} 节私教课`);
+    await enrollCoach(userId, coachId, 1);
+    ElMessage.success('已成功加入私教，可前往"我的私教"预约课程');
     router.push('/member/my-coaches');
   } catch (e) {
-    ElMessage.error(e instanceof Error ? e.message : '购买失败');
+    ElMessage.error(e instanceof Error ? e.message : '加入失败');
   } finally { purchasing.value = false; }
 }
 
@@ -121,7 +117,7 @@ onMounted(fetchDetail);
 </script>
 
 <style scoped>
-.detail-page { max-width: 800px; }
+.detail-page { display: flex; flex-direction: column; flex: 1; min-height: 0; max-width: 800px; }
 .detail-header { display: flex; flex-direction: column; gap: 20px; }
 .detail-cover { border-radius: 12px; overflow: hidden; max-height: 240px; }
 .detail-cover img { width: 100%; object-fit: cover; }
@@ -136,7 +132,7 @@ onMounted(fetchDetail);
 .detail-desc h3 { margin: 0 0 8px; font-size: 16px; }
 .detail-desc p { color: #64748b; line-height: 1.8; white-space: pre-wrap; margin: 0; }
 .purchase-section h3 { margin: 0 0 12px; font-size: 16px; }
-.purchase-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.purchase-row { display: flex; flex-direction: column; gap: 16px; align-items: flex-start; }
 .purchase-total { font-size: 16px; }
 .purchase-total strong { color: #ef4444; font-size: 22px; }
 .schedule-section h3 { margin: 0 0 12px; font-size: 16px; }

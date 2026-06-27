@@ -137,5 +137,5 @@ async function doSendToUser() {
 </script>
 
 <style scoped>
-.admin-notification-page { display: flex; flex-direction: column; }
+.admin-notification-page { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 </style>

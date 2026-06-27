@@ -400,7 +400,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.exercise-page { padding: 0; }
+.exercise-page { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 .stats-row { margin-bottom: 16px; }
 .stat-card { background: #fff; border: 1px solid #ebeef5; border-radius: 8px; padding: 20px; text-align: center; }
 .stat-value { font-size: 28px; font-weight: 700; color: #303133; }

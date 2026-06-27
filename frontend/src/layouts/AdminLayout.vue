@@ -42,8 +42,12 @@
           <template #title>
             <el-icon><Reading /></el-icon>
             <span>课程管理</span>
+            <el-badge v-if="pendingCount > 0" :value="pendingCount" :max="99" class="submenu-badge" />
           </template>
-          <el-menu-item index="/dashboard/course-approval">课程审批</el-menu-item>
+          <el-menu-item index="/dashboard/course-approval">
+            <span style="flex:1">课程审批</span>
+            <el-badge v-if="pendingCount > 0" :value="pendingCount" :max="99" />
+          </el-menu-item>
           <el-menu-item index="/dashboard/schedule-manage">日程管理</el-menu-item>
         </el-sub-menu>
         <el-menu-item v-if="user?.role === 'ADMIN'" index="/dashboard/notification-manage">
@@ -54,6 +58,21 @@
           <el-icon><ChatDotRound /></el-icon>
           <span>聊天管理</span>
         </el-menu-item>
+        <el-sub-menu v-if="user?.role === 'ADMIN'" index="feedback-manage">
+          <template #title>
+            <el-icon><Comment /></el-icon>
+            <span>反馈管理</span>
+            <el-badge v-if="feedbackPendingCount > 0" :value="feedbackPendingCount" :max="99" class="submenu-badge" />
+          </template>
+          <el-menu-item index="/dashboard/repair-manage">
+            <span style="flex:1">器材保修</span>
+            <el-badge v-if="repairPendingCount > 0" :value="repairPendingCount" :max="99" />
+          </el-menu-item>
+          <el-menu-item index="/dashboard/complaint-manage">
+            <span style="flex:1">教练投诉</span>
+            <el-badge v-if="complaintPendingCount > 0" :value="complaintPendingCount" :max="99" />
+          </el-menu-item>
+        </el-sub-menu>
         <el-sub-menu v-if="user?.role === 'ADMIN'" index="user-manage">
           <template #title>
             <el-icon><User /></el-icon>
@@ -84,7 +103,7 @@
             <span>选课</span>
           </template>
           <el-menu-item index="/member/public-courses">公共课</el-menu-item>
-          <el-menu-item index="/member/private-courses">私教教练</el-menu-item>
+          <el-menu-item index="/member/private-courses">私教</el-menu-item>
         </el-sub-menu>
         <el-sub-menu v-if="user?.role === 'COACH'" index="course-manage">
           <template #title>
@@ -108,6 +127,7 @@
           <el-menu-item v-if="user?.role === 'COACH'" index="/coach/my-students">我的学员</el-menu-item>
           <el-menu-item v-if="user?.role === 'MEMBER'" index="/member/my-schedule">我的课表</el-menu-item>
           <el-menu-item v-if="user?.role === 'MEMBER'" index="/member/exercise">我的锻炼</el-menu-item>
+          <el-menu-item v-if="user?.role === 'MEMBER'" index="/member/my-plan">我的计划</el-menu-item>
           <el-menu-item v-if="user?.role === 'MEMBER'" index="/member/checkin">我的签到</el-menu-item>
           <el-menu-item v-if="user?.role === 'COACH'" index="/coach/my-schedule">我的课表</el-menu-item>
           <el-menu-item v-if="user?.role === 'COACH'" index="/coach/checkin">我的签到</el-menu-item>
@@ -152,6 +172,12 @@
           </template>
           <template v-if="user?.role === 'ADMIN'">
             <StockNotificationDropdown />
+          </template>
+          <template v-if="user?.role === 'COACH'">
+            <RepairDropdown />
+          </template>
+          <template v-if="user?.role === 'MEMBER'">
+            <ComplaintDropdown />
           </template>
           <el-dropdown @command="handleUserCommand">
             <span class="user-dropdown-trigger">
@@ -268,17 +294,21 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref, onMounted, watch } from 'vue';
+import { computed, reactive, ref, onMounted, onBeforeUnmount, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
-import { Monitor, Folder, DataAnalysis, User, Reading, Setting, ChatDotRound, ArrowDown, Ticket, Shop, Bell } from '@element-plus/icons-vue';
+import { Monitor, Folder, DataAnalysis, User, Reading, Setting, ChatDotRound, ArrowDown, Ticket, Shop, Bell, Comment } from '@element-plus/icons-vue';
 import { gsap } from 'gsap';
 import { changePassword, getProfile, updateProfile, type UserProfile } from '../api/auth';
+import { getPendingCourseCount } from '../api/course';
+import { countPendingRepairs, countPendingComplaints } from '../api/feedback';
 import { useUserStore } from '../stores/user';
 import { useAdminThemeStore } from '../stores/adminTheme';
 import MessageDropdown from '../components/MessageDropdown.vue';
 import NotificationDropdown from '../components/NotificationDropdown.vue';
 import StockNotificationDropdown from '../components/StockNotificationDropdown.vue';
+import RepairDropdown from '../components/RepairDropdown.vue';
+import ComplaintDropdown from '../components/ComplaintDropdown.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -291,6 +321,38 @@ const profileDialogVisible = ref(false);
 const profileLoading = ref(false);
 const messageDropdownRef = ref();
 const notificationDropdownRef = ref();
+
+/* ─── 课程审批小红点 ─── */
+const pendingCount = ref(0);
+let coursePollTimer: ReturnType<typeof setInterval> | null = null;
+
+async function loadPendingCount() {
+  try {
+    pendingCount.value = await getPendingCourseCount();
+  } catch { /* ignore */ }
+}
+
+/* ─── 反馈管理小红点 ─── */
+const repairPendingCount = ref(0);
+const complaintPendingCount = ref(0);
+const feedbackPendingCount = ref(0);
+let feedbackPollTimer: ReturnType<typeof setInterval> | null = null;
+
+async function loadFeedbackCounts() {
+  try {
+    repairPendingCount.value = await countPendingRepairs();
+  } catch { repairPendingCount.value = 0; }
+  try {
+    complaintPendingCount.value = await countPendingComplaints();
+  } catch { complaintPendingCount.value = 0; }
+  feedbackPendingCount.value = repairPendingCount.value + complaintPendingCount.value;
+}
+
+watch(() => route.path, (path) => {
+  if (path === '/dashboard/course-approval') {
+    pendingCount.value = 0;
+  }
+});
 
 const passwordForm = reactive({
   oldPassword: '',
@@ -464,6 +526,25 @@ onMounted(() => {
     { autoAlpha: 0, y: 12 },
     { autoAlpha: 1, y: 0, duration: 0.5, ease: 'power2.out', delay: 0.3 }
   );
+
+  /* 课程审批：首次加载 + 每隔30秒轮询 */
+  loadPendingCount();
+  coursePollTimer = setInterval(loadPendingCount, 30000);
+
+  /* 反馈管理小红点 */
+  loadFeedbackCounts();
+  feedbackPollTimer = setInterval(loadFeedbackCounts, 30000);
+});
+
+onBeforeUnmount(() => {
+  if (coursePollTimer) {
+    clearInterval(coursePollTimer);
+    coursePollTimer = null;
+  }
+  if (feedbackPollTimer) {
+    clearInterval(feedbackPollTimer);
+    feedbackPollTimer = null;
+  }
 });
 
 // Route change — animate page content transition
@@ -520,5 +601,13 @@ watch(() => route.path, () => {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.submenu-badge {
+  margin-left: 6px;
+}
+
+.submenu-badge :deep(.el-badge__content) {
+  position: static;
 }
 </style>

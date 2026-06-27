@@ -41,6 +41,7 @@ export interface MyCoachItem {
   totalSessions: number;
   remainingSessions: number;
   paidAmount: number;
+  autoDeductAgreed?: number;
 }
 
 export interface Enrollment {
@@ -76,6 +77,26 @@ export function saveMyProfile(coachId: number, data: PrivateCoachProfile) {
 
 export function purchaseSessions(userId: number, coachId: number, sessions: number) {
   return request.post<Enrollment>(`/private-coach/purchase?userId=${userId}&coachId=${coachId}&sessions=${sessions}`);
+}
+
+export function enrollCoach(userId: number, coachId: number, autoDeductAgreed: number) {
+  return request.post<Enrollment>(`/private-coach/enroll?userId=${userId}&coachId=${coachId}&autoDeductAgreed=${autoDeductAgreed}`);
+}
+
+export function requestSession(userId: number, coachId: number, startTime: string, endTime: string) {
+  return request.post<ScheduleEvent>(`/private-coach/request-session?userId=${userId}&coachId=${coachId}&startTime=${encodeURIComponent(startTime)}&endTime=${encodeURIComponent(endTime)}`);
+}
+
+export function approveSession(coachId: number, scheduleId: number) {
+  return request.put<void>(`/private-coach/approve-session/${scheduleId}?coachId=${coachId}`);
+}
+
+export function rejectSession(coachId: number, scheduleId: number, reason?: string) {
+  return request.put<void>(`/private-coach/reject-session/${scheduleId}?coachId=${coachId}`, reason ? { reason } : {});
+}
+
+export function quitCoach(userId: number, coachId: number) {
+  return request.delete<void>(`/private-coach/quit/${coachId}?userId=${userId}`);
 }
 
 export function getMyCoaches(userId: number) {

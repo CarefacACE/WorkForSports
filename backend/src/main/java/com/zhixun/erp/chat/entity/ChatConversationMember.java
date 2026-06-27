@@ -17,6 +17,12 @@ public class ChatConversationMember {
 
     private Long userId;
 
+    private String nickname;
+
+    private Integer isMuted;
+
+    private LocalDateTime mutedUntil;
+
     private LocalDateTime joinedAt;
 
     @TableLogic
@@ -28,6 +34,12 @@ public class ChatConversationMember {
     public void setConversationId(Long conversationId) { this.conversationId = conversationId; }
     public Long getUserId() { return userId; }
     public void setUserId(Long userId) { this.userId = userId; }
+    public String getNickname() { return nickname; }
+    public void setNickname(String nickname) { this.nickname = nickname; }
+    public Integer getIsMuted() { return isMuted; }
+    public void setIsMuted(Integer isMuted) { this.isMuted = isMuted; }
+    public LocalDateTime getMutedUntil() { return mutedUntil; }
+    public void setMutedUntil(LocalDateTime mutedUntil) { this.mutedUntil = mutedUntil; }
     public LocalDateTime getJoinedAt() { return joinedAt; }
     public void setJoinedAt(LocalDateTime joinedAt) { this.joinedAt = joinedAt; }
     public Integer getDeleted() { return deleted; }

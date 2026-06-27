@@ -47,26 +47,70 @@ public class PrivateCoachController {
         return Result.success("保存成功", privateCoachService.saveCoachProfile(coachId, profile));
     }
 
-    @PostMapping("/purchase")
-    public Result<Enrollment> purchase(
+    /* ─── New: Enroll (join coach, no upfront payment) ─── */
+
+    @PostMapping("/enroll")
+    public Result<Enrollment> enrollCoach(
             @RequestParam Long userId,
             @RequestParam Long coachId,
-            @RequestParam Integer sessions) {
-        return Result.success("购买成功", privateCoachService.purchaseSessions(userId, coachId, sessions));
+            @RequestParam(defaultValue = "0") Integer autoDeductAgreed) {
+        return Result.success("加入成功", privateCoachService.enrollCoach(userId, coachId, autoDeductAgreed));
     }
+
+    /* ─── New: Request session (member → coach approval) ─── */
+
+    @PostMapping("/request-session")
+    public Result<CourseSchedule> requestSession(
+            @RequestParam Long userId,
+            @RequestParam Long coachId,
+            @RequestParam String startTime,
+            @RequestParam String endTime) {
+        LocalDateTime start = LocalDateTime.parse(startTime);
+        LocalDateTime end = LocalDateTime.parse(endTime);
+        return Result.success("已发送预约请求，等待教练确认",
+                privateCoachService.requestSession(userId, coachId, start, end));
+    }
+
+    /* ─── New: Approve session ─── */
+
+    @PutMapping("/approve-session/{scheduleId}")
+    public Result<Void> approveSession(
+            @RequestParam Long coachId,
+            @PathVariable Long scheduleId) {
+        privateCoachService.approveSession(coachId, scheduleId);
+        return Result.success("已通过预约", null);
+    }
+
+    /* ─── New: Reject session ─── */
+
+    @PutMapping("/reject-session/{scheduleId}")
+    public Result<Void> rejectSession(
+            @RequestParam Long coachId,
+            @PathVariable Long scheduleId,
+            @RequestBody(required = false) Map<String, String> body) {
+        String reason = body != null ? body.get("reason") : null;
+        privateCoachService.rejectSession(coachId, scheduleId, reason);
+        return Result.success("已拒绝预约", null);
+    }
+
+    /* ─── New: Quit coach ─── */
+
+    @DeleteMapping("/quit/{coachId}")
+    public Result<Void> quitCoach(
+            @RequestParam Long userId,
+            @PathVariable Long coachId) {
+        privateCoachService.quitCoach(userId, coachId);
+        return Result.success("已退出私教课程", null);
+    }
+
+    /* ─── My Coaches ─── */
 
     @GetMapping("/my-coaches")
     public Result<List<Map<String, Object>>> getMyCoaches(@RequestParam Long userId) {
         return Result.success(privateCoachService.getMyCoaches(userId));
     }
 
-    @PostMapping("/book-session")
-    public Result<Void> bookSession(
-            @RequestParam Long userId,
-            @RequestParam Long scheduleId) {
-        privateCoachService.bookSession(userId, scheduleId);
-        return Result.success("预约成功", null);
-    }
+    /* ─── Book Direct (member clicks empty slot → directly book) ─── */
 
     @PostMapping("/book-direct")
     public Result<CourseSchedule> bookDirect(
@@ -79,23 +123,13 @@ public class PrivateCoachController {
         return Result.success("预约成功", privateCoachService.bookDirect(userId, coachId, start, end));
     }
 
+    /* ─── Cancel Booking ─── */
+
     @DeleteMapping("/cancel-booking/{scheduleId}")
     public Result<Void> cancelBooking(
             @RequestParam Long userId,
             @PathVariable Long scheduleId) {
         privateCoachService.cancelBooking(userId, scheduleId);
         return Result.success("取消成功", null);
-    }
-
-    @PutMapping("/reschedule")
-    public Result<Void> reschedule(
-            @RequestParam Long userId,
-            @RequestParam Long currentScheduleId,
-            @RequestParam String targetStart,
-            @RequestParam String targetEnd) {
-        LocalDateTime start = LocalDateTime.parse(targetStart);
-        LocalDateTime end = LocalDateTime.parse(targetEnd);
-        privateCoachService.rescheduleBooking(userId, currentScheduleId, start, end);
-        return Result.success("改期成功", null);
     }
 }

@@ -188,7 +188,7 @@ onMounted(() => fetchData());
 </script>
 
 <style scoped>
-.course-page { padding: 0; }
+.course-page { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 .card-header { font-weight: 600; }
 .toolbar { margin-bottom: 16px; }
 .course-card { cursor: pointer; }

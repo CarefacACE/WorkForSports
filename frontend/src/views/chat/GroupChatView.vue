@@ -209,10 +209,12 @@ onMounted(() => { loadData(); });
 <style scoped>
 .cv {
   display: flex;
-  height: calc(100vh - 76px);
-  margin: -28px -32px;
+  flex: 1;
+  min-height: 0;
+  margin: -24px;
   background: #f8fafc;
   overflow: hidden;
+  flex-direction: row !important;
 }
 
 /* === Sidebar === */

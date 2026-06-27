@@ -218,7 +218,10 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .system-monitor-view {
-  padding: 0;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 .monitor-header {

@@ -24,8 +24,10 @@ function openInNewTab() {
 
 <style scoped>
 .sql-monitor-view {
-  padding: 0;
-  height: calc(100vh - 140px);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 .full-card {

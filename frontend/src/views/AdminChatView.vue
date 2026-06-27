@@ -240,11 +240,11 @@ onMounted(fetchConversations);
 </script>
 
 <style scoped>
-.admin-chat-page { display: flex; flex-direction: column; height: calc(100vh - 120px); }
+.admin-chat-page { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 .chat-card { flex: 1; display: flex; flex-direction: column; }
 .chat-card :deep(.el-card__body) { flex: 1; display: flex; flex-direction: column; padding: 0; }
 
-.chat-layout { display: flex; flex: 1; overflow: hidden; }
+.chat-layout { display: flex; flex-direction: row !important; flex: 1; overflow: hidden; }
 .conv-list-panel { width: 320px; border-right: 1px solid #e5e7eb; display: flex; flex-direction: column; overflow: hidden; }
 .conv-list, .user-list { flex: 1; overflow-y: auto; padding: 4px 0; }
 

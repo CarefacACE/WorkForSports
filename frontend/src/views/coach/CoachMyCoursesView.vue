@@ -23,18 +23,20 @@
             <span v-else class="free-text">免费</span>
           </template>
         </el-table-column>
-        <el-table-column prop="status" label="状态" width="80" align="center">
+        <el-table-column prop="status" label="状态" width="100" align="center">
           <template #default="{ row }">
-            <el-tag :type="row.status === 'ACTIVE' ? 'success' : 'info'" size="small">
-              {{ row.status === 'ACTIVE' ? '上架' : '下架' }}
-            </el-tag>
+            <el-tag v-if="row.status === 'ACTIVE'" type="success" size="small">已通过</el-tag>
+            <el-tag v-else-if="row.status === 'PENDING'" type="warning" size="small">待审批</el-tag>
+            <el-tag v-else-if="row.status === 'REJECTED'" type="danger" size="small">已驳回</el-tag>
+            <el-tag v-else type="info" size="small">{{ row.status }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="240" align="center" fixed="right">
+        <el-table-column label="操作" width="320" align="center" fixed="right">
           <template #default="{ row }">
             <el-button type="primary" link @click="openEditDialog(row)">编辑</el-button>
             <el-button type="success" link @click="openLessonDialog(row)">课时管理</el-button>
             <el-button type="warning" link @click="openPriceDialog(row)">改价</el-button>
+            <el-button v-if="row.status === 'REJECTED'" type="danger" link @click="handleResubmit(row)">重新提交</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -49,6 +51,7 @@
       </div>
     </el-card>
 
+    <!-- ═══ 报名记录（含私教学员） ═══ -->
     <el-card style="margin-top: 20px">
       <template #header>
         <div class="card-header">
@@ -67,14 +70,29 @@
 
       <el-table :data="enrollments" v-loading="enrollLoading" stripe>
         <el-table-column prop="id" label="ID" width="70" align="center" />
-        <el-table-column label="学员" min-width="120">
+        <el-table-column label="类型" width="80" align="center">
           <template #default="{ row }">
-            {{ studentNameMap[row.userId] || '-' }}
+            <el-tag v-if="row.coachId" type="warning" size="small">私教</el-tag>
+            <el-tag v-else type="" size="small">公共课</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="学员/教练" min-width="120">
+          <template #default="{ row }">
+            <span v-if="row.coachId">{{ studentNameMap[row.userId] || '-' }}</span>
+            <span v-else>{{ studentNameMap[row.userId] || '-' }}</span>
           </template>
         </el-table-column>
         <el-table-column label="课程" min-width="120">
           <template #default="{ row }">
-            {{ courseNameMap[row.courseId] || '-' }}
+            <span v-if="row.coachId">私教课</span>
+            <span v-else>{{ courseNameMap[row.courseId] || '-' }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="自动扣费" width="95" align="center">
+          <template #default="{ row }">
+            <el-tag v-if="row.coachId && row.autoDeductAgreed" type="success" size="small">已开通</el-tag>
+            <el-tag v-else-if="row.coachId" type="info" size="small">未开通</el-tag>
+            <span v-else>-</span>
           </template>
         </el-table-column>
         <el-table-column prop="paidAmount" label="支付金额" width="100" align="center">
@@ -87,7 +105,8 @@
           <template #default="{ row }">
             <el-tag v-if="row.status === 'TRIAL'" type="warning" size="small">试听中</el-tag>
             <el-tag v-else-if="row.status === 'CONFIRMED'" type="primary" size="small">已确认</el-tag>
-            <el-tag v-else-if="row.status === 'PAID'" type="success" size="small">已购买</el-tag>
+            <el-tag v-else-if="row.status === 'PAID'" type="success" size="small">在读</el-tag>
+            <el-tag v-else-if="row.status === 'CANCELLED'" type="info" size="small">已退出</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="报名时间" width="170" align="center" />
@@ -103,6 +122,7 @@
       </div>
     </el-card>
 
+    <!-- ═══ Dialogs (unchanged from existing) ═══ -->
     <el-dialog v-model="editDialogVisible" title="编辑课程" width="500px">
       <el-form :model="editForm" label-position="top">
         <el-form-item label="课程名称">
@@ -190,7 +210,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
-import { getMyCourses, updateCourse, updateCoursePrice, type Course } from '../../api/course';
+import { getMyCourses, updateCourse, updateCoursePrice, resubmitCourse, type Course } from '../../api/course';
 import { getLessons, addLesson, updateLesson, deleteLesson, type Lesson } from '../../api/lesson';
 import { getCoachEnrollments, type Enrollment } from '../../api/enrollment';
 import { getProfile, type UserProfile } from '../../api/auth';
@@ -301,7 +321,13 @@ async function handleLessonSubmit() {
   submitLoading.value = true;
   try {
     if (isEditLesson.value) {
-      await updateLesson(coachId, editingLessonId.value, lessonForm.title, lessonForm.videoUrl, lessonForm.sortOrder, lessonForm.isTrial);
+      await updateLesson(coachId, editingLessonId.value, {
+        courseId: currentCourseId.value,
+        title: lessonForm.title,
+        videoUrl: lessonForm.videoUrl,
+        sortOrder: lessonForm.sortOrder,
+        isTrial: lessonForm.isTrial,
+      });
       ElMessage.success('课时更新成功');
     } else {
       await addLesson(coachId, {
@@ -355,6 +381,17 @@ async function handlePriceChange() {
   }
 }
 
+async function handleResubmit(course: Course) {
+  if (!coachId) return;
+  try {
+    await resubmitCourse(course.id, coachId);
+    ElMessage.success('已重新提交审核');
+    await fetchData();
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '重新提交失败');
+  }
+}
+
 async function fetchEnrollments() {
   if (!coachId) return;
   enrollLoading.value = true;
@@ -369,7 +406,7 @@ async function fetchEnrollments() {
           studentNameMap[e.userId] = profile.realName || profile.username;
         } catch { studentNameMap[e.userId] = 'ID:' + e.userId; }
       }
-      if (!courseNameMap[e.courseId]) {
+      if (e.courseId && !courseNameMap[e.courseId]) {
         const c = courses.value.find(c => c.id === e.courseId);
         if (c) courseNameMap[e.courseId] = c.name;
       }
@@ -388,7 +425,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.my-courses-page { padding: 0; }
+.my-courses-page { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 .card-header { font-weight: 600; }
 .toolbar { margin-bottom: 16px; }
 .pagination-wrapper { display: flex; justify-content: flex-end; margin-top: 16px; }

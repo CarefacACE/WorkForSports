@@ -80,6 +80,10 @@ export interface GroupMember {
   username: string;
   realName: string;
   role: string;
+  nickname?: string;
+  isMuted?: number;
+  mutedUntil?: string | null;
+  isOwner?: boolean;
 }
 
 export function getGroupMembers(conversationId: number) {
@@ -227,4 +231,44 @@ export function searchGroups(keyword: string, userId: number) {
 
 export function searchGroupById(id: number, userId: number) {
   return request.get<ChatConversation>('/chat/search-group-by-id', { id, userId });
+}
+
+/* ─── 拉黑 / 删除好友 ─── */
+
+export function blockUser(userId: number, blockedUserId: number) {
+  return request.post<void>('/friend/block', { userId, blockedUserId });
+}
+
+export function unblockUser(userId: number, blockedUserId: number) {
+  return request.delete<void>('/friend/block', { data: { userId, blockedUserId } });
+}
+
+export function getBlockedUsers(userId: number) {
+  return request.get<{ userId: number; username: string; realName: string }[]>('/friend/blocks', { userId });
+}
+
+export function deleteFriend(userId: number, friendUserId: number) {
+  return request.delete<void>(`/friend/${friendUserId}`, { data: { userId } });
+}
+
+/* ─── 群管理：禁言 / 群昵称 ─── */
+
+export function setMemberNickname(conversationId: number, userId: number, operatorId: number, nickname: string) {
+  return request.put<void>(`/chat/conversations/${conversationId}/members/${userId}/nickname`, { operatorId, nickname });
+}
+
+export function muteMember(conversationId: number, userId: number, operatorId: number, durationMinutes?: number) {
+  return request.post<void>(`/chat/conversations/${conversationId}/members/${userId}/mute`, { operatorId, durationMinutes: durationMinutes ?? null });
+}
+
+export function unmuteMember(conversationId: number, userId: number, operatorId: number) {
+  return request.delete<void>(`/chat/conversations/${conversationId}/members/${userId}/mute?operatorId=${operatorId}`);
+}
+
+export function muteAllMembers(conversationId: number, operatorId: number) {
+  return request.post<void>(`/chat/conversations/${conversationId}/mute-all`, { operatorId });
+}
+
+export function unmuteAllMembers(conversationId: number, operatorId: number) {
+  return request.delete<void>(`/chat/conversations/${conversationId}/mute-all?operatorId=${operatorId}`);
 }

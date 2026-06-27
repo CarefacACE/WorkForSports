@@ -334,6 +334,10 @@ onMounted(() => {
 
 <style scoped>
 .member-profile-page {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
   max-width: 1100px;
   margin: 0 auto;
 }

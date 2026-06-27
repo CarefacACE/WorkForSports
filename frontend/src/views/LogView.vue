@@ -168,7 +168,10 @@ onMounted(() => {
 
 <style scoped>
 .log-manage-view {
-  padding: 0;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 .card-header {

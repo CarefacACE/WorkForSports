@@ -22,6 +22,15 @@
       <div v-if="selectedId" class="cv-chat-wrapper">
         <div class="cv-chat-header">
           <span class="cv-chat-title">{{ selectedName }}</span>
+          <el-dropdown v-if="selectedId" trigger="click" @command="handleChatCommand">
+            <el-button text><el-icon><MoreFilled /></el-icon></el-button>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item command="block">拉黑</el-dropdown-item>
+                <el-dropdown-item command="deleteFriend" divided>删除好友</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
         </div>
         <div class="cv-chat-body">
           <ChatRoom :conversationId="selectedId" :conversationName="selectedName" :currentUserId="currentUserId" />
@@ -37,20 +46,27 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
-import { ElMessage } from 'element-plus';
-import { getConversationsByType, type ChatConversation } from '../../api/chat';
+import { useRoute, useRouter } from 'vue-router';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import { MoreFilled } from '@element-plus/icons-vue';
+import { getConversationsByType, getGroupMembers, deleteFriend, blockUser, type ChatConversation, type GroupMember } from '../../api/chat';
 import ChatRoom from './ChatRoom.vue';
 
+const router = useRouter();
 const route = useRoute();
 const conversations = ref<ChatConversation[]>([]);
 const selectedId = ref<number>(0);
 const selectedName = ref('');
 const currentUserId = ref(0);
+const memberCache = ref<GroupMember[]>([]);
 
 function selectConversation(conv: ChatConversation) {
   selectedId.value = conv.id;
   selectedName.value = conv.name || '私信';
+  // 加载该会话的成员列表以便获取对方用户ID
+  getGroupMembers(conv.id).then(members => {
+    memberCache.value = members;
+  }).catch(() => { memberCache.value = []; });
 }
 
 async function loadData() {
@@ -72,15 +88,59 @@ async function loadData() {
 }
 
 onMounted(() => { loadData(); });
+
+function getOtherUserId(): number | null {
+  const other = memberCache.value.find(m => m.userId !== currentUserId.value);
+  return other ? other.userId : null;
+}
+
+async function handleChatCommand(command: string) {
+  const otherUserId = getOtherUserId();
+  if (!otherUserId) {
+    ElMessage.warning('无法获取对方信息');
+    return;
+  }
+  const name = selectedName.value;
+  if (command === 'deleteFriend') {
+    try {
+      await ElMessageBox.confirm(`确定删除与 ${name} 的好友关系？`, '删除好友', { type: 'warning', confirmButtonText: '确定删除' });
+      await deleteFriend(currentUserId.value, otherUserId);
+      ElMessage.success('已删除好友');
+      // 重新加载列表，该会话会消失
+      await loadData();
+      selectedId.value = 0;
+      selectedName.value = '';
+    } catch (e) {
+      if (e !== 'cancel' && (e as any)?.toString() !== 'cancel') {
+        ElMessage.error(e instanceof Error ? e.message : '操作失败');
+      }
+    }
+  } else if (command === 'block') {
+    try {
+      await ElMessageBox.confirm(`确定拉黑 ${name}？拉黑后将无法接收对方消息`, '拉黑', { type: 'warning', confirmButtonText: '确定拉黑' });
+      await blockUser(currentUserId.value, otherUserId);
+      ElMessage.success('已拉黑');
+      await loadData();
+      selectedId.value = 0;
+      selectedName.value = '';
+    } catch (e) {
+      if (e !== 'cancel' && (e as any)?.toString() !== 'cancel') {
+        ElMessage.error(e instanceof Error ? e.message : '操作失败');
+      }
+    }
+  }
+}
 </script>
 
 <style scoped>
 .cv {
   display: flex;
-  height: calc(100vh - 76px);
-  margin: -28px -32px;
+  flex: 1;
+  min-height: 0;
+  margin: -24px;
   background: #f8fafc;
   overflow: hidden;
+  flex-direction: row !important;
 }
 
 /* === Sidebar === */

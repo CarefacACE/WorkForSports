@@ -338,11 +338,15 @@ fetchTables();
 
 <style scoped>
 .db-control-view {
-  padding: 0;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 .table-list-card {
-  height: calc(100vh - 160px);
+  flex: 1;
+  min-height: 0;
 }
 
 .table-list-card :deep(.el-card__body) {

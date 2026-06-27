@@ -172,7 +172,7 @@ onMounted(fetchProfile);
 </script>
 
 <style scoped>
-.profile-page { max-width: 800px; }
+.profile-page { display: flex; flex-direction: column; flex: 1; min-height: 0; max-width: 800px; }
 .card-header { display: flex; align-items: center; justify-content: space-between; font-weight: 600; }
 .cover-upload { display: flex; align-items: center; gap: 16px; }
 .cover-preview { width: 160px; height: 100px; object-fit: cover; border-radius: 8px; border: 1px solid #eee; }

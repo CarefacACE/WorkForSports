@@ -37,6 +37,41 @@ public class CourseService {
             throw new RuntimeException("课程名称不能为空");
         }
 
+        Course course = buildCourse(coachId, request);
+        course.setStatus("PENDING");
+        course.setCreateTime(LocalDateTime.now());
+        courseMapper.insert(course);
+        return course;
+    }
+
+    /** 管理员：替任意教练创建课程 */
+    @Transactional
+    public Course adminCreateCourse(Long coachId, CreateCourseRequest request) {
+        User coach = userMapper.selectById(coachId);
+        if (coach == null || !"COACH".equals(coach.getRole())) {
+            throw new RuntimeException("只有教练可以关联课程");
+        }
+
+        if (request.getName() == null || request.getName().trim().isEmpty()) {
+            throw new RuntimeException("课程名称不能为空");
+        }
+
+        Course course = buildCourse(coachId, request);
+        course.setStatus("ACTIVE"); // 管理员创建的课程直接通过
+        course.setCreateTime(LocalDateTime.now());
+        courseMapper.insert(course);
+
+        notificationService.sendNotification(
+                coachId,
+                "管理员已为您创建课程",
+                "管理员已为您创建课程「" + course.getName() + "」，现已上架。",
+                "COURSE_ADMIN_CREATED",
+                course.getId());
+
+        return course;
+    }
+
+    private Course buildCourse(Long coachId, CreateCourseRequest request) {
         Course course = new Course();
         course.setCoachId(coachId);
         course.setName(request.getName().trim());
@@ -56,9 +91,6 @@ public class CourseService {
         course.setFrequency(request.getFrequency());
         course.setScheduleMode(request.getScheduleMode() != null ? request.getScheduleMode() : "MANUAL");
         course.setDefaultTimeSlot(request.getDefaultTimeSlot());
-        course.setStatus("PENDING");
-        course.setCreateTime(LocalDateTime.now());
-        courseMapper.insert(course);
         return course;
     }
 
@@ -113,6 +145,66 @@ public class CourseService {
         }
         course.setUpdateTime(LocalDateTime.now());
         courseMapper.updateById(course);
+        return course;
+    }
+
+    /** 管理员：修改任意课程（并通知教练） */
+    @Transactional
+    public Course adminUpdateCourse(UpdateCourseRequest request) {
+        Course course = courseMapper.selectById(request.getId());
+        if (course == null) {
+            throw new RuntimeException("课程不存在");
+        }
+
+        if (request.getName() != null && !request.getName().trim().isEmpty()) {
+            course.setName(request.getName().trim());
+        }
+        if (request.getDescription() != null) {
+            course.setDescription(request.getDescription());
+        }
+        if (request.getCoverImage() != null) {
+            course.setCoverImage(request.getCoverImage());
+        }
+        if (request.getCategory() != null) {
+            course.setCategory(request.getCategory());
+        }
+        if (request.getDifficulty() != null) {
+            course.setDifficulty(request.getDifficulty());
+        }
+        if (request.getMaxStudents() != null) {
+            course.setMaxStudents(request.getMaxStudents());
+        }
+        if (request.getLocation() != null) {
+            course.setLocation(request.getLocation());
+        }
+        if (request.getStartDate() != null && !request.getStartDate().isEmpty()) {
+            course.setStartDate(java.time.LocalDate.parse(request.getStartDate()));
+        }
+        if (request.getTags() != null) {
+            course.setTags(request.getTags());
+        }
+        if (request.getTotalLessons() != null) {
+            course.setTotalLessons(request.getTotalLessons());
+        }
+        if (request.getFrequency() != null) {
+            course.setFrequency(request.getFrequency());
+        }
+        if (request.getScheduleMode() != null) {
+            course.setScheduleMode(request.getScheduleMode());
+        }
+        if (request.getDefaultTimeSlot() != null) {
+            course.setDefaultTimeSlot(request.getDefaultTimeSlot());
+        }
+        course.setUpdateTime(LocalDateTime.now());
+        courseMapper.updateById(course);
+
+        notificationService.sendNotification(
+                course.getCoachId(),
+                "管理员已修改您的课程",
+                "管理员已修改您的课程「" + course.getName() + "」的信息。",
+                "COURSE_ADMIN_UPDATED",
+                course.getId());
+
         return course;
     }
 
@@ -182,6 +274,13 @@ public class CourseService {
                         .orderByDesc(Course::getCreateTime));
     }
 
+    /** 获取待审批的课程数量 */
+    public long getPendingCount() {
+        return courseMapper.selectCount(
+                new LambdaQueryWrapper<Course>()
+                        .eq(Course::getStatus, "PENDING"));
+    }
+
     /** 获取按状态筛选的所有课程（管理员） */
     public List<Course> getAllCoursesByStatus(String status) {
         LambdaQueryWrapper<Course> wrapper = new LambdaQueryWrapper<Course>()
@@ -192,12 +291,12 @@ public class CourseService {
         return courseMapper.selectList(wrapper);
     }
 
-    /** 管理员：通过审批 */
+    /** 管理员：通过审批（支持 PENDING→ACTIVE 和 REJECTED→ACTIVE） */
     @Transactional
     public Course approveCourse(Long courseId) {
         Course course = courseMapper.selectById(courseId);
         if (course == null) throw new RuntimeException("课程不存在");
-        if (!"PENDING".equals(course.getStatus())) throw new RuntimeException("该课程不是待审批状态");
+        if ("ACTIVE".equals(course.getStatus())) throw new RuntimeException("该课程已经是通过状态");
 
         course.setStatus("ACTIVE");
         course.setUpdateTime(LocalDateTime.now());
@@ -213,12 +312,12 @@ public class CourseService {
         return course;
     }
 
-    /** 管理员：驳回审批 */
+    /** 管理员：驳回审批（支持 PENDING→REJECTED 和 ACTIVE→REJECTED） */
     @Transactional
     public Course rejectCourse(Long courseId, String reason) {
         Course course = courseMapper.selectById(courseId);
         if (course == null) throw new RuntimeException("课程不存在");
-        if (!"PENDING".equals(course.getStatus())) throw new RuntimeException("该课程不是待审批状态");
+        if ("REJECTED".equals(course.getStatus())) throw new RuntimeException("该课程已经被驳回");
 
         course.setStatus("REJECTED");
         course.setUpdateTime(LocalDateTime.now());
@@ -232,6 +331,21 @@ public class CourseService {
                 msg,
                 "COURSE_REJECTED",
                 courseId);
+
+        return course;
+    }
+
+    /** 教练：重新申请被驳回的课程（REJECTED→PENDING） */
+    @Transactional
+    public Course resubmitCourse(Long coachId, Long courseId) {
+        Course course = courseMapper.selectById(courseId);
+        if (course == null) throw new RuntimeException("课程不存在");
+        if (!course.getCoachId().equals(coachId)) throw new RuntimeException("只能修改自己的课程");
+        if (!"REJECTED".equals(course.getStatus())) throw new RuntimeException("只有被驳回的课程才能重新申请");
+
+        course.setStatus("PENDING");
+        course.setUpdateTime(LocalDateTime.now());
+        courseMapper.updateById(course);
 
         return course;
     }

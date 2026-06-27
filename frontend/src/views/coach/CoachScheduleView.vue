@@ -45,14 +45,16 @@
             <!-- 已排课（可拖拽） -->
             <div v-if="getEvent(day.date, slot.start)" class="event-block"
                  :style="{ background: getEvent(day.date, slot.start)!.color }"
-                 :draggable="!isPast(day.date, slot.start)"
-                 :class="{ 
+                 :draggable="!isPast(day.date, slot.start) && getEvent(day.date, slot.start)!.bookingStatus !== 'REQUESTED'"
+                 :class="{
                    dragging: isDragging(getEvent(day.date, slot.start)!),
-                   'event-past': isPast(day.date, slot.start)
+                   'event-past': isPast(day.date, slot.start),
+                   'event-requested': getEvent(day.date, slot.start)!.bookingStatus === 'REQUESTED'
                  }"
                  @click.stop="onEventClick(getEvent(day.date, slot.start)!)"
-                 @dragstart="onDragStart($event, getEvent(day.date, slot.start)!)">
+                 @dragstart="getEvent(day.date, slot.start)!.bookingStatus !== 'REQUESTED' ? onDragStart($event, getEvent(day.date, slot.start)!) : void 0">
               <div class="event-title">{{ getEvent(day.date, slot.start)!.title }}</div>
+              <div class="event-badge" v-if="getEvent(day.date, slot.start)!.bookingStatus === 'REQUESTED'">待审批</div>
               <div class="event-location" v-if="getEvent(day.date, slot.start)!.location">{{ getEvent(day.date, slot.start)!.location }}</div>
             </div>
             <!-- 空位 hover 加号 -->
@@ -100,6 +102,11 @@
 
     <!-- 编辑/删除排课弹窗 -->
     <el-dialog v-model="editDialogVisible" title="排课详情" width="440px">
+      <!-- 审批提示 -->
+      <el-alert v-if="editingEvent?.bookingStatus === 'REQUESTED'"
+                title="该时段有待审批的预约请求" type="warning" show-icon :closable="false"
+                style="margin-bottom: 16px" />
+
       <el-form :model="editForm" label-position="top">
         <el-form-item label="课程">
           <el-input :model-value="editForm.title" disabled />
@@ -147,9 +154,16 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button type="danger" @click="handleDeleteEvent">删除排课</el-button>
-        <el-button @click="editDialogVisible = false">关闭</el-button>
-        <el-button type="primary" :loading="submitLoading" @click="handleEditEvent">保存</el-button>
+        <template v-if="editingEvent?.bookingStatus === 'REQUESTED'">
+          <el-button type="danger" @click="handleRejectRequest">拒绝</el-button>
+          <el-button @click="editDialogVisible = false">关闭</el-button>
+          <el-button type="primary" :loading="submitLoading" @click="handleApproveRequest">通过</el-button>
+        </template>
+        <template v-else>
+          <el-button type="danger" @click="handleDeleteEvent">删除排课</el-button>
+          <el-button @click="editDialogVisible = false">关闭</el-button>
+          <el-button type="primary" :loading="submitLoading" @click="handleEditEvent">保存</el-button>
+        </template>
       </template>
     </el-dialog>
   </div>
@@ -157,11 +171,12 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
-import { ElMessage } from 'element-plus';
+import { ElMessage, ElMessageBox } from 'element-plus';
 import { Plus } from '@element-plus/icons-vue';
 import { getMyCourses, type Course } from '../../api/course';
 import { getCoachSchedules, createSchedule, updateSchedule, deleteSchedule, type ScheduleEvent } from '../../api/schedule';
 import { checkIn, getCheckInStatus, getScheduleCheckIns, updateCheckInStatus, type CheckInRecord } from '../../api/checkin';
+import { approveSession, rejectSession } from '../../api/privateCoach';
 import { useUserStore } from '../../stores/user';
 
 const userStore = useUserStore();
@@ -410,6 +425,45 @@ async function handleDeleteEvent() {
   }
 }
 
+/* ─── 私教预约审批 ─── */
+
+async function handleApproveRequest() {
+  if (!coachId || !editingEvent.value?.id) return;
+  submitLoading.value = true;
+  try {
+    await approveSession(coachId, editingEvent.value.id);
+    ElMessage.success('已通过预约');
+    editDialogVisible.value = false;
+    await fetchSchedules();
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '审批失败');
+  } finally {
+    submitLoading.value = false;
+  }
+}
+
+async function handleRejectRequest() {
+  if (!coachId || !editingEvent.value?.id) return;
+  try {
+    const { value: reason } = await ElMessageBox.prompt(
+      '请输入拒绝原因（可选）',
+      '拒绝预约',
+      { confirmButtonText: '确定拒绝', cancelButtonText: '取消', inputPlaceholder: '填写拒绝原因...', inputType: 'textarea', inputValidator: (val: string) => true }
+    );
+    submitLoading.value = true;
+    await rejectSession(coachId, editingEvent.value.id, reason || undefined);
+    ElMessage.success('已拒绝预约');
+    editDialogVisible.value = false;
+    await fetchSchedules();
+  } catch (e) {
+    if (e !== 'cancel' && (e as any)?.toString() !== 'cancel') {
+      ElMessage.error(e instanceof Error ? e.message : '操作失败');
+    }
+  } finally {
+    submitLoading.value = false;
+  }
+}
+
 // ====== 拖拽排课 ======
 const draggingEvent = ref<(ScheduleEvent & { _date: string; _slot: string }) | null>(null);
 const dragOverCell = ref<string | null>(null); // "YYYY-MM-DD_HH:mm"
@@ -541,7 +595,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.schedule-page { padding: 0; }
+.schedule-page { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 .card-header { display: flex; align-items: center; justify-content: space-between; font-weight: 600; }
 .header-right { display: flex; align-items: center; gap: 12px; }
 .week-label { font-size: 14px; color: #606266; }
@@ -576,7 +630,9 @@ onMounted(async () => {
 .event-block.dragging { opacity: 0.4; cursor: grabbing; }
 .event-block.event-past { opacity: 0.5; cursor: not-allowed; }
 .event-block.event-past:hover { transform: none; box-shadow: none; }
+.event-block.event-requested { border: 2px dashed #f59e0b; }
 .event-block .event-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.event-block .event-badge { font-size: 10px; background: rgba(255,255,255,0.3); border-radius: 4px; padding: 1px 4px; margin-top: 1px; }
 .event-block .event-location { font-size: 10px; opacity: 0.85; margin-top: 2px; }
 .timetable-slot.has-event { padding: 4px; }
 .timetable-slot.has-event:hover { background: transparent; }

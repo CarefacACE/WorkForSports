@@ -1,6 +1,6 @@
 <template>
   <div class="my-coaches-page">
-    <el-card shadow="never">
+    <el-card shadow="never" style="flex: 1; display: flex; flex-direction: column; min-height: 0;">
       <template #header>
         <div class="card-header">
           <span>🏋️ 我的私教</span>
@@ -9,8 +9,8 @@
               <el-option v-for="mc in myCoaches" :key="mc.coachId" :label="mc.realName" :value="mc.coachId">
                 <div class="coach-option">
                   <span>{{ mc.realName }}</span>
-                  <el-tag size="small" :type="mc.remainingSessions > 0 ? 'success' : 'danger'" style="margin-left: auto">
-                    {{ mc.remainingSessions }}/{{ mc.totalSessions }} 节
+                  <el-tag size="small" type="success" style="margin-left: auto">
+                    ¥{{ mc.pricePerSession }}/节
                   </el-tag>
                 </div>
               </el-option>
@@ -29,7 +29,7 @@
 
       <div v-loading="loading">
         <div v-if="myCoaches.length === 0 && !loading" style="text-align: center; padding: 40px 0;">
-          <el-empty description="还没有购买私教课">
+          <el-empty description="还没有加入私教课程">
             <el-button type="primary" @click="$router.push('/member/private-courses')">去浏览教练</el-button>
           </el-empty>
         </div>
@@ -45,16 +45,17 @@
               </div>
             </div>
             <div class="coach-sessions">
-              <span class="sessions-num">{{ selectedCoach.remainingSessions }}</span>
-              <span class="sessions-total">/{{ selectedCoach.totalSessions }} 节</span>
+              <span class="sessions-num">¥{{ selectedCoach.pricePerSession }}</span>
+              <span class="sessions-total">/节 (按次扣费)</span>
             </div>
           </div>
 
           <div class="legend-bar">
-            <span class="legend-item"><span class="legend-dot dot-mine"></span>已预约（可拖拽改期）</span>
+            <span class="legend-item"><span class="legend-dot dot-mine"></span>已预约</span>
+            <span class="legend-item"><span class="legend-dot dot-requested"></span>待审批</span>
             <span class="legend-item"><span class="legend-dot dot-booked"></span>教练已有课</span>
             <span class="legend-item"><span class="legend-dot dot-empty"></span>空闲可预约</span>
-            <span class="legend-tip">💡 点击空格预约 · 拖拽蓝色课程改期</span>
+            <span class="legend-tip">💡 点击空格发起预约请求，等待教练确认</span>
           </div>
 
           <div class="timetable">
@@ -81,27 +82,30 @@
 
                 <!-- Has event -->
                 <template v-if="getEvent(selectedCoach.coachId, d, slot)">
-                  <!-- Booked by me: draggable -->
-                  <div v-if="isBookedByMe(getEvent(selectedCoach.coachId, d, slot)!)"
-                       class="event-block ev-mine"
-                       draggable="true"
-                       :class="{ dragging: isDragging(getEvent(selectedCoach.coachId, d, slot)!) }"
-                       @dragstart="onDragStart($event, getEvent(selectedCoach.coachId, d, slot)!)">
-                    <span class="ev-drag-icon">⠿</span>
-                    <span class="ev-label">已预约</span>
-                    <span class="ev-hint">拖拽改期</span>
+                  <!-- My booking: BOOKED or REQUESTED -->
+                  <div v-if="isMine(getEvent(selectedCoach.coachId, d, slot)!)"
+                       class="event-block"
+                       :class="{
+                         'ev-mine': getEvent(selectedCoach.coachId, d, slot)!.bookingStatus === 'BOOKED',
+                         'ev-requested': getEvent(selectedCoach.coachId, d, slot)!.bookingStatus === 'REQUESTED',
+                         dragging: isDragging(getEvent(selectedCoach.coachId, d, slot)!)
+                       }"
+                       :draggable="getEvent(selectedCoach.coachId, d, slot)!.bookingStatus === 'BOOKED'"
+                       @dragstart="getEvent(selectedCoach.coachId, d, slot)!.bookingStatus === 'BOOKED' ? onDragStart($event, getEvent(selectedCoach.coachId, d, slot)!) : void 0">
+                    <span class="ev-label">{{ getEvent(selectedCoach.coachId, d, slot)!.bookingStatus === 'REQUESTED' ? '待确认' : '已预约' }}</span>
+                    <span v-if="getEvent(selectedCoach.coachId, d, slot)!.bookingStatus === 'BOOKED'" class="ev-hint">拖拽改期</span>
                     <el-button type="danger" size="small" class="ev-cancel"
-                               @click.stop="handleCancel(selectedCoach.enrollmentId, getEvent(selectedCoach.coachId, d, slot)!.id!)">✕ 取消</el-button>
+                               @click.stop="handleCancel(getEvent(selectedCoach.coachId, d, slot)!.id!)">✕ 取消</el-button>
                   </div>
 
-                  <!-- Other events (coach's courses, booked by others, etc) -->
+                  <!-- Other events (coach's courses, booked by others) — privacy: only show type label -->
                   <div v-else class="event-block ev-course">
-                    <span class="ev-label">{{ getEvent(selectedCoach.coachId, d, slot)!.title || '课程' }}</span>
+                    <span class="ev-label">{{ getEvent(selectedCoach.coachId, d, slot)!.courseType === 'PRIVATE' ? '私教课' : getEvent(selectedCoach.coachId, d, slot)!.courseType === 'PUBLIC' ? '公共课' : '课程' }}</span>
                   </div>
                 </template>
 
-                <!-- Empty cell: member books directly -->
-                <div v-else class="add-btn" @click="openBookDialog(d, slot)">
+                <!-- Empty cell: request session -->
+                <div v-else class="add-btn" @click="openRequestDialog(d, slot)">
                   <span>+</span>
                 </div>
               </div>
@@ -111,26 +115,25 @@
       </div>
     </el-card>
 
-    <!-- ═══════ Booking Dialog ═══════ -->
-    <el-dialog v-model="bookDialogVisible" title="预约私教课" width="400px">
+    <!-- ═══════ Request Session Dialog ═══════ -->
+    <el-dialog v-model="requestDialogVisible" title="预约私教课" width="400px">
       <div class="dialog-info">
         <div class="dialog-coach" v-if="selectedCoach">
           <div class="coach-avatar-ph small">{{ (selectedCoach.realName || '?')[0] }}</div>
           <span>{{ selectedCoach.realName }}</span>
         </div>
         <div class="dialog-time">
-          <span>📅 {{ bookDialogDate }}</span>
-          <span>🕐 {{ bookDialogSlot }}</span>
+          <span>📅 {{ requestDialogDate }}</span>
+          <span>🕐 {{ requestDialogSlot }}</span>
         </div>
         <div class="dialog-sessions">
-          剩余课时：<strong>{{ selectedCoach?.remainingSessions ?? 0 }}</strong>
+          价格：<strong>¥{{ selectedCoach?.pricePerSession ?? 0 }}/节</strong>
+          <span class="dialog-hint">（双方签到后自动扣费）</span>
         </div>
       </div>
       <template #footer>
-        <el-button @click="bookDialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="bookLoading"
-                   :disabled="!selectedCoach || selectedCoach.remainingSessions <= 0"
-                   @click="handleConfirmBook">确认预约</el-button>
+        <el-button @click="requestDialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="requestLoading" @click="handleConfirmRequest">确认预约</el-button>
       </template>
     </el-dialog>
   </div>
@@ -139,7 +142,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { getMyCoaches, bookDirect, cancelBooking, rescheduleBooking, type MyCoachItem } from '../../api/privateCoach';
+import { getMyCoaches, requestSession, cancelBooking, rescheduleBooking, type MyCoachItem } from '../../api/privateCoach';
 import { getCoachSchedules, type ScheduleEvent } from '../../api/schedule';
 import { useUserStore } from '../../stores/user';
 
@@ -147,7 +150,7 @@ const userStore = useUserStore();
 const userId = userStore.user?.id || 0;
 
 const loading = ref(false);
-const bookLoading = ref(false);
+const requestLoading = ref(false);
 const myCoaches = ref<MyCoachItem[]>([]);
 const coachSchedules = ref<Record<number, ScheduleEvent[]>>({});
 const currentWeekOffset = ref(0);
@@ -206,62 +209,56 @@ function getEvent(coachId: number, day: Date, slot: string): ScheduleEvent | und
   });
 }
 
-function isBookedByMe(ev: ScheduleEvent) {
-  return ev.bookingStatus === 'BOOKED' && ev.memberId === userId;
+function isMine(ev: ScheduleEvent) {
+  return (ev.bookingStatus === 'BOOKED' || ev.bookingStatus === 'REQUESTED') && ev.memberId === userId;
 }
 
 function onCoachChange() {
   if (selectedCoachId.value) fetchSchedules(selectedCoachId.value);
 }
 
-// ====== Booking Dialog ======
-const bookDialogVisible = ref(false);
-const bookDialogDate = ref('');
-const bookDialogSlot = ref('');
-const bookDialogDay = ref<Date | null>(null);
-const bookDialogSlotStr = ref('');
+// ====== Request Session Dialog ======
+const requestDialogVisible = ref(false);
+const requestDialogDate = ref('');
+const requestDialogSlot = ref('');
+const requestDialogDay = ref<Date | null>(null);
+const requestDialogSlotStr = ref('');
 
-function openBookDialog(day: Date, slot: string) {
-  if (!selectedCoach.value || selectedCoach.value.remainingSessions <= 0) {
-    ElMessage.warning('课时不足，请先购买该教练的私教课');
+function openRequestDialog(day: Date, slot: string) {
+  if (!selectedCoachId.value) {
+    ElMessage.warning('请先选择教练');
     return;
   }
-  bookDialogDay.value = day;
-  bookDialogSlotStr.value = slot;
-  bookDialogDate.value = `${day.getFullYear()}年${day.getMonth() + 1}月${day.getDate()}日 ${dayNames[weekDays.value.findIndex(w => w.getTime() === day.getTime())] || ''}`;
+  requestDialogDay.value = day;
+  requestDialogSlotStr.value = slot;
+  requestDialogDate.value = `${day.getFullYear()}年${day.getMonth() + 1}月${day.getDate()}日 ${dayNames[weekDays.value.findIndex(w => w.getTime() === day.getTime())] || ''}`;
   const [h] = slot.split(':').map(Number);
-  bookDialogSlot.value = `${slot} - ${String(h + 1).padStart(2, '0')}:00`;
-  bookDialogVisible.value = true;
+  requestDialogSlot.value = `${slot} - ${String(h + 1).padStart(2, '0')}:00`;
+  requestDialogVisible.value = true;
 }
 
-async function handleConfirmBook() {
-  if (!selectedCoachId.value || !selectedCoach.value || !bookDialogDay.value || !bookDialogSlotStr.value) return;
-  if (selectedCoach.value.remainingSessions <= 0) {
-    ElMessage.warning('课时不足');
-    return;
-  }
-  bookLoading.value = true;
+async function handleConfirmRequest() {
+  if (!selectedCoachId.value || !requestDialogDay.value || !requestDialogSlotStr.value) return;
+  requestLoading.value = true;
   try {
-    const day = bookDialogDay.value;
-    const [h] = bookDialogSlotStr.value.split(':').map(Number);
+    const day = requestDialogDay.value;
+    const [h] = requestDialogSlotStr.value.split(':').map(Number);
     const dateStr = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
     const startTime = `${dateStr}T${String(h).padStart(2, '0')}:00:00`;
     const endTime = `${dateStr}T${String(h + 1).padStart(2, '0')}:00:00`;
 
-    await bookDirect(userId, selectedCoachId.value, startTime, endTime);
-    ElMessage.success('预约成功');
-    bookDialogVisible.value = false;
+    await requestSession(userId, selectedCoachId.value, startTime, endTime);
+    ElMessage.success('已发送预约请求，等待教练确认');
+    requestDialogVisible.value = false;
     await fetchSchedules(selectedCoachId.value);
-    // Refresh coach list to update remaining sessions
-    myCoaches.value = await getMyCoaches(userId);
   } catch (error) {
     ElMessage.error(error instanceof Error ? error.message : '预约失败');
   } finally {
-    bookLoading.value = false;
+    requestLoading.value = false;
   }
 }
 
-// ====== Drag & drop (reschedule to any empty slot) ======
+// ====== Drag & drop (reschedule BOOKED only) ======
 const draggingEvent = ref<ScheduleEvent | null>(null);
 const dragOverCell = ref<string | null>(null);
 
@@ -275,7 +272,6 @@ function onDragStart(e: DragEvent, event: ScheduleEvent) {
 
 function onDragEnter(day: Date, slot: string) {
   if (!draggingEvent.value || !selectedCoachId.value) return;
-  // Only allow drop on empty cells (no existing event)
   if (!getEvent(selectedCoachId.value, day, slot)) {
     dragOverCell.value = `${formatDayDate(day)}_${slot}`;
   }
@@ -303,7 +299,6 @@ async function onDrop(day: Date, slot: string) {
     (el as HTMLElement).style.opacity = '1';
   });
 
-  // Target must be empty
   if (getEvent(selectedCoachId.value, day, slot)) {
     draggingEvent.value = null;
     return;
@@ -326,9 +321,9 @@ async function onDrop(day: Date, slot: string) {
 }
 
 // ====== Cancel booking ======
-async function handleCancel(enrollmentId: number, scheduleId: number) {
+async function handleCancel(scheduleId: number) {
   try {
-    await ElMessageBox.confirm('确定取消预约？将归还 1 节课时。', '取消确认');
+    await ElMessageBox.confirm('确定取消预约？', '取消确认');
     await cancelBooking(userId, scheduleId);
     ElMessage.success('已取消预约');
     await fetchAll();
@@ -396,6 +391,7 @@ onMounted(fetchAll);
 .legend-item { display: flex; align-items: center; gap: 4px; }
 .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
 .dot-mine { background: #3b82f6; border: 1px solid #2563eb; }
+.dot-requested { background: #f59e0b; border: 1px solid #d97706; }
 .dot-booked { background: #f59e0b; border: 1px solid #d97706; }
 .dot-empty { background: #f1f5f9; border: 1px dashed #94a3b8; }
 .legend-tip { margin-left: auto; color: #94a3b8; font-style: italic; }
@@ -418,78 +414,62 @@ onMounted(fetchAll);
 .ev-label { font-weight: 600; font-size: 11px; line-height: 1.3; color: inherit !important; }
 .ev-hint { font-size: 9px; opacity: 0.65; color: inherit !important; }
 
-/* Mine (booked by me — draggable) */
+/* BOOKED by me */
 .ev-mine { background: #dbeafe !important; border: 1px solid #3b82f6 !important; color: #1e3a8a !important; cursor: grab; user-select: none; }
 .ev-mine .ev-label { color: #1e3a8a !important; }
 .ev-mine .ev-hint { color: #1e3a8a !important; }
-.ev-mine .ev-drag-icon { color: #1e3a8a !important; }
 .ev-mine:hover { box-shadow: 0 2px 8px rgba(37,99,235,0.25); transform: scale(1.02); }
-.ev-mine .ev-drag-icon { font-size: 10px; opacity: 0.5; letter-spacing: -2px; line-height: 1; }
-.ev-mine:hover .ev-drag-icon { opacity: 0.8; }
 .ev-mine .ev-cancel { margin-top: 2px; font-size: 10px; background: rgba(0,0,0,0.06); border: 1px solid rgba(0,0,0,0.15); border-radius: 4px; padding: 1px 6px; height: auto; }
+
+/* REQUESTED (pending approval) */
+.ev-requested { background: #fef3c7 !important; border: 1px solid #f59e0b !important; color: #92400e !important; }
+.ev-requested .ev-label { color: #92400e !important; }
+.ev-requested .ev-cancel { margin-top: 2px; font-size: 10px; background: rgba(0,0,0,0.06); border: 1px solid rgba(0,0,0,0.15); border-radius: 4px; padding: 1px 6px; height: auto; }
+
 .event-block.dragging { opacity: 0.4 !important; cursor: grabbing; }
 
-/* Other events (coach's courses etc) */
-.ev-course { background: #fef3c7; border: 1px solid #f59e0b; color: #1e293b !important; font-weight: 500; }
+/* Other events */
+.ev-course { background: #f1f5f9; border: 1px solid #94a3b8; color: #1e293b !important; font-weight: 500; }
 
-/* Drag over empty cell */
 .timetable-cell.drag-over { background: #eff6ff !important; outline: 2px dashed #60a5fa; outline-offset: -2px; animation: pulse-border 0.8s ease-in-out infinite; }
 @keyframes pulse-border { 0%,100% { outline-color: #60a5fa; } 50% { outline-color: #93c5fd; } }
 
-/* + button */
 .add-btn { width: 100%; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 6px; color: #cbd5e1; font-size: 22px; font-weight: 300; transition: all 0.2s; opacity: 0; }
 .timetable-cell:hover .add-btn { opacity: 1; }
 .add-btn:hover { background: #eff6ff; color: #2563eb; border: 1px dashed #93c5fd; }
 
-/* Booking dialog */
 .dialog-info { display: flex; flex-direction: column; gap: 12px; }
 .dialog-coach { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; }
 .dialog-time { display: flex; gap: 16px; padding: 10px 14px; background: #f0f9ff; border-radius: 8px; font-size: 14px; color: #1e40af; }
 .dialog-sessions { font-size: 14px; color: #64748b; }
 .dialog-sessions strong { font-size: 18px; color: #2563eb; }
-
-/* ═══════ Dark theme ═══════ */
-/* Moved to unscoped style block below for reliable :global() matching */
+.dialog-hint { font-size: 12px; color: #94a3b8; }
 </style>
 
-<!-- Unscoped overrides — beat nike-theme.css global !important rules -->
+<!-- Unscoped overrides for dark theme -->
 <style>
-/* ── Beat .event-block { color: #fff !important } from nike-theme.css ── */
-
-/* Light: ev-mine text = dark blue */
 .my-coaches-page .ev-mine,
 .my-coaches-page .ev-mine .ev-label,
-.my-coaches-page .ev-mine .ev-hint,
-.my-coaches-page .ev-mine .ev-drag-icon { color: #1e3a8a !important; }
-.my-coaches-page .ev-mine .ev-cancel { color: #1e293b !important; font-weight: 600 !important; }
-
-/* Light: ev-course text = black */
+.my-coaches-page .ev-mine .ev-hint { color: #1e3a8a !important; }
+.my-coaches-page .ev-requested,
+.my-coaches-page .ev-requested .ev-label { color: #92400e !important; }
 .my-coaches-page .ev-course,
 .my-coaches-page .ev-course .ev-label { color: #1e293b !important; }
+.my-coaches-page .ev-mine .ev-cancel,
+.my-coaches-page .ev-requested .ev-cancel { color: #1e293b !important; font-weight: 600 !important; }
 
-/* ── Dark theme: full overrides ── */
-
-/* Card & containers */
 [data-admin-theme="dark"] .my-coaches-page .el-card { background: #161822; border-color: rgba(255,255,255,0.06); color: #e0e0e0; }
 [data-admin-theme="dark"] .my-coaches-page .card-header { color: #e8eaed; }
 [data-admin-theme="dark"] .my-coaches-page .week-label { color: #5a5f73; }
 [data-admin-theme="dark"] .my-coaches-page .sessions-num { color: #60a5fa; }
 [data-admin-theme="dark"] .my-coaches-page .sessions-total { color: #4a4e63; }
-
-/* Coach block */
 [data-admin-theme="dark"] .my-coaches-page .coach-block { border-color: rgba(255,255,255,0.12); background: #1a1c28; }
 [data-admin-theme="dark"] .my-coaches-page .coach-header { background: #1e2030 !important; border-bottom-color: rgba(255,255,255,0.1); }
 [data-admin-theme="dark"] .my-coaches-page .coach-name { color: #e8eaed !important; }
-[data-admin-theme="dark"] .my-coaches-page .coach-info .coach-tags .el-tag { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.08); color: #9ca3af; }
 [data-admin-theme="dark"] .my-coaches-page .coach-avatar-ph { background: linear-gradient(135deg, #1d4ed8, #2563eb); }
-
-/* Legend */
 [data-admin-theme="dark"] .my-coaches-page .legend-bar { background: #12141d; border-bottom-color: rgba(255,255,255,0.04); color: #6b7084; }
 [data-admin-theme="dark"] .my-coaches-page .legend-tip { color: #4a4e63; }
 [data-admin-theme="dark"] .my-coaches-page .dot-empty { background: #2a2d3a; border-color: #4a4e63; }
-
-/* Timetable grid */
-[data-admin-theme="dark"] .my-coaches-page .timetable { border-color: rgba(255,255,255,0.06); }
 [data-admin-theme="dark"] .my-coaches-page .timetable-header { border-bottom-color: rgba(255,255,255,0.15); background: #12141d; }
 [data-admin-theme="dark"] .my-coaches-page .timetable-row { border-bottom-color: rgba(255,255,255,0.08); }
 [data-admin-theme="dark"] .my-coaches-page .timetable-day { border-left-color: rgba(255,255,255,0.08); }
@@ -500,29 +480,19 @@ onMounted(fetchAll);
 [data-admin-theme="dark"] .my-coaches-page .day-date { color: #4a4e63 !important; }
 [data-admin-theme="dark"] .my-coaches-page .timetable-day.today { background: rgba(45,212,191,0.08); }
 [data-admin-theme="dark"] .my-coaches-page .timetable-day.today .day-name { color: #2dd4bf !important; }
-
-/* Booked by me: TEAL in dark */
 [data-admin-theme="dark"] .my-coaches-page .ev-mine { background: rgba(45,212,191,0.15) !important; border-color: rgba(45,212,191,0.45) !important; }
 [data-admin-theme="dark"] .my-coaches-page .ev-mine,
 [data-admin-theme="dark"] .my-coaches-page .ev-mine .ev-label,
-[data-admin-theme="dark"] .my-coaches-page .ev-mine .ev-hint,
-[data-admin-theme="dark"] .my-coaches-page .ev-mine .ev-drag-icon { color: #5eead4 !important; }
-[data-admin-theme="dark"] .my-coaches-page .ev-mine:hover { box-shadow: 0 2px 8px rgba(45,212,191,0.25) !important; }
-[data-admin-theme="dark"] .my-coaches-page .ev-mine .ev-cancel { color: #f87171 !important; }
-
-/* Courses: PURPLE in dark */
+[data-admin-theme="dark"] .my-coaches-page .ev-mine .ev-hint { color: #5eead4 !important; }
+[data-admin-theme="dark"] .my-coaches-page .ev-requested { background: rgba(245, 158, 11, 0.15) !important; border-color: rgba(245, 158, 11, 0.45) !important; }
+[data-admin-theme="dark"] .my-coaches-page .ev-requested,
+[data-admin-theme="dark"] .my-coaches-page .ev-requested .ev-label { color: #fbbf24 !important; }
 [data-admin-theme="dark"] .my-coaches-page .ev-course { background: rgba(167,139,250,0.15) !important; border-color: rgba(167,139,250,0.4) !important; }
 [data-admin-theme="dark"] .my-coaches-page .ev-course,
 [data-admin-theme="dark"] .my-coaches-page .ev-course .ev-label { color: #c4b5fd !important; }
-
-/* Drag over */
 [data-admin-theme="dark"] .my-coaches-page .timetable-cell.drag-over { background: rgba(45,212,191,0.08) !important; outline-color: rgba(45,212,191,0.5); }
-
-/* + button */
 [data-admin-theme="dark"] .my-coaches-page .add-btn { color: #3d4155; }
 [data-admin-theme="dark"] .my-coaches-page .add-btn:hover { background: rgba(45,212,191,0.08); color: #2dd4bf !important; border-color: rgba(45,212,191,0.3); }
-
-/* Dialog */
 [data-admin-theme="dark"] .my-coaches-page .dialog-time { background: rgba(45,212,191,0.1); color: #5eead4; }
 [data-admin-theme="dark"] .my-coaches-page .dialog-sessions { color: #6b7084; }
 [data-admin-theme="dark"] .my-coaches-page .dialog-sessions strong { color: #5eead4; }

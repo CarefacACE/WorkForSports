@@ -9,6 +9,8 @@ import com.zhixun.erp.course.mapper.CourseMapper;
 import com.zhixun.erp.course.mapper.EnrollmentMapper;
 import com.zhixun.erp.schedule.entity.CourseSchedule;
 import com.zhixun.erp.schedule.mapper.CourseScheduleMapper;
+import com.zhixun.erp.user.entity.User;
+import com.zhixun.erp.user.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +22,8 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +32,7 @@ public class CourseScheduleService {
     private final CourseScheduleMapper scheduleMapper;
     private final CourseMapper courseMapper;
     private final EnrollmentMapper enrollmentMapper;
+    private final UserMapper userMapper;
     private final CheckInService checkInService;
     private final NotificationService notificationService;
 
@@ -46,7 +51,26 @@ public class CourseScheduleService {
         if (from != null) wrapper.ge(CourseSchedule::getStartTime, from);
         if (to != null) wrapper.le(CourseSchedule::getEndTime, to);
         wrapper.orderByAsc(CourseSchedule::getStartTime);
-        return scheduleMapper.selectList(wrapper);
+        List<CourseSchedule> schedules = scheduleMapper.selectList(wrapper);
+
+        // 批量查询课程类型，填充 courseType 字段（保护教练隐私，不暴露具体课程名）
+        List<Long> courseIds = schedules.stream()
+                .map(CourseSchedule::getCourseId)
+                .filter(id -> id != null)
+                .distinct()
+                .collect(Collectors.toList());
+        if (!courseIds.isEmpty()) {
+            List<Course> courses = courseMapper.selectBatchIds(courseIds);
+            Map<Long, String> typeMap = courses.stream()
+                    .collect(Collectors.toMap(Course::getId, c -> c.getType() != null ? c.getType() : "PUBLIC"));
+            for (CourseSchedule s : schedules) {
+                if (s.getCourseId() != null) {
+                    s.setCourseType(typeMap.getOrDefault(s.getCourseId(), null));
+                }
+            }
+        }
+
+        return schedules;
     }
 
     /** 管理员：查看所有日程（不区分教练/学员） */
@@ -84,10 +108,10 @@ public class CourseScheduleService {
     public List<CourseSchedule> getMemberSchedules(Long userId, LocalDateTime from, LocalDateTime to) {
         LambdaQueryWrapper<CourseSchedule> wrapper = new LambdaQueryWrapper<CourseSchedule>()
                 .and(w -> w
-                        // Regular course enrollments
+                        // Regular course enrollments: includes total_sessions = 0 or NULL
                         .inSql(CourseSchedule::getCourseId,
                                 "SELECT course_id FROM enrollment WHERE user_id = " + userId
-                                        + " AND status IN ('PAID','CONFIRMED') AND deleted = 0 AND total_sessions IS NULL")
+                                        + " AND status IN ('PAID','CONFIRMED') AND deleted = 0 AND (total_sessions IS NULL OR total_sessions = 0)")
                         // Private coaching: booked sessions
                         .or().eq(CourseSchedule::getMemberId, userId)
                 );
@@ -107,11 +131,13 @@ public class CourseScheduleService {
         }
         input.setCoachId(coachId);
         input.setCreateTime(LocalDateTime.now());
-        // Private coaching available slot
+        // Private coaching available slot — use coach real name
         if (input.getCourseId() == null) {
             input.setBookingStatus("AVAILABLE");
             if (input.getTitle() == null || input.getTitle().isEmpty()) {
-                input.setTitle("私教空闲");
+                User coach = userMapper.selectById(coachId);
+                String coachName = coach != null && coach.getRealName() != null ? coach.getRealName() : "教练";
+                input.setTitle(coachName + "的私教课");
             }
         }
         scheduleMapper.insert(input);

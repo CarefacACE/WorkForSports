@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS sys_file (
 
 ALTER TABLE sys_user ADD COLUMN IF NOT EXISTS deleted TINYINT DEFAULT 0;
 ALTER TABLE sys_user ADD COLUMN IF NOT EXISTS balance DECIMAL(10,2) DEFAULT 0.00;
+ALTER TABLE sys_user ADD COLUMN IF NOT EXISTS total_earnings DECIMAL(12,2) DEFAULT 0.00 COMMENT '累计收入（用于段位判定）';
 
 ALTER TABLE course ADD COLUMN IF NOT EXISTS category VARCHAR(32) DEFAULT 'OTHER';
 ALTER TABLE course ADD COLUMN IF NOT EXISTS difficulty VARCHAR(16) DEFAULT 'BEGINNER';
@@ -54,7 +55,7 @@ ALTER TABLE lesson ADD COLUMN IF NOT EXISTS duration INT DEFAULT 0;
 
 CREATE TABLE IF NOT EXISTS course_schedule (
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    course_id BIGINT NOT NULL,
+    course_id BIGINT DEFAULT NULL,
     coach_id BIGINT NOT NULL,
     title VARCHAR(128) NOT NULL,
     start_time DATETIME NOT NULL,
@@ -106,13 +107,14 @@ CREATE TABLE IF NOT EXISTS lesson (
 CREATE TABLE IF NOT EXISTS enrollment (
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
-    course_id BIGINT NOT NULL,
+    course_id BIGINT DEFAULT NULL,
     status VARCHAR(32) NOT NULL DEFAULT 'TRIAL',
     paid_amount DECIMAL(10,2) DEFAULT 0.00,
     create_time DATETIME,
     update_time DATETIME,
     deleted TINYINT DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+ALTER TABLE enrollment MODIFY COLUMN course_id BIGINT DEFAULT NULL COMMENT '课程ID（私教时可为NULL）';
 
 CREATE TABLE IF NOT EXISTS sys_log (
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -185,6 +187,14 @@ CREATE TABLE IF NOT EXISTS chat_group_notice (
     create_time DATETIME,
     update_time DATETIME,
     deleted TINYINT DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS chat_block (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    blocked_user_id BIGINT NOT NULL,
+    create_time DATETIME,
+    UNIQUE KEY uk_user_blocked (user_id, blocked_user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS chat_friend_request (
@@ -266,6 +276,37 @@ ALTER TABLE course_schedule ADD COLUMN IF NOT EXISTS booking_status VARCHAR(16) 
 
 ALTER TABLE enrollment ADD COLUMN IF NOT EXISTS total_sessions INT DEFAULT 0 COMMENT '总课时';
 ALTER TABLE enrollment ADD COLUMN IF NOT EXISTS remaining_sessions INT DEFAULT 0 COMMENT '剩余课时';
+ALTER TABLE enrollment ADD COLUMN IF NOT EXISTS coach_id BIGINT DEFAULT NULL COMMENT '私教教练ID';
+ALTER TABLE enrollment ADD COLUMN IF NOT EXISTS auto_deduct_agreed TINYINT DEFAULT 0 COMMENT '同意自动扣费';
+ALTER TABLE enrollment MODIFY COLUMN course_id BIGINT DEFAULT NULL COMMENT '课程ID（私教时可为NULL）';
+ALTER TABLE course_schedule MODIFY COLUMN course_id BIGINT DEFAULT NULL COMMENT '课程ID（私教预约时可为NULL）';
+ALTER TABLE course_schedule ADD COLUMN IF NOT EXISTS reject_reason VARCHAR(500) DEFAULT NULL COMMENT '拒绝原因';
+ALTER TABLE chat_conversation_member ADD COLUMN IF NOT EXISTS nickname VARCHAR(64) DEFAULT NULL COMMENT '群昵称';
+ALTER TABLE chat_conversation_member ADD COLUMN IF NOT EXISTS is_muted TINYINT DEFAULT 0 COMMENT '是否禁言';
+ALTER TABLE chat_conversation_member ADD COLUMN IF NOT EXISTS muted_until DATETIME DEFAULT NULL COMMENT '禁言截止时间';
+
+-- ============================================================
+-- 清理方案一旧数据：删除 PRIVATE 类型的课程及关联数据
+-- ============================================================
+
+-- 删除私有课关联的签到记录
+DELETE FROM check_in_record WHERE schedule_id IN (SELECT id FROM course_schedule WHERE course_id IN (SELECT id FROM course WHERE type = 'PRIVATE'));
+
+-- 删除私有课关联的排课
+DELETE FROM course_schedule WHERE course_id IN (SELECT id FROM course WHERE type = 'PRIVATE');
+
+-- 删除私有课关联的课时
+DELETE FROM lesson WHERE course_id IN (SELECT id FROM course WHERE type = 'PRIVATE');
+
+-- 删除私有课关联的报名记录（coach_id IS NULL 的旧数据，即 course_id 指向 PRIVATE 课程的）
+DELETE FROM enrollment WHERE course_id IN (SELECT id FROM course WHERE type = 'PRIVATE');
+
+-- 删除私有课关联的聊天会话及成员
+DELETE FROM chat_conversation_member WHERE conversation_id IN (SELECT id FROM chat_conversation WHERE course_id IN (SELECT id FROM course WHERE type = 'PRIVATE'));
+DELETE FROM chat_conversation WHERE course_id IN (SELECT id FROM course WHERE type = 'PRIVATE');
+
+-- 删除私有课本身
+DELETE FROM course WHERE type = 'PRIVATE';
 
 CREATE TABLE IF NOT EXISTS agent_chat_message (
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -275,6 +316,8 @@ CREATE TABLE IF NOT EXISTS agent_chat_message (
     create_time DATETIME,
     INDEX idx_memory_id (memory_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+ALTER TABLE agent_chat_message MODIFY COLUMN role VARCHAR(32) NOT NULL COMMENT 'SYSTEM/USER/ASSISTANT/AI/TOOL_EXECUTION_RESULT';
 
 CREATE TABLE IF NOT EXISTS private_coach_profile (
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -389,3 +432,82 @@ CREATE TABLE IF NOT EXISTS `stock_notification` (
   KEY `idx_product_id` (`product_id`),
   UNIQUE KEY `uk_user_product` (`user_id`, `product_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='缺货通知';
+
+-- ============================================================
+-- 训练计划主表
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `training_plan` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `user_id` BIGINT NOT NULL COMMENT '用户ID',
+  `goal` VARCHAR(200) NOT NULL COMMENT '训练目标',
+  `duration_days` INT NOT NULL COMMENT '计划总天数',
+  `start_date` DATE DEFAULT NULL COMMENT '开始日期',
+  `end_date` DATE DEFAULT NULL COMMENT '结束日期',
+  `description` VARCHAR(500) DEFAULT NULL COMMENT '计划描述',
+  `status` VARCHAR(32) NOT NULL DEFAULT 'ACTIVE' COMMENT 'ACTIVE/COMPLETED/CANCELLED',
+  `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `update_time` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `deleted` TINYINT NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `idx_user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='训练计划';
+
+-- ============================================================
+-- 训练计划明细表
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `plan_detail` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `plan_id` BIGINT NOT NULL COMMENT '关联训练计划ID',
+  `day_number` INT NOT NULL COMMENT '第几天',
+  `training_type` VARCHAR(64) NOT NULL COMMENT '训练类型',
+  `content` TEXT COMMENT '训练内容',
+  `duration_minutes` INT NOT NULL DEFAULT 0 COMMENT '训练时长(分钟)',
+  `intensity` VARCHAR(16) NOT NULL DEFAULT 'MEDIUM' COMMENT 'LOW/MEDIUM/HIGH',
+  `is_checked` TINYINT NOT NULL DEFAULT 0 COMMENT '0未打卡/1已打卡',
+  `check_time` DATETIME DEFAULT NULL COMMENT '打卡时间',
+  `notes` VARCHAR(500) DEFAULT NULL COMMENT '备注',
+  `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `update_time` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `deleted` TINYINT NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `idx_plan_id` (`plan_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='训练计划明细';
+
+-- 器材报修表
+CREATE TABLE IF NOT EXISTS `equipment_repair` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `user_id` BIGINT NOT NULL COMMENT '提交报修的教练ID',
+  `username` VARCHAR(64) NOT NULL COMMENT '教练用户名',
+  `equipment_name` VARCHAR(128) NOT NULL COMMENT '器材名称',
+  `equipment_location` VARCHAR(255) DEFAULT NULL COMMENT '器材位置/编号',
+  `description` TEXT NOT NULL COMMENT '故障描述',
+  `status` VARCHAR(20) NOT NULL DEFAULT 'PENDING' COMMENT '状态：PENDING/PROCESSING/RESOLVED/REJECTED',
+  `feedback` TEXT DEFAULT NULL COMMENT '管理员反馈',
+  `processed_time` DATETIME DEFAULT NULL COMMENT '处理时间',
+  `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `update_time` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `deleted` TINYINT NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `idx_user_id` (`user_id`),
+  KEY `idx_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='器材报修';
+
+-- 教练投诉表
+CREATE TABLE IF NOT EXISTS `coach_complaint` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `user_id` BIGINT NOT NULL COMMENT '提交投诉的会员ID',
+  `username` VARCHAR(64) NOT NULL COMMENT '会员用户名',
+  `coach_id` BIGINT NOT NULL COMMENT '被投诉教练ID',
+  `coach_username` VARCHAR(64) NOT NULL COMMENT '教练用户名',
+  `content` TEXT NOT NULL COMMENT '投诉内容',
+  `status` VARCHAR(20) NOT NULL DEFAULT 'PENDING' COMMENT '状态：PENDING/PROCESSING/RESOLVED/REJECTED',
+  `feedback` TEXT DEFAULT NULL COMMENT '管理员反馈',
+  `processed_time` DATETIME DEFAULT NULL COMMENT '处理时间',
+  `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `update_time` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `deleted` TINYINT NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `idx_user_id` (`user_id`),
+  KEY `idx_coach_id` (`coach_id`),
+  KEY `idx_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='教练投诉';

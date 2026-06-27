@@ -385,7 +385,7 @@ onMounted(fetchAll);
 </script>
 
 <style scoped>
-.supermarket-page { padding: 0; display: flex; flex-direction: column; min-height: calc(100vh - 120px); }
+.supermarket-page { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 .supermarket-page :deep(.el-card) { flex: 1; display: flex; flex-direction: column; }
 .supermarket-page :deep(.el-card__body) { flex: 1; display: flex; flex-direction: column; }
 .card-header { display: flex; align-items: center; justify-content: space-between; font-weight: 600; }

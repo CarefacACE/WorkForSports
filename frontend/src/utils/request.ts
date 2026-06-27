@@ -54,8 +54,8 @@ const request = {
   get<T = unknown>(url: string, params?: unknown): Promise<T> {
     return service.get(url, { params });
   },
-  post<T = unknown>(url: string, data?: unknown): Promise<T> {
-    return service.post(url, data);
+  post<T = unknown>(url: string, data?: unknown, config?: { timeout?: number }): Promise<T> {
+    return service.post(url, data, config);
   },
   put<T = unknown>(url: string, data?: unknown): Promise<T> {
     return service.put(url, data);

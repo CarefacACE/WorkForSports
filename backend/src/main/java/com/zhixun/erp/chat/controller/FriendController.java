@@ -9,6 +9,7 @@ import com.zhixun.erp.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -98,5 +99,34 @@ public class FriendController {
             @RequestParam(defaultValue = "1") int pageNum,
             @RequestParam(defaultValue = "20") int pageSize) {
         return Result.success(friendService.getSentRequests(userId, pageNum, pageSize));
+    }
+
+    /* ─── 拉黑 / 删除好友 ─── */
+
+    @PostMapping("/block")
+    public Result<Void> blockUser(@RequestBody Map<String, Object> body) {
+        Long userId = Long.valueOf(body.get("userId").toString());
+        Long blockedUserId = Long.valueOf(body.get("blockedUserId").toString());
+        friendService.blockUser(userId, blockedUserId);
+        return Result.success("已拉黑", null);
+    }
+
+    @DeleteMapping("/block")
+    public Result<Void> unblockUser(@RequestBody Map<String, Object> body) {
+        Long userId = Long.valueOf(body.get("userId").toString());
+        Long blockedUserId = Long.valueOf(body.get("blockedUserId").toString());
+        friendService.unblockUser(userId, blockedUserId);
+        return Result.success("已取消拉黑", null);
+    }
+
+    @GetMapping("/blocks")
+    public Result<List<Map<String, Object>>> getBlockedUsers(@RequestParam Long userId) {
+        return Result.success(friendService.getBlockedUsers(userId));
+    }
+
+    @DeleteMapping("/{friendUserId}")
+    public Result<Void> deleteFriend(@RequestParam Long userId, @PathVariable Long friendUserId) {
+        friendService.deleteFriend(userId, friendUserId);
+        return Result.success("已删除好友", null);
     }
 }

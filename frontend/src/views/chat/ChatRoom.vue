@@ -39,12 +39,17 @@
 
 <script setup lang="ts">
 import { ref, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
+import { ElMessage } from 'element-plus';
 import { getMessages, type ChatMessage } from '../../api/chat';
 
 const props = defineProps<{
   conversationId: number;
   conversationName: string;
   currentUserId: number;
+}>();
+
+const emit = defineEmits<{
+  'message-sent': [];
 }>();
 
 const messages = ref<ChatMessage[]>([]);
@@ -138,6 +143,8 @@ function connectWs() {
           createTime: data.createTime,
         });
         scrollToBottom();
+      } else if (data.type === 'error') {
+        ElMessage.error(data.message || '发送失败');
       }
     } catch {}
   };
@@ -152,6 +159,7 @@ function sendMessage() {
     msgType: 'TEXT',
   }));
   inputText.value = '';
+  emit('message-sent');
   nextTick(() => {
     if (textareaEl.value) {
       textareaEl.value.style.height = 'auto';

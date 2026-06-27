@@ -90,7 +90,7 @@ onMounted(fetchData)
 </script>
 
 <style scoped>
-.checkin-page { padding: 0; }
+.checkin-page { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 .stats-row { margin-bottom: 16px; }
 .stat-card {
   background: #fff;

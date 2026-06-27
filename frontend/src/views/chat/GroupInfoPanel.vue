@@ -42,6 +42,8 @@
             @keyup.enter="handleSearchUser" style="flex:1">
           </el-input>
           <el-button size="small" @click="handleSearchUser">添加</el-button>
+          <el-button size="small" type="warning" @click="handleMuteAll">全员禁言</el-button>
+          <el-button size="small" type="success" @click="handleUnmuteAll">解除禁言</el-button>
         </div>
         <div v-if="searchUserResult" class="search-result">
           <span>{{ searchUserResult.realName || searchUserResult.username }}</span>
@@ -50,12 +52,28 @@
         <div class="member-list">
           <div v-for="member in members" :key="member.userId" class="member-item">
             <div class="member-info">
-              <span class="member-name">{{ member.realName || member.username }}</span>
-              <el-tag v-if="member.userId === ownerId" size="small" type="warning">群主</el-tag>
+              <span class="member-name">
+                {{ member.nickname || member.realName || member.username }}
+                <span v-if="member.nickname" class="member-original-name">({{ member.realName || member.username }})</span>
+              </span>
+              <el-tag v-if="member.isOwner" size="small" type="warning">群主</el-tag>
               <el-tag v-if="member.userId === currentUserId" size="small" type="info">我</el-tag>
+              <el-tag v-if="member.isMuted === 1" size="small" type="danger">禁言</el-tag>
             </div>
-            <el-button v-if="isOwner && member.userId !== ownerId" type="danger" link size="small"
-              @click="handleRemoveMember(member.userId)">移除</el-button>
+            <div class="member-actions-group">
+              <!-- 群主专属操作 -->
+              <template v-if="isOwner && member.userId !== ownerId">
+                <el-button type="primary" link size="small" @click="handleEditNickname(member)">改昵称</el-button>
+                <el-button v-if="member.isMuted === 1" type="warning" link size="small" @click="handleUnmute(member)">取消禁言</el-button>
+                <el-button v-else type="warning" link size="small" @click="handleMute(member)">禁言</el-button>
+                <el-button type="danger" link size="small" @click="handleRemoveMember(member.userId)">移除</el-button>
+              </template>
+              <!-- 普通成员操作 -->
+              <template v-if="member.userId !== currentUserId">
+                <el-button type="success" link size="small" @click="handleAddFriend(member)">加好友</el-button>
+                <el-button type="primary" link size="small" @click="handleTempChat(member)">临时私信</el-button>
+              </template>
+            </div>
           </div>
         </div>
       </div>
@@ -79,7 +97,7 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { Close } from '@element-plus/icons-vue';
-import { getGroupMembers, addGroupMember, removeGroupMember, updateConversationName, leaveGroup, searchUser, searchUserById, getGroupNotice, publishGroupNotice, deleteGroupNotice, type GroupMember, type SearchResult, type GroupNotice } from '../../api/chat';
+import { getGroupMembers, addGroupMember, removeGroupMember, updateConversationName, leaveGroup, searchUser, searchUserById, getGroupNotice, publishGroupNotice, deleteGroupNotice, sendFriendRequest, startTempChat, setMemberNickname, muteMember, unmuteMember, muteAllMembers, unmuteAllMembers, type GroupMember, type SearchResult, type GroupNotice } from '../../api/chat';
 
 const props = defineProps<{
   conversationId: number;
@@ -203,6 +221,86 @@ async function handleLeaveGroup() {
     ElMessage.success('已退出群聊');
     emit('left');
   } catch {}
+}
+
+/* ─── 群管理：禁言 / 昵称 ─── */
+
+async function handleEditNickname(member: GroupMember) {
+  try {
+    const { value } = await ElMessageBox.prompt(
+      `设置 ${member.realName || member.username} 的群昵称`,
+      '修改群昵称',
+      { inputValue: member.nickname || '', confirmButtonText: '确定', cancelButtonText: '取消' }
+    );
+    await setMemberNickname(props.conversationId, member.userId, props.currentUserId, value || '');
+    ElMessage.success('修改成功');
+    loadMembers();
+  } catch { /* cancel */ }
+}
+
+async function handleMute(member: GroupMember) {
+  try {
+    const { value } = await ElMessageBox.prompt(
+      `输入禁言时长（分钟），留空为永久禁言`,
+      `禁言 ${member.realName || member.username}`,
+      { inputType: 'number', inputPlaceholder: '分钟数，留空为永久', confirmButtonText: '确定禁言', cancelButtonText: '取消' }
+    );
+    const duration = value ? Number(value) : undefined;
+    await muteMember(props.conversationId, member.userId, props.currentUserId, duration);
+    ElMessage.success('已禁言');
+    loadMembers();
+  } catch { /* cancel */ }
+}
+
+async function handleUnmute(member: GroupMember) {
+  try {
+    await ElMessageBox.confirm(`确定取消 ${member.realName || member.username} 的禁言？`, '取消禁言', { type: 'info' });
+    await unmuteMember(props.conversationId, member.userId, props.currentUserId);
+    ElMessage.success('已取消禁言');
+    loadMembers();
+  } catch { /* cancel */ }
+}
+
+/* ─── 加好友 / 临时私信 ─── */
+
+async function handleAddFriend(member: GroupMember) {
+  try {
+    await sendFriendRequest(props.currentUserId, member.userId, 'FRIEND', `来自群聊的好友申请`);
+    ElMessage.success('好友申请已发送');
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '操作失败');
+  }
+}
+
+async function handleTempChat(member: GroupMember) {
+  try {
+    const conv = await startTempChat(props.currentUserId, member.userId);
+    // 跳转到私信页面
+    const basePath = JSON.parse(localStorage.getItem('user_info') || '{}').role === 'COACH' ? '/coach' : '/member';
+    window.open(`${basePath}/chat-private?conversationId=${conv.id}`, '_blank');
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '操作失败');
+  }
+}
+
+/* ─── 全员禁言 ─── */
+
+async function handleMuteAll() {
+  try {
+    await ElMessageBox.confirm('确定开启全员禁言？', '全员禁言', { type: 'warning', confirmButtonText: '确定' });
+    await muteAllMembers(props.conversationId, props.currentUserId);
+    ElMessage.success('已开启全员禁言');
+    loadMembers();
+  } catch { /* cancel */ }
+}
+
+async function handleUnmuteAll() {
+  try {
+    await ElMessageBox.confirm('确定解除全员禁言？', '解除禁言', { type: 'info', confirmButtonText: '确定' });
+    await unmuteAllMembers(props.conversationId, props.currentUserId);
+    ElMessage.success('已关闭全员禁言');
+    loadMembers();
+  } catch { /* cancel */ }
 }
 
 watch(() => props.conversationId, () => {

@@ -1,6 +1,7 @@
 package com.zhixun.erp.schedule.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -22,6 +23,14 @@ public class CourseSchedule {
     private Long memberId;
     private Long enrollmentId;
     private String bookingStatus;
+
+    /** 拒绝原因（仅 REJECTED 状态时有值） */
+    private String rejectReason;
+
+    /** 课程类型 (PUBLIC/PRIVATE)，非数据库字段，仅供前端展示用 */
+    @TableField(exist = false)
+    private String courseType;
+
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
     @TableLogic
@@ -49,6 +58,10 @@ public class CourseSchedule {
     public void setEnrollmentId(Long enrollmentId) { this.enrollmentId = enrollmentId; }
     public String getBookingStatus() { return bookingStatus; }
     public void setBookingStatus(String bookingStatus) { this.bookingStatus = bookingStatus; }
+    public String getRejectReason() { return rejectReason; }
+    public void setRejectReason(String rejectReason) { this.rejectReason = rejectReason; }
+    public String getCourseType() { return courseType; }
+    public void setCourseType(String courseType) { this.courseType = courseType; }
     public LocalDateTime getCreateTime() { return createTime; }
     public void setCreateTime(LocalDateTime createTime) { this.createTime = createTime; }
     public LocalDateTime getUpdateTime() { return updateTime; }

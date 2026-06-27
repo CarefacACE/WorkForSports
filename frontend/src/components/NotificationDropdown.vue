@@ -24,9 +24,11 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { useRouter } from 'vue-router';
 import { Bell } from '@element-plus/icons-vue';
 import { getNotifications, markAsRead, getUnreadCount, type NotificationItem } from '../api/notification';
 
+const router = useRouter();
 const notifications = ref<NotificationItem[]>([]);
 const unreadCount = ref(0);
 const currentUserId = ref(0);
@@ -61,6 +63,12 @@ async function handleRead(item: NotificationItem) {
     await markAsRead(item.id);
     item.isRead = 1;
     unreadCount.value = Math.max(0, unreadCount.value - 1);
+  }
+  // 根据通知类型跳转到对应页面
+  if (item.type === 'SESSION_REQUEST') {
+    router.push('/coach/my-schedule');
+  } else if (item.type === 'SESSION_APPROVED' || item.type === 'SESSION_REJECTED') {
+    router.push('/member/my-coaches');
   }
 }
 
