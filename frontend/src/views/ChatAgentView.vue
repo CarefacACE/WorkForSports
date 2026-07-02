@@ -17,7 +17,7 @@
             <span v-else>🤖</span>
           </div>
           <div class="message-bubble">
-            <div class="message-text" v-html="formatMessage(msg.content)"></div>
+            <div class="message-text markdown-body" v-html="formatMessage(msg.content)"></div>
           </div>
         </div>
         <div v-if="loading && !streamingStarted" class="message assistant">
@@ -42,6 +42,7 @@
         </el-input>
         <div class="quick-actions">
           <el-button size="small" @click="quickAsk('帮我查看本周的课程安排')">📅 查看课表</el-button>
+          <el-button size="small" @click="quickAsk('根据我的情况给我推荐一下适合的课程吧')">🎯 推荐课程</el-button>
           <el-button size="small" @click="quickAsk('我的账户余额是多少')">💰 查询余额</el-button>
           <el-button size="small" @click="quickAsk('分析一下我最近的运动数据')">🏃 运动分析</el-button>
           <el-button size="small" @click="quickAsk('根据我的身体状况制定锻炼计划')">📋 锻炼计划</el-button>
@@ -128,6 +129,7 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '../stores/user'
 import { generateTrainingPlan, type PlanGenerateRequest } from '../api/agent'
 import { getMyEnrollments } from '../api/enrollment'
+import { marked } from 'marked'
 
 const userStore = useUserStore()
 const router = useRouter()
@@ -157,12 +159,14 @@ const planForm = reactive<PlanGenerateRequest & { _defaultGoal: string }>({
 onMounted(() => {
   messages.value.push({
     role: 'assistant',
-    content: `你好！我是智训健身助手 🏋️\n\n我可以帮你：\n• 查看课程和排课安排\n• 查询余额和消费记录\n• 分析运动数据和热量消耗\n• 制定个性化锻炼计划\n• 查看签到出勤情况\n\n有什么可以帮你的？`
+    content: `你好！我是智训健身助手 🏋️\n\n我可以帮你：\n• 查看课程和排课安排\n• 根据你的需求推荐合适的课程\n• 查询余额和消费记录\n• 分析运动数据和热量消耗\n• 制定个性化锻炼计划\n• 查看签到出勤情况\n\n有什么可以帮你的？`
   })
 })
 
 function formatMessage(text: string): string {
-  return text.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+  // Fix markdown without space after # (DeepSeek often outputs "###text")
+  const fixed = text.replace(/^(#{1,6})([^\s#])/gm, '$1 $2')
+  return marked.parse(fixed) as string
 }
 
 function scrollToBottom() {
@@ -326,4 +330,48 @@ async function generatePlan() {
 
 /* Dark theme for plan dialog */
 :global([data-admin-theme="dark"]) .plan-enrollment-hint { background: #222536; }
+
+/* Markdown styles */
+.markdown-body h1, .markdown-body h2, .markdown-body h3 {
+  margin: 8px 0 4px;
+  font-weight: 600;
+}
+.markdown-body h2 { font-size: 16px; }
+.markdown-body h3 { font-size: 14px; }
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0;
+  font-size: 13px;
+}
+.markdown-body th, .markdown-body td {
+  padding: 6px 10px;
+  border: 1px solid #dcdfe6;
+  text-align: center;
+}
+.markdown-body th {
+  background: #f5f7fa;
+  font-weight: 600;
+}
+.markdown-body ul, .markdown-body ol {
+  padding-left: 20px;
+  margin: 4px 0;
+}
+.markdown-body li { line-height: 1.6; }
+.markdown-body strong { font-weight: 600; }
+.markdown-body p { margin: 4px 0; }
+.markdown-body code {
+  background: #f0f2f5;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 13px;
+}
+.markdown-body blockquote {
+  border-left: 3px solid #409eff;
+  margin: 8px 0;
+  padding: 4px 12px;
+  color: #606266;
+  background: #f5f7fa;
+}
+.markdown-body hr { border: none; border-top: 1px solid #ebeef5; margin: 8px 0; }
 </style>

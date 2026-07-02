@@ -30,6 +30,10 @@
           <el-icon><Shop /></el-icon>
           <span>超市</span>
         </el-menu-item>
+        <el-menu-item v-if="user?.role !== 'ADMIN'" :index="user?.role === 'MEMBER' ? '/member/video-channel' : '/coach/video-channel'">
+          <el-icon><VideoCamera /></el-icon>
+          <span>栏目</span>
+        </el-menu-item>
         <el-menu-item v-if="user?.role === 'ADMIN'" index="/dashboard/supermarket">
           <el-icon><Shop /></el-icon>
           <span>超市管理</span>
@@ -297,7 +301,7 @@
 import { computed, reactive, ref, onMounted, onBeforeUnmount, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
-import { Monitor, Folder, DataAnalysis, User, Reading, Setting, ChatDotRound, ArrowDown, Ticket, Shop, Bell, Comment } from '@element-plus/icons-vue';
+import { Monitor, Folder, DataAnalysis, User, Reading, Setting, ChatDotRound, ArrowDown, Ticket, Shop, Bell, Comment, VideoCamera } from '@element-plus/icons-vue';
 import { gsap } from 'gsap';
 import { changePassword, getProfile, updateProfile, type UserProfile } from '../api/auth';
 import { getPendingCourseCount } from '../api/course';

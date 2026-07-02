@@ -1,0 +1,242 @@
+{
+  "easycom": {
+    "autoscan": true,
+    "custom": {
+      "^u-(.*)": "uni_modules/uview-ui/components/u-$1/u-$1.vue"
+    }
+  },
+  "pages": [
+    {
+      "path": "pages/auth/login",
+      "style": {
+        "navigationBarTitleText": "登录",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/auth/register",
+      "style": {
+        "navigationBarTitleText": "注册",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/auth/forgot-password",
+      "style": {
+        "navigationBarTitleText": "忘记密码"
+      }
+    },
+    {
+      "path": "pages/index/index",
+      "style": {
+        "navigationBarTitleText": "智训业财云"
+      }
+    },
+    {
+      "path": "pages/courses/public-list",
+      "style": {
+        "navigationBarTitleText": "公共课程"
+      }
+    },
+    {
+      "path": "pages/courses/private-list",
+      "style": {
+        "navigationBarTitleText": "私教课程"
+      }
+    },
+    {
+      "path": "pages/courses/detail",
+      "style": {
+        "navigationBarTitleText": "课程详情"
+      }
+    },
+    {
+      "path": "pages/courses/my-courses",
+      "style": {
+        "navigationBarTitleText": "我的课程"
+      }
+    },
+    {
+      "path": "pages/schedule/my-schedule",
+      "style": {
+        "navigationBarTitleText": "我的课表"
+      }
+    },
+    {
+      "path": "pages/exercise/index",
+      "style": {
+        "navigationBarTitleText": "运动记录"
+      }
+    },
+    {
+      "path": "pages/exercise/add-record",
+      "style": {
+        "navigationBarTitleText": "添加记录"
+      }
+    },
+    {
+      "path": "pages/plan/my-plan",
+      "style": {
+        "navigationBarTitleText": "训练计划"
+      }
+    },
+    {
+      "path": "pages/plan/plan-detail",
+      "style": {
+        "navigationBarTitleText": "计划详情"
+      }
+    },
+    {
+      "path": "pages/checkin/index",
+      "style": {
+        "navigationBarTitleText": "打卡"
+      }
+    },
+    {
+      "path": "pages/profile/index",
+      "style": {
+        "navigationBarTitleText": "我的"
+      }
+    },
+    {
+      "path": "pages/profile/edit",
+      "style": {
+        "navigationBarTitleText": "编辑资料"
+      }
+    },
+    {
+      "path": "pages/profile/health",
+      "style": {
+        "navigationBarTitleText": "健康档案"
+      }
+    },
+    {
+      "path": "pages/profile/wallet",
+      "style": {
+        "navigationBarTitleText": "我的钱包"
+      }
+    },
+    {
+      "path": "pages/chat/conversations",
+      "style": {
+        "navigationBarTitleText": "聊天"
+      }
+    },
+    {
+      "path": "pages/chat/chat-room",
+      "style": {
+        "navigationBarTitleText": ""
+      }
+    },
+    {
+      "path": "pages/chat/contacts",
+      "style": {
+        "navigationBarTitleText": "联系人"
+      }
+    },
+    {
+      "path": "pages/gym/index",
+      "style": {
+        "navigationBarTitleText": "健身房"
+      }
+    },
+    {
+      "path": "pages/gym/supermarket",
+      "style": {
+        "navigationBarTitleText": "运动超市"
+      }
+    },
+    {
+      "path": "pages/gym/my-membership",
+      "style": {
+        "navigationBarTitleText": "我的会员"
+      }
+    },
+    {
+      "path": "pages/video/channel",
+      "style": {
+        "navigationBarTitleText": "健身视频"
+      }
+    },
+    {
+      "path": "pages/coach/dashboard",
+      "style": {
+        "navigationBarTitleText": "教练工作台"
+      }
+    },
+    {
+      "path": "pages/coach/my-students",
+      "style": {
+        "navigationBarTitleText": "我的学员"
+      }
+    },
+    {
+      "path": "pages/coach/profile",
+      "style": {
+        "navigationBarTitleText": "私教档案"
+      }
+    },
+    {
+      "path": "pages/admin/dashboard",
+      "style": {
+        "navigationBarTitleText": "管理仪表盘"
+      }
+    },
+    {
+      "path": "pages/admin/course-approval",
+      "style": {
+        "navigationBarTitleText": "课程审批"
+      }
+    },
+    {
+      "path": "pages/admin/user-manage",
+      "style": {
+        "navigationBarTitleText": "用户管理"
+      }
+    }
+  ],
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#2563eb",
+    "borderStyle": "black",
+    "backgroundColor": "#ffffff",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "iconPath": "static/tab/home.png",
+        "selectedIconPath": "static/tab/home-active.png",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/courses/public-list",
+        "iconPath": "static/tab/course.png",
+        "selectedIconPath": "static/tab/course-active.png",
+        "text": "课程"
+      },
+      {
+        "pagePath": "pages/schedule/my-schedule",
+        "iconPath": "static/tab/schedule.png",
+        "selectedIconPath": "static/tab/schedule-active.png",
+        "text": "课表"
+      },
+      {
+        "pagePath": "pages/chat/conversations",
+        "iconPath": "static/tab/chat.png",
+        "selectedIconPath": "static/tab/chat-active.png",
+        "text": "聊天"
+      },
+      {
+        "pagePath": "pages/profile/index",
+        "iconPath": "static/tab/profile.png",
+        "selectedIconPath": "static/tab/profile-active.png",
+        "text": "我的"
+      }
+    ]
+  },
+  "globalStyle": {
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "智训业财云",
+    "navigationBarBackgroundColor": "#2563eb",
+    "backgroundColor": "#f5f6fa"
+  }
+}

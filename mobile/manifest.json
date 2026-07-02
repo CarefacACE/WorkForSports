@@ -1,0 +1,33 @@
+{
+  "name": "智训业财云",
+  "appid": "__UNI_ZHIXUN_ERP",
+  "description": "一站式健身房智能管理平台 - 鸿蒙移动端",
+  "versionName": "0.1.0",
+  "versionCode": 100,
+  "transformPx": false,
+  "vueVersion": "3",
+  "app-harmony": {
+    "distribute": {
+      "app-harmony": {
+        "packageName": "com.zhixun.erp",
+        "bundleName": "com.zhixun.erp.hmservice",
+        "version": "0.1.0"
+      }
+    }
+  },
+  "app-plus": {
+    "distribute": {
+      "android": {
+        "packageName": "com.zhixun.erp"
+      },
+      "ios": {
+        "appid": "com.zhixun.erp"
+      }
+    }
+  },
+  "h5": {
+    "router": {
+      "mode": "hash"
+    }
+  }
+}

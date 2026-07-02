@@ -46,6 +46,7 @@ import AdminChatView from '../views/AdminChatView.vue';
 import ChatAgentView from '../views/ChatAgentView.vue';
 import AdminRepairView from '../views/AdminRepairView.vue';
 import AdminComplaintView from '../views/AdminComplaintView.vue';
+import VideoChannelView from '../views/video/VideoChannelView.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -263,6 +264,11 @@ const router = createRouter({
           name: 'member-supermarket',
           component: GymSupermarketView,
         },
+        {
+          path: 'video-channel',
+          name: 'member-video-channel',
+          component: VideoChannelView,
+        },
       ],
     },
     {
@@ -320,6 +326,11 @@ const router = createRouter({
           path: 'supermarket',
           name: 'coach-supermarket',
           component: GymSupermarketView,
+        },
+        {
+          path: 'video-channel',
+          name: 'coach-video-channel',
+          component: VideoChannelView,
         },
       ],
     },

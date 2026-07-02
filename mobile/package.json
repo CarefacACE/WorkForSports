@@ -1,0 +1,19 @@
+{
+  "name": "zhixun-erp-mobile",
+  "version": "0.1.0",
+  "private": true,
+  "description": "智训业财云 - 鸿蒙移动端",
+  "scripts": {
+    "sync": "npx tsx scripts/sync-shared.ts"
+  },
+  "dependencies": {
+    "pinia": "^3.0.4",
+    "vue": "^3.5.38"
+  },
+  "devDependencies": {
+    "@dcloudio/types": "^3.4.31",
+    "sass": "^1.80.0",
+    "tsx": "^4.19.0",
+    "typescript": "~5.5.0"
+  }
+}

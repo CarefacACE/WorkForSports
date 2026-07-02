@@ -511,3 +511,25 @@ CREATE TABLE IF NOT EXISTS `coach_complaint` (
   KEY `idx_coach_id` (`coach_id`),
   KEY `idx_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='教练投诉';
+
+CREATE TABLE IF NOT EXISTS video_channel (
+    `id` BIGINT NOT NULL AUTO_INCREMENT,
+    `title` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '视频标题',
+    `description` VARCHAR(2000) DEFAULT '' COMMENT '视频简介',
+    `platform` VARCHAR(32) NOT NULL DEFAULT 'BILIBILI' COMMENT '来源平台',
+    `source_url` VARCHAR(500) NOT NULL DEFAULT '' COMMENT '源链接',
+    `embed_url` VARCHAR(500) DEFAULT '' COMMENT '嵌入播放链接',
+    `thumbnail_url` VARCHAR(500) DEFAULT '' COMMENT '封面图',
+    `play_count` BIGINT DEFAULT 0 COMMENT '播放量',
+    `duration` VARCHAR(32) DEFAULT '' COMMENT '时长',
+    `author` VARCHAR(128) DEFAULT '' COMMENT '作者/UP主',
+    `tags` VARCHAR(500) DEFAULT '' COMMENT '标签',
+    `category` VARCHAR(64) DEFAULT '综合' COMMENT '分类',
+    `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `update_time` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    `deleted` TINYINT NOT NULL DEFAULT 0,
+    PRIMARY KEY (`id`),
+    KEY `idx_platform` (`platform`),
+    KEY `idx_category` (`category`),
+    KEY `idx_source_url` (`source_url`(255))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='健身教学视频栏目';
