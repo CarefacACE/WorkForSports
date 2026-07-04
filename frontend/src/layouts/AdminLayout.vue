@@ -10,13 +10,10 @@
       </div>
 
       <el-menu router :default-active="route.path" class="side-menu">
+        <!-- ═══ 通用区域（所有角色） ═══ -->
         <el-menu-item index="/dashboard/workbench">
           <el-icon><Monitor /></el-icon>
           <span>工作栏</span>
-        </el-menu-item>
-        <el-menu-item index="/dashboard/ai-assistant">
-          <el-icon><ChatDotRound /></el-icon>
-          <span>AI助手</span>
         </el-menu-item>
         <el-menu-item index="/dashboard/files">
           <el-icon><Folder /></el-icon>
@@ -26,22 +23,12 @@
           <el-icon><DataAnalysis /></el-icon>
           <span>CSV分析</span>
         </el-menu-item>
-        <el-menu-item v-if="user?.role !== 'ADMIN'" :index="user?.role === 'MEMBER' ? '/member/supermarket' : '/coach/supermarket'">
-          <el-icon><Shop /></el-icon>
-          <span>超市</span>
+        <el-menu-item index="/dashboard/ai-assistant">
+          <el-icon><ChatDotRound /></el-icon>
+          <span>AI助手</span>
         </el-menu-item>
-        <el-menu-item v-if="user?.role !== 'ADMIN'" :index="user?.role === 'MEMBER' ? '/member/video-channel' : '/coach/video-channel'">
-          <el-icon><VideoCamera /></el-icon>
-          <span>栏目</span>
-        </el-menu-item>
-        <el-menu-item v-if="user?.role === 'ADMIN'" index="/dashboard/supermarket">
-          <el-icon><Shop /></el-icon>
-          <span>超市管理</span>
-        </el-menu-item>
-        <el-menu-item v-if="user?.role === 'ADMIN'" index="/dashboard/finance">
-          <el-icon><DataAnalysis /></el-icon>
-          <span>收支分析</span>
-        </el-menu-item>
+
+        <!-- ═══ 管理员菜单 ═══ -->
         <el-sub-menu v-if="user?.role === 'ADMIN'" index="course-manage">
           <template #title>
             <el-icon><Reading /></el-icon>
@@ -54,14 +41,16 @@
           </el-menu-item>
           <el-menu-item index="/dashboard/schedule-manage">日程管理</el-menu-item>
         </el-sub-menu>
-        <el-menu-item v-if="user?.role === 'ADMIN'" index="/dashboard/notification-manage">
-          <el-icon><Bell /></el-icon>
-          <span>发布通知</span>
-        </el-menu-item>
-        <el-menu-item v-if="user?.role === 'ADMIN'" index="/dashboard/chat-manage">
-          <el-icon><ChatDotRound /></el-icon>
-          <span>聊天管理</span>
-        </el-menu-item>
+        <el-sub-menu v-if="user?.role === 'ADMIN'" index="user-manage">
+          <template #title>
+            <el-icon><User /></el-icon>
+            <span>用户管理</span>
+          </template>
+          <el-menu-item index="/dashboard/coaches">教练信息</el-menu-item>
+          <el-menu-item index="/dashboard/coach-salary">教练工资</el-menu-item>
+          <el-menu-item index="/dashboard/members">会员信息</el-menu-item>
+          <el-menu-item index="/dashboard/member-balance">会员金额</el-menu-item>
+        </el-sub-menu>
         <el-sub-menu v-if="user?.role === 'ADMIN'" index="feedback-manage">
           <template #title>
             <el-icon><Comment /></el-icon>
@@ -77,16 +66,26 @@
             <el-badge v-if="complaintPendingCount > 0" :value="complaintPendingCount" :max="99" />
           </el-menu-item>
         </el-sub-menu>
-        <el-sub-menu v-if="user?.role === 'ADMIN'" index="user-manage">
-          <template #title>
-            <el-icon><User /></el-icon>
-            <span>用户管理</span>
-          </template>
-          <el-menu-item index="/dashboard/coaches">教练信息</el-menu-item>
-          <el-menu-item index="/dashboard/coach-salary">教练工资</el-menu-item>
-          <el-menu-item index="/dashboard/members">会员信息</el-menu-item>
-          <el-menu-item index="/dashboard/member-balance">会员金额</el-menu-item>
-        </el-sub-menu>
+        <el-menu-item v-if="user?.role === 'ADMIN'" index="/dashboard/finance">
+          <el-icon><DataAnalysis /></el-icon>
+          <span>收支分析</span>
+        </el-menu-item>
+        <el-menu-item v-if="user?.role === 'ADMIN'" index="/dashboard/notification-manage">
+          <el-icon><Bell /></el-icon>
+          <span>发布通知</span>
+        </el-menu-item>
+        <el-menu-item v-if="user?.role === 'ADMIN'" index="/dashboard/chat-manage">
+          <el-icon><ChatDotRound /></el-icon>
+          <span>聊天管理</span>
+        </el-menu-item>
+        <el-menu-item v-if="user?.role === 'ADMIN'" index="/dashboard/supermarket">
+          <el-icon><Shop /></el-icon>
+          <span>超市管理</span>
+        </el-menu-item>
+        <el-menu-item v-if="user?.role === 'ADMIN'" index="/dashboard/gym">
+          <el-icon><Ticket /></el-icon>
+          <span>健身房管理</span>
+        </el-menu-item>
         <el-sub-menu v-if="user?.role === 'ADMIN'" index="system-manage">
           <template #title>
             <el-icon><Setting /></el-icon>
@@ -97,9 +96,15 @@
           <el-menu-item index="/dashboard/system-monitor">系统监控</el-menu-item>
           <el-menu-item index="/dashboard/db-control">数据库控制</el-menu-item>
         </el-sub-menu>
-        <el-menu-item v-if="user?.role === 'ADMIN'" index="/dashboard/gym">
-          <el-icon><Ticket /></el-icon>
-          <span>健身房管理</span>
+
+        <!-- ═══ 会员/教练菜单 ═══ -->
+        <el-menu-item v-if="user?.role !== 'ADMIN'" :index="user?.role === 'MEMBER' ? '/member/supermarket' : '/coach/supermarket'">
+          <el-icon><Shop /></el-icon>
+          <span>超市</span>
+        </el-menu-item>
+        <el-menu-item v-if="user?.role !== 'ADMIN'" :index="user?.role === 'MEMBER' ? '/member/video-channel' : '/coach/video-channel'">
+          <el-icon><VideoCamera /></el-icon>
+          <span>栏目</span>
         </el-menu-item>
         <el-sub-menu v-if="user?.role === 'MEMBER'" index="course-select">
           <template #title>
